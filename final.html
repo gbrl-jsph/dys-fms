@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DYS Sales Tracker Management System — Final System Architecture</title>
+<style>
+  :root {
+    --ink: #1F2937;
+    --muted: #6B7280;
+    --border: #9CA3AF;
+    --panel: #F7F7F8;
+    --panel-strong: #ECEFF3;
+    --header: #374151;
+    --divider: #D1D5DB;
+    --connector: #4B5563;
+    --connector-soft: #9CA3AF;
+    --bg: #F3F4F6;
+  }
+ 
+  * { box-sizing: border-box; }
+ 
+  body {
+    margin: 0;
+    padding: 34px 18px 48px;
+    background: var(--bg);
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: var(--ink);
+  }
+ 
+  .page-shell {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 28px 24px 32px;
+    background: #F8F9FA;
+    border: 1px solid #DBDEE3;
+    border-radius: 22px;
+  }
+ 
+  .diagram-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.2px;
+    color: #1F2937;
+  }
+ 
+  .diagram-subtitle {
+    text-align: center;
+    font-size: 14px;
+    font-style: italic;
+    color: var(--muted);
+    margin: 0 0 30px 0;
+  }
+ 
+  .architecture-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    max-width: 1720px;
+    margin: 0 auto;
+    flex-wrap: nowrap;
+    padding: 6px 4px;
+  }
+ 
+  .users-box {
+    width: 180px;
+    min-width: 180px;
+    border: 1.2px solid var(--border);
+    background: #F2F4F6;
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+    align-self: center;
+  }
+ 
+  .users-box .users-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--header);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+ 
+  .users-box .role {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+ 
+  .arrow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-width: 92px;
+    padding: 0 4px;
+  }
+ 
+  .arrow-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+ 
+  .arrow-label {
+    font-size: 10.5px;
+    color: var(--muted);
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    line-height: 1.2;
+  }
+ 
+  .arrow-request .arrow-label {
+    margin-bottom: 6px;
+  }
+ 
+  .arrow-response .arrow-label {
+    margin-top: 6px;
+  }
+ 
+  .arrow-track {
+    position: relative;
+    width: 100%;
+    height: 2px;
+    background: var(--connector);
+    border-radius: 999px;
+  }
+ 
+  .arrow-track::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    border-width: 5px 0 5px 8px;
+    border-style: solid;
+    border-color: transparent transparent transparent var(--connector);
+  }
+ 
+  .arrow-response .arrow-track {
+    background: transparent;
+    border-top: 2px dashed var(--connector-soft);
+    height: 0;
+  }
+ 
+  .arrow-response .arrow-track::after {
+    right: auto;
+    left: -1px;
+    top: -6px;
+    border-width: 5px 8px 5px 0;
+    border-color: transparent var(--connector-soft) transparent transparent;
+  }
+ 
+  .tier-card {
+    width: 285px;
+    min-width: 285px;
+    height: 620px;
+    border-radius: 16px;
+    border: 1.2px solid var(--border);
+    background: var(--panel);
+    padding: 16px 16px 18px 16px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: none;
+  }
+ 
+  .card-header {
+    background: var(--panel-strong);
+    color: var(--header);
+    font-weight: 700;
+    font-size: 14.5px;
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+    border: 1px solid var(--divider);
+  }
+ 
+  .card-subtitle {
+    text-align: center;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+    margin: 11px 0 10px 0;
+  }
+ 
+  .card-divider {
+    border-top: 1px solid var(--divider);
+    margin: 2px 4px 0 4px;
+  }
+ 
+  .section-label {
+    font-size: 10.8px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--header);
+    margin: 12px 0 8px 2px;
+    text-transform: uppercase;
+  }
+ 
+  .card-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+  }
+ 
+  .card-list li {
+    font-size: 12.9px;
+    padding: 5px 0 5px 16px;
+    position: relative;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+ 
+  .card-list li::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 12px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+ 
+  .card-purpose {
+    border-top: 1px solid var(--divider);
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+ 
+  .purpose-label {
+    font-size: 10.6px;
+    font-weight: 700;
+    color: var(--header);
+    margin-bottom: 4px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+ 
+  .purpose-text {
+    font-size: 11px;
+    font-style: italic;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+ 
+  @media (max-width: 1520px) {
+    .architecture-row {
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+ 
+    .arrow-col {
+      min-width: 70px;
+      order: 0;
+    }
+  }
+ 
+  @media (max-width: 980px) {
+    .page-shell {
+      padding: 20px 14px 24px;
+    }
+ 
+    .architecture-row {
+      justify-content: center;
+    }
+ 
+    .users-box,
+    .tier-card {
+      width: min(100%, 320px);
+      min-width: min(100%, 320px);
+      height: auto;
+      min-height: 560px;
+    }
+ 
+    .arrow-col {
+      width: 100%;
+      min-width: 0;
+      flex-direction: row;
+      justify-content: center;
+      gap: 12px;
+      padding: 4px 0;
+    }
+ 
+    .arrow-unit {
+      min-height: 26px;
+      width: 140px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="page-shell">
+    <h1 class="diagram-title">Centralized Financial Transaction Monitoring and Management System for DYS Event Management 
+</h1>
+    <p class="diagram-subtitle">System Architecture — Four-Layer View</p>
+ 
+    <div class="architecture-row">
+ 
+      <!-- USERS -->
+      <div class="users-box">
+        <div class="users-title">USERS</div>
+        <div class="role">Business Owner</div>
+        <div class="role">Event Manager</div>
+        <div class="role">Employees/Event Staff</div>
+        <div class="role">External Client</div>
+      </div>
+ 
+      <!-- Arrow: Users -> Client -->
+      <div class="arrow-col">
+        <div class="arrow-unit arrow-request"><div class="arrow-track"></div></div>
+        <div class="arrow-unit arrow-response"><div class="arrow-track"></div></div>
+      </div>
+ 
+      <!-- CLIENT TIER -->
+      <div class="tier-card client">
+        <div class="card-header">Client Tier (Frontend)</div>
+        <div class="card-subtitle">Flutter Mobile Application</div>
+        <div class="card-divider"></div>
+        <div class="section-label">SCREENS</div>
+        <ul class="card-list">
+          <li>Login</li>
+          <li>Dashboard</li>
+          <li>Sales</li>
+          <li>Expenses</li>
+          <li>Payroll</li>
+          <li>Reports</li>
+          <li>Business Sector Switcher</li>
+        </ul>
+        <div class="card-purpose">
+          <div class="purpose-label">PURPOSE</div>
+          <div class="purpose-text">User interface for input, display, and secure HTTPS requests</div>
+        </div>
+      </div>
+ 
+      <!-- Arrow: Client -> API -->
+      <div class="arrow-col">
+        <div class="arrow-unit arrow-request"><span class="arrow-label">HTTPS / JSON Request</span><div class="arrow-track"></div></div>
+        <div class="arrow-unit arrow-response"><div class="arrow-track"></div><span class="arrow-label">JSON Response</span></div>
+      </div>
+ 
+      <!-- API LAYER -->
+      <div class="tier-card api">
+        <div class="card-header">API Communication Layer</div>
+        <div class="card-subtitle">REST API (HTTP/JSON)</div>
+        <div class="card-divider"></div>
+        <div class="section-label">INCLUDES</div>
+        <ul class="card-list">
+          <li>REST Endpoints</li>
+          <li>Laravel Sanctum Authentication</li>
+          <li>JSON Requests &amp; Responses</li>
+          <li>API Routing</li>
+        </ul>
+        <div class="card-purpose">
+          <div class="purpose-label">PURPOSE</div>
+          <div class="purpose-text">Receives, authenticates, routes, and returns requests as JSON</div>
+        </div>
+      </div>
+ 
+      <!-- Arrow: API -> Backend -->
+      <div class="arrow-col">
+        <div class="arrow-unit arrow-request"><span class="arrow-label">Routed Request</span><div class="arrow-track"></div></div>
+        <div class="arrow-unit arrow-response"><div class="arrow-track"></div><span class="arrow-label">JSON Response</span></div>
+      </div>
+ 
+      <!-- BACKEND TIER -->
+      <div class="tier-card backend">
+        <div class="card-header">Backend Application Layer</div>
+        <div class="card-subtitle">Laravel 12 Backend</div>
+        <div class="card-divider"></div>
+        <div class="section-label">SERVICES</div>
+        <ul class="card-list">
+          <li>Authentication &amp; Role Management</li>
+          <li>Sales Management</li>
+          <li>Expense Management</li>
+          <li>Financial Calculator</li>
+          <li>Payroll Calculator</li>
+          <li>Business Sector Management</li>
+          <li>Reports &amp; Analytics</li>
+        </ul>
+        <div class="card-purpose">
+          <div class="purpose-label">PURPOSE</div>
+          <div class="purpose-text">Business logic, validation, RBAC, calculations, and report generation</div>
+        </div>
+      </div>
+ 
+      <!-- Arrow: Backend -> Data -->
+      <div class="arrow-col">
+        <div class="arrow-unit arrow-request"><span class="arrow-label">SQL Query</span><div class="arrow-track"></div></div>
+        <div class="arrow-unit arrow-response"><div class="arrow-track"></div><span class="arrow-label">Query Result</span></div>
+      </div>
+ 
+      <!-- DATA TIER -->
+      <div class="tier-card data">
+        <div class="card-header">Data Tier (Database)</div>
+        <div class="card-subtitle">MySQL Database</div>
+        <div class="card-divider"></div>
+        <div class="section-label">ENTITIES</div>
+        <ul class="card-list">
+          <li>User</li>
+          <li>Business Sector</li>
+          <li>Sales Transaction</li>
+          <li>Expense</li>
+        </ul>
+        <div class="card-purpose">
+          <div class="purpose-label">PURPOSE</div>
+          <div class="purpose-text">Persistent storage, read/write operations, and integrity for financial records</div>
+        </div>
+      </div>
+ 
+    </div>
+  </div>
+</body>
+</html>
+ 

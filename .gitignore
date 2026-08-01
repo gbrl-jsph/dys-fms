@@ -1,0 +1,4 @@
+# AI knowledge base — generated artifacts
+.ai/extracted/
+.ai/cache/
+.ai/.extracted_hashes.json

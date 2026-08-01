@@ -1,0 +1,59 @@
+@startuml
+' DYS Financial Management System (DYS FMS) — UML Use Case Diagram
+' Version 1.0 — Final
+' Notation: Strict UML 2.x Use Case Diagram
+' Conforms to: Approved Concept Paper, FRS, Client Clarifications
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+title DYS Financial Management System (DYS FMS) — Use Case Diagram
+
+' --- Actors ---
+actor "Business Owner" as BO
+actor "Event Manager" as EM
+actor "Employee /\nEvent Staff" as EE
+
+' --- System Boundary ---
+rectangle "DYS Financial Management System" {
+  ' --- Use Cases ---
+  usecase "Login / Authenticate" as UC1
+  usecase "Record Sales Transaction" as UC2
+  usecase "Record Expense" as UC3
+  usecase "View Analytics Dashboard" as UC4
+  usecase "View Payroll Calculations" as UC5
+  usecase "View Reports" as UC6
+  usecase "View Own Payroll" as UC7
+  usecase "Switch Business Sector" as UC8
+  usecase "Payroll Auto-creates Expense" as UC9
+  usecase "Manage User Accounts" as UC10
+}
+
+' --- Actor Associations ---
+
+' Business Owner
+BO --> UC1
+BO --> UC2
+BO --> UC3
+BO --> UC4
+BO --> UC5
+BO --> UC6
+BO --> UC8
+BO --> UC10
+
+' Event Manager
+EM --> UC1
+EM --> UC2
+EM --> UC3
+EM --> UC6
+EM --> UC7
+
+' Employee / Event Staff
+EE --> UC1
+EE --> UC7
+
+' --- Include Relationships ---
+UC5 --> UC9 : <<include>>
+
+@enduml

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen 1 — Login | DYS FMS Wireframes</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- SCREEN 1: LOGIN -->
+<header>
+  <nav class="topnav" aria-label="Wireframe screens">
+    <a href="index.html">Overview</a>
+    <a href="login.html" aria-current="page">1. Login</a>
+    <a href="dashboard.html">2. Dashboard</a>
+    <a href="sales.html">3. Sales Recording</a>
+    <a href="expenses.html">4. Expense Recording</a>
+    <a href="payroll.html">5. Payroll</a>
+    <a href="reports.html">6. Reports</a>
+    <a href="sector-switcher.html">7. Business Sector Switcher</a>
+    <a href="users.html">8. Manage Users</a>
+  </nav>
+</header>
+
+<main class="doc-main">
+  <h1 class="doc-title">Screen 1 — Login Screen</h1>
+  <p class="doc-meta">Authenticates the user and routes to the role-based dashboard.</p>
+
+  <div class="phone-shell">
+    <div class="phone-screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="status-icons">
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="4" width="3" height="6" rx="0.5" fill="currentColor"/><rect x="4.5" y="2" width="3" height="8" rx="0.5" fill="currentColor"/><rect x="9" y="0" width="3" height="10" rx="0.5" fill="currentColor"/></svg>
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0.5" y="0.5" width="15" height="11" rx="2.5" stroke="currentColor"/><rect x="2" y="2" width="12" height="8" rx="1" fill="currentColor"/><rect x="16" y="4" width="1.5" height="4" rx="0.5" fill="currentColor"/></svg>
+        </span>
+      </div>
+
+      <div class="screen-content" style="display:flex; flex-direction:column;">
+        <div class="login-hero">
+          <div class="login-logo">DYS</div>
+          <h2 class="login-title">DYS Financial Management System (DYS FMS)</h2>
+          <p class="login-subtitle">Management System</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="email">Email</label>
+          <input class="field-input" id="email" type="email" placeholder="Enter email" disabled>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="password">Password</label>
+          <input class="field-input" id="password" type="password" placeholder="Enter password" disabled>
+        </div>
+
+        <a class="btn btn-primary" href="dashboard.html">Log In</a>
+
+        <div class="validation-msg" style="justify-content:center; background:var(--danger-container); padding:10px; border-radius:12px; margin-top:4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12" y2="16.01"/></svg>
+          <span>[ Error message placeholder — e.g. &ldquo;Invalid username or password.&rdquo; ]</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="notes">
+    <strong>Components:</strong> Logo mark, Email field, Password field, primary Log In button, inline error placeholder.<br>
+    <strong>Supports:</strong> Authenticates authorized users and redirects to the appropriate role-based dashboard (Owner: DYS Event Management; EM/Employee: assigned sector). No self-registration or public account creation — accounts are created exclusively by the Business Owner via the Manage Users screen.
+  </p>
+</main>
+
+<footer class="page-footer">DYS Financial Management System (DYS FMS) &mdash; High-Fidelity Wireframe Prototype (Software Blueprint documentation only)</footer>
+</body>
+</html>

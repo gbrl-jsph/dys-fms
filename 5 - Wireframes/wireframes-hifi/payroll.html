@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screen 5 — Payroll | DYS FMS Wireframes</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- SCREEN 5: PAYROLL -->
+<header>
+  <nav class="topnav" aria-label="Wireframe screens">
+    <a href="index.html">Overview</a>
+    <a href="login.html">1. Login</a>
+    <a href="dashboard.html">2. Dashboard</a>
+    <a href="sales.html">3. Sales Recording</a>
+    <a href="expenses.html">4. Expense Recording</a>
+    <a href="payroll.html" aria-current="page">5. Payroll</a>
+    <a href="reports.html">6. Reports</a>
+    <a href="sector-switcher.html">7. Business Sector Switcher</a>
+    <a href="users.html">8. Manage Users</a>
+  </nav>
+</header>
+
+<main class="doc-main">
+  <h1 class="doc-title">Screen 5 — Payroll Screen</h1>
+  <p class="doc-meta">Computes and displays employee salary based on recorded transaction dates/logs, per the Automated Payroll Calculator feature.</p>
+
+  <div class="phone-shell">
+    <div class="phone-screen">
+      <div class="status-bar">
+        <span>9:41</span>
+        <span class="status-icons">
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><rect x="0" y="4" width="3" height="6" rx="0.5" fill="currentColor"/><rect x="4.5" y="2" width="3" height="8" rx="0.5" fill="currentColor"/><rect x="9" y="0" width="3" height="10" rx="0.5" fill="currentColor"/></svg>
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0.5" y="0.5" width="15" height="11" rx="2.5" stroke="currentColor"/><rect x="2" y="2" width="12" height="8" rx="1" fill="currentColor"/><rect x="16" y="4" width="1.5" height="4" rx="0.5" fill="currentColor"/></svg>
+        </span>
+      </div>
+
+      <div class="screen-content">
+        <div class="app-bar">
+          <a class="back-btn" href="dashboard.html" aria-label="Back to Dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </a>
+          <h2 style="font-size:19px;">Payroll</h2>
+          <span style="width:36px;"></span>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Business Sector</label>
+          <div class="field-select">Select sector <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Employee</label>
+          <div class="field-select">Select employee <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="hours">Hours Worked</label>
+          <input class="field-input" id="hours" type="text" placeholder="Enter hours worked" disabled>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="rate">Hourly Rate (&#8369;)</label>
+          <input class="field-input" id="rate" type="text" placeholder="Enter hourly rate" disabled>
+        </div>
+
+        <p class="section-label">Payroll Calculation (Hours × Rate)</p>
+        <div class="calc-panel">
+          <div class="calc-row"><span>Hours Worked</span><span id="calc-hours">0.00</span></div>
+          <div class="calc-row"><span>Hourly Rate</span><span id="calc-rate">&#8369;0.00</span></div>
+          <div class="calc-total"><span>Computed Salary</span><span class="amount">&#8369;0.00</span></div>
+        </div>
+
+        <p class="section-label">Payroll History</p>
+        <table class="data-table">
+          <thead>
+            <tr><th>Employee</th><th>Hours</th><th>Rate</th><th style="text-align:right;">Salary</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>[ &mdash; ]</td><td>[ &mdash; ]</td><td>[ &mdash; ]</td><td class="amount-cell">&#8369;&mdash;</td></tr>
+          </tbody>
+        </table>
+
+        <a class="btn btn-primary" href="dashboard.html">Save Payroll Record</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="notes">
+    <strong>Components:</strong> Sector selector, Employee selector, Hours Worked field, Hourly Rate field, Payroll Calculation panel (Hours × Rate), Payroll History table, Save Payroll Record action.<br>
+    <strong>Supports:</strong> Implements the Automated Payroll Calculator feature (Hours × Rate). Payroll Record is stored permanently, viewable historically, and automatically creates an Expense record. Business Owner (all employees), Event Manager (sector employees), Employee (own records only).
+  </p>
+</main>
+
+<footer class="page-footer">DYS Financial Management System (DYS FMS) &mdash; High-Fidelity Wireframe Prototype (Software Blueprint documentation only)</footer>
+</body>
+</html>
