@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../config/business_sectors.dart';
 import '../../../../config/theme.dart';
 import '../../../../shared/widgets/loading_button.dart';
+import '../../../../shared/widgets/section_label.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/save_user_request.dart';
 import '../../data/models/user_account.dart';
@@ -168,7 +169,7 @@ class _UsersScreenState extends State<UsersScreen> {
             children: [
               _AppBar(initials: _initials(authProvider.state.user?.name)),
               const SizedBox(height: AppSpacing.sp3),
-              const _SectionLabel('User List'),
+              const SectionLabel('User List'),
               const SizedBox(height: AppSpacing.sp2),
               _UserListTable(
                 state: state,
@@ -182,7 +183,7 @@ class _UsersScreenState extends State<UsersScreen> {
                 label: const Text('Add User'),
               ),
               const SizedBox(height: AppSpacing.sp4),
-              const _SectionLabel('Add / Edit User'),
+              const SectionLabel('Add / Edit User'),
               const SizedBox(height: AppSpacing.sp2),
               _UserForm(
                 isEditing: isEditing,
@@ -289,25 +290,6 @@ class _AppBar extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Uppercase section label (wireframe `.section-label`).
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppColors.inkSecondary,
-            letterSpacing: AppTypography.letterSpacingSectionLabel,
-          ),
     );
   }
 }

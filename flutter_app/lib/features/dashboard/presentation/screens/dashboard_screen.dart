@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/section_label.dart';
 
 /// Dashboard placeholder per blueprint §4.10.
 ///
 /// App bar with "Dashboard" title and the user's avatar (initials from
-/// [UserModel]); the full dashboard (stat cards, chart, quick actions,
-/// bottom navigation) arrives in Phase 8.
+/// [UserModel]). The Business Owner sees the "Manage Users" quick action
+/// (navigation-map Rules 5/9, Screen 2 wireframe); the full dashboard
+/// (stat cards, chart, remaining quick actions, bottom navigation) arrives
+/// in Phase 8.
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
@@ -16,6 +20,8 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthProvider authProvider = context.watch<AuthProvider>();
     final String? name = authProvider.state.user?.name;
+    final bool isBusinessOwner =
+        authProvider.state.user?.isBusinessOwner ?? false;
 
     return Scaffold(
       body: SafeArea(
@@ -46,6 +52,15 @@ class DashboardScreen extends StatelessWidget {
                   child: Text('Dashboard — Phase 8'),
                 ),
               ),
+              if (isBusinessOwner) ...[
+                const SectionLabel('Quick Actions'),
+                const SizedBox(height: AppSpacing.sp2),
+                OutlinedButton.icon(
+                  onPressed: () => context.go('/users'),
+                  icon: const Icon(Icons.group_add_outlined, size: 16),
+                  label: const Text('Manage Users'),
+                ),
+              ],
             ],
           ),
         ),

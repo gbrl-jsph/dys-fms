@@ -5,12 +5,18 @@ import '../features/auth/presentation/providers/auth_provider.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/users/presentation/screens/users_screen.dart';
+import '../shared/widgets/app_shell.dart';
 
 /// GoRouter configuration (blueprint §4.8).
 ///
 /// Route guarding is driven by [AuthProvider]; `refreshListenable`
-/// re-evaluates the redirect whenever auth state changes. The Users
-/// screen is Business Owner only (navigation-map Rule 9).
+/// re-evaluates the redirect whenever auth state changes. Authenticated
+/// screens live in the [StatefulShellRoute] wrapped by [AppShell], which
+/// renders the role-specific bottom navigation bar (navigation-map Rule 4).
+/// The Users screen is Business Owner only (navigation-map Rule 9).
+///
+/// Branch order must match the nav items in [AppShell]:
+/// 0 Dashboard, 1 Sales, 2 Expenses, 3 Payroll, 4 Users, 5 Reports.
 class AppRouter {
   AppRouter._();
 
@@ -40,38 +46,68 @@ class AppRouter {
           path: '/login',
           builder: (context, state) => const LoginScreen(),
         ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (context, state) => const DashboardScreen(),
-        ),
-        GoRoute(
-          path: '/sales',
-          builder: (context, state) =>
-              const _RoutePlaceholder(title: 'Sales — Phase 3'),
-        ),
-        GoRoute(
-          path: '/expenses',
-          builder: (context, state) =>
-              const _RoutePlaceholder(title: 'Expenses — Phase 4'),
-        ),
-        GoRoute(
-          path: '/payroll',
-          builder: (context, state) =>
-              const _RoutePlaceholder(title: 'Payroll — Phase 5'),
-        ),
-        GoRoute(
-          path: '/reports',
-          builder: (context, state) =>
-              const _RoutePlaceholder(title: 'Reports — Phase 6'),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) =>
+              AppShell(navigationShell: navigationShell),
+          branches: [
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/dashboard',
+                  builder: (context, state) => const DashboardScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/sales',
+                  builder: (context, state) =>
+                      const _RoutePlaceholder(title: 'Sales — Phase 3'),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/expenses',
+                  builder: (context, state) =>
+                      const _RoutePlaceholder(title: 'Expenses — Phase 4'),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/payroll',
+                  builder: (context, state) =>
+                      const _RoutePlaceholder(title: 'Payroll — Phase 5'),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/users',
+                  builder: (context, state) => const UsersScreen(),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/reports',
+                  builder: (context, state) =>
+                      const _RoutePlaceholder(title: 'Reports — Phase 6'),
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           path: '/sector-switcher',
           builder: (context, state) =>
               const _RoutePlaceholder(title: 'Sector Switcher — Phase 7'),
-        ),
-        GoRoute(
-          path: '/users',
-          builder: (context, state) => const UsersScreen(),
         ),
       ],
     );
