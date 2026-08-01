@@ -221,11 +221,8 @@ class ThemeConfig {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
           foregroundColor: AppColors.inkOnPrimary,
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.38),
           disabledForegroundColor: AppColors.inkMuted,
-          elevation: 0,
           minimumSize: const Size.fromHeight(48),
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sp4,
@@ -239,9 +236,21 @@ class ThemeConfig {
             fontWeight: FontWeight.w700,
           ),
         ).copyWith(
-          shadowColor: WidgetStateProperty.all(AppColors.primary),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.pressed) ||
+                states.contains(WidgetState.hovered)) {
+              return AppColors.primaryHover;
+            }
+            if (states.contains(WidgetState.disabled)) {
+              return AppColors.primary.withValues(alpha: 0.38);
+            }
+            return AppColors.primary;
+          }),
+          shadowColor: WidgetStateProperty.all(
+            AppColors.primary.withValues(alpha: 0.28),
+          ),
           elevation: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.pressed) ? 0 : 0,
+            (states) => states.contains(WidgetState.disabled) ? 0 : 6,
           ),
         ),
       ),
