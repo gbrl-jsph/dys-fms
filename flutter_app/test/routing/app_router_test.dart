@@ -5,9 +5,20 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:dys_fms/app.dart';
 import 'package:dys_fms/features/auth/data/models/user_model.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
+import 'package:dys_fms/features/users/presentation/providers/users_provider.dart';
 import 'package:dys_fms/routing/app_router.dart';
 
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_users_repository.dart';
+
+const Map<String, dynamic> eventManagerUserJson = {
+  'id': 2,
+  'name': 'Maria Santos',
+  'email': 'maria@dys.com',
+  'role': 'Event Manager',
+  'sector_id': 2,
+  'account_status': 'Active',
+};
 
 void main() {
   late FakeAuthRepository fakeRepository;
@@ -20,18 +31,26 @@ void main() {
   Future<GoRouter> pumpApp(
     WidgetTester tester, {
     bool authenticated = false,
+    Map<String, dynamic>? storedUserJson,
   }) async {
     final AuthProvider provider = AuthProvider(fakeRepository);
     if (authenticated) {
       fakeRepository.onIsAuthenticated = () async => true;
       fakeRepository.onGetStoredUser =
-          () async => UserModel.fromJson(ownerUserJson);
+          () async => UserModel.fromJson(storedUserJson ?? ownerUserJson);
       await provider.checkAuthStatus();
     }
 
+    final UsersProvider usersProvider =
+        UsersProvider(FakeUsersRepository());
+
     final GoRouter router = AppRouter.create(provider);
 
-    await tester.pumpWidget(App(authProvider: provider, router: router));
+    await tester.pumpWidget(App(
+      authProvider: provider,
+      usersProvider: usersProvider,
+      router: router,
+    ));
     await tester.pumpAndSettle();
 
     return router;
@@ -64,5 +83,27 @@ void main() {
 
     expect(find.text('Dashboard — Phase 8'), findsOneWidget);
     expect(find.text('Log In'), findsNothing);
+  });
+
+  testWidgets('owner visiting /users is shown the manage users screen',
+      (WidgetTester tester) async {
+    final GoRouter router = await pumpApp(tester, authenticated: true);
+
+    router.go('/users');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manage Users'), findsOneWidget);
+  });
+
+  testWidgets('non-owner visiting /users is redirected to /dashboard',
+      (WidgetTester tester) async {
+    final GoRouter router =
+        await pumpApp(tester, authenticated: true, storedUserJson: eventManagerUserJson);
+
+    router.go('/users');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manage Users'), findsNothing);
+    expect(find.text('Dashboard — Phase 8'), findsOneWidget);
   });
 }

@@ -4,15 +4,23 @@ import 'package:provider/provider.dart';
 
 import 'config/theme.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/users/presentation/providers/users_provider.dart';
 
 /// Root application widget (blueprint §4.11).
 ///
-/// Provides [AuthProvider] at app level and wires the MaterialApp.router
-/// with the theme from [ThemeConfig] and the router from [AppRouter].
+/// Provides [AuthProvider] and [UsersProvider] at app level and wires the
+/// MaterialApp.router with the theme from [ThemeConfig] and the router
+/// from [AppRouter].
 class App extends StatelessWidget {
-  const App({super.key, required this.authProvider, required this.router});
+  const App({
+    super.key,
+    required this.authProvider,
+    required this.usersProvider,
+    required this.router,
+  });
 
   final AuthProvider authProvider;
+  final UsersProvider usersProvider;
   final GoRouter router;
 
   @override
@@ -20,6 +28,7 @@ class App extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+        ChangeNotifierProvider<UsersProvider>.value(value: usersProvider),
       ],
       child: MaterialApp.router(
         title: 'DYS FMS',

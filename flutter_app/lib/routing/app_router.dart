@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../features/users/presentation/screens/users_screen.dart';
 
 /// GoRouter configuration (blueprint §4.8).
 ///
 /// Route guarding is driven by [AuthProvider]; `refreshListenable`
-/// re-evaluates the redirect whenever auth state changes.
+/// re-evaluates the redirect whenever auth state changes. The Users
+/// screen is Business Owner only (navigation-map Rule 9).
 class AppRouter {
   AppRouter._();
 
@@ -19,11 +21,16 @@ class AppRouter {
       redirect: (context, state) {
         final bool isAuthenticated = authProvider.state.isAuthenticated;
         final bool isOnLogin = state.matchedLocation == '/login';
+        final bool isBusinessOwner =
+            authProvider.state.user?.isBusinessOwner ?? false;
 
         if (!isAuthenticated) {
           return isOnLogin ? null : '/login';
         }
         if (isOnLogin) {
+          return '/dashboard';
+        }
+        if (state.matchedLocation == '/users' && !isBusinessOwner) {
           return '/dashboard';
         }
         return null;
@@ -64,8 +71,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/users',
-          builder: (context, state) =>
-              const _RoutePlaceholder(title: 'Users — Phase 2'),
+          builder: (context, state) => const UsersScreen(),
         ),
       ],
     );

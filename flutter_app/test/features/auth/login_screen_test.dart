@@ -10,9 +10,11 @@ import 'package:dys_fms/app.dart';
 import 'package:dys_fms/features/auth/data/models/login_response.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dys_fms/features/auth/presentation/screens/login_screen.dart';
+import 'package:dys_fms/features/users/presentation/providers/users_provider.dart';
 import 'package:dys_fms/routing/app_router.dart';
 
 import '../../helpers/fake_auth_repository.dart';
+import '../../helpers/fake_users_repository.dart';
 
 void main() {
   late FakeAuthRepository fakeRepository;
@@ -110,8 +112,13 @@ void main() {
     fakeRepository.onLogin = (_, _) async => buildLoginResponse();
 
     final GoRouter router = AppRouter.create(provider);
+    final UsersProvider usersProvider = UsersProvider(FakeUsersRepository());
 
-    await tester.pumpWidget(App(authProvider: provider, router: router));
+    await tester.pumpWidget(App(
+      authProvider: provider,
+      usersProvider: usersProvider,
+      router: router,
+    ));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField).first, 'owner@dys.com');

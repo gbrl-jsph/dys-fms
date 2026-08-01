@@ -6,6 +6,8 @@ import 'package:dys_fms/core/network/api_client.dart';
 import 'package:dys_fms/core/storage/secure_storage.dart';
 import 'package:dys_fms/features/auth/data/repositories/auth_repository.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
+import 'package:dys_fms/features/users/data/repositories/users_repository.dart';
+import 'package:dys_fms/features/users/presentation/providers/users_provider.dart';
 import 'package:dys_fms/routing/app_router.dart';
 
 void main() {
@@ -16,10 +18,13 @@ void main() {
     ApiClient.init(tokenProvider: secureStorage.getToken);
     final AuthProvider authProvider =
         AuthProvider(AuthRepository(ApiClient.instance, secureStorage));
+    final UsersProvider usersProvider =
+        UsersProvider(UsersRepository(ApiClient.instance));
 
     await tester.pumpWidget(
       App(
         authProvider: authProvider,
+        usersProvider: usersProvider,
         router: AppRouter.create(authProvider),
       ),
     );
