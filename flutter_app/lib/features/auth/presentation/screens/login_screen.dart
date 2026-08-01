@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../config/theme.dart';
+import '../../../../shared/widgets/loading_button.dart';
 import '../providers/auth_provider.dart';
 
 /// Login screen per UI Style Guide (Screen 1) and blueprint §4.9.
@@ -100,18 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
               if (_passwordError != null)
                 _ErrorContainer(message: _passwordError!),
               const SizedBox(height: AppSpacing.sp4),
-              ElevatedButton(
-                onPressed: isLoading ? null : _submit,
-                child: isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: AppColors.inkOnPrimary,
-                        ),
-                      )
-                    : const Text('Log In'),
+              LoadingButton(
+                label: 'Log In',
+                loading: isLoading,
+                onPressed: _submit,
               ),
               if (serverError != null) ...[
                 const SizedBox(height: AppSpacing.sp4),

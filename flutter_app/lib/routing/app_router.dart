@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/auth/presentation/providers/auth_provider.dart';
+import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 
 /// GoRouter configuration (blueprint §4.8).
 ///
@@ -29,12 +31,11 @@ class AppRouter {
       routes: [
         GoRoute(
           path: '/login',
-          builder: (context, state) => const _RoutePlaceholder(title: 'Login'),
+          builder: (context, state) => const LoginScreen(),
         ),
         GoRoute(
           path: '/dashboard',
-          builder: (context, state) =>
-              const _RoutePlaceholder(title: 'Dashboard — Phase 8'),
+          builder: (context, state) => const DashboardScreen(),
         ),
         GoRoute(
           path: '/sales',
