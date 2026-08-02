@@ -15,9 +15,9 @@ class SaveUserRequest {
   final int sectorId;
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'email': email,
-        'role': role,
-        'sector_id': sectorId,
-      };
+    'name': name,
+    'email': email,
+    'role': role,
+    'sector_id': sectorId,
+  };
 }

@@ -22,8 +22,10 @@ void main() {
     final Completer<LoginResponse> completer = Completer<LoginResponse>();
     fakeRepository.onLogin = (_, _) => completer.future;
 
-    final Future<void> loginFuture =
-        provider.login('owner@dys.com', 'SecurePass123');
+    final Future<void> loginFuture = provider.login(
+      'owner@dys.com',
+      'SecurePass123',
+    );
 
     expect(provider.state.isLoading, isTrue);
 
@@ -69,8 +71,8 @@ void main() {
 
   test('checkAuthStatus() detects a stored token', () async {
     fakeRepository.onIsAuthenticated = () async => true;
-    fakeRepository.onGetStoredUser =
-        () async => UserModel.fromJson(ownerUserJson);
+    fakeRepository.onGetStoredUser = () async =>
+        UserModel.fromJson(ownerUserJson);
 
     await provider.checkAuthStatus();
 
@@ -78,12 +80,15 @@ void main() {
     expect(provider.state.user?.email, 'owner@dys.com');
   });
 
-  test('checkAuthStatus() leaves state unauthenticated when no token', () async {
-    fakeRepository.onIsAuthenticated = () async => false;
+  test(
+    'checkAuthStatus() leaves state unauthenticated when no token',
+    () async {
+      fakeRepository.onIsAuthenticated = () async => false;
 
-    await provider.checkAuthStatus();
+      await provider.checkAuthStatus();
 
-    expect(provider.state.isAuthenticated, isFalse);
-    expect(provider.state.user, isNull);
-  });
+      expect(provider.state.isAuthenticated, isFalse);
+      expect(provider.state.user, isNull);
+    },
+  );
 }

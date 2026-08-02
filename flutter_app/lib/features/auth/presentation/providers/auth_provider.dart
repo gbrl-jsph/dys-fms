@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../core/network/api_error_mapper.dart';
+import '../../../../data/api/api_error_mapper.dart';
+import '../../data/models/login_response.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../domain/auth_state.dart';
 
@@ -62,5 +63,16 @@ class AuthProvider extends ChangeNotifier {
       _state = _state.copyWith(error: null);
       notifyListeners();
     }
+  }
+
+  /// Updates the client-side sector context after a successful sector
+  /// switch (FR-008).
+  ///
+  /// The switch endpoint is stateless, so no backend call is made;
+  /// all screens scoped by [AuthState.defaultSector] pick up the new
+  /// sector on the next notification.
+  void updateSector(DefaultSector sector) {
+    _state = _state.copyWith(defaultSector: sector);
+    notifyListeners();
   }
 }

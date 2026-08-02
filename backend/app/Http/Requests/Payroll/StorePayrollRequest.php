@@ -40,6 +40,18 @@ class StorePayrollRequest extends FormRequest
                 if ($employee && $employee->role === 'Business Owner') {
                     $validator->errors()->add('user_id', 'Payroll cannot be calculated for the Business Owner.');
                 }
+
+                // computed_salary (hours × rate) must fit DECIMAL(10,2),
+                // even though each input is individually capped (E25-E28).
+                $hours = (float) $this->input('hours_worked');
+                $rate = (float) $this->input('hourly_rate');
+
+                if ($hours > 0 && $rate > 0 && ($hours * $rate) > 99999999.99) {
+                    $validator->errors()->add(
+                        'hours_worked',
+                        'Computed salary must not exceed 99999999.99.'
+                    );
+                }
             },
         ];
     }

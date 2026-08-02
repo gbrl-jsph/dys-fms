@@ -17,16 +17,16 @@ class UserAccount {
   });
 
   factory UserAccount.fromJson(Map<String, dynamic> json) => UserAccount(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        role: json['role'] as String,
-        sectorId: json['sector_id'] as int?,
-        sectorName: json['sector_name'] as String?,
-        accountStatus: json['account_status'] as String,
-        temporaryPassword: json['temporary_password'] as String?,
-        createdAt: json['created_at'] as String?,
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    email: json['email'] as String,
+    role: json['role'] as String,
+    sectorId: json['sector_id'] as int?,
+    sectorName: json['sector_name'] as String?,
+    accountStatus: json['account_status'] as String,
+    temporaryPassword: json['temporary_password'] as String?,
+    createdAt: json['created_at'] as String?,
+  );
 
   final int id;
   final String name;

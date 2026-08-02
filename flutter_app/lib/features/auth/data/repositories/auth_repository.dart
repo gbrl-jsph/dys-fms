@@ -1,30 +1,31 @@
-import '../../../../config/api_config.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
+import '../../../../data/api/api_config.dart';
+import '../../../../data/repositories/repository_base.dart';
 import '../models/login_request.dart';
 import '../models/login_response.dart';
 import '../models/user_model.dart';
+import '../storage/secure_storage.dart';
 
 /// Auth data operations: login, logout, and local session inspection.
 ///
-/// All HTTP calls go through [ApiClient]; the token is attached
-/// automatically by the auth interceptor. All persistence goes through
-/// [SecureStorage]. No business logic lives outside this repository.
-class AuthRepository {
-  AuthRepository(this._apiClient, this._secureStorage);
+/// All HTTP calls go through the shared [dio] client; the token is
+/// attached automatically by the auth interceptor. All persistence goes
+/// through [SecureStorage]. No business logic lives outside this
+/// repository.
+class AuthRepository extends Repository {
+  AuthRepository(super.apiClient, this._secureStorage);
 
-  final ApiClient _apiClient;
   final SecureStorage _secureStorage;
 
   /// POST /api/login — authenticate and persist the session.
   Future<LoginResponse> login(String email, String password) async {
-    final response = await _apiClient.dio.post<dynamic>(
+    final response = await dio.post<dynamic>(
       ApiConfig.loginEndpoint,
       data: LoginRequest(email: email, password: password).toJson(),
     );
 
-    final LoginResponse loginResponse =
-        LoginResponse.fromJson(response.data as Map<String, dynamic>);
+    final LoginResponse loginResponse = LoginResponse.fromJson(
+      response.data as Map<String, dynamic>,
+    );
 
     await _secureStorage.saveToken(loginResponse.token);
     await _secureStorage.saveUserData({
@@ -42,7 +43,7 @@ class AuthRepository {
   /// POST /api/logout — revoke the token (auto-attached by the
   /// interceptor) and clear all locally stored session data.
   Future<void> logout() async {
-    await _apiClient.dio.post<void>(ApiConfig.logoutEndpoint);
+    await dio.post<void>(ApiConfig.logoutEndpoint);
     await _secureStorage.deleteAll();
   }
 

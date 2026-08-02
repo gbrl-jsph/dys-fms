@@ -19,7 +19,7 @@ class StoreExpenseRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'gt:0', 'max:999999.99'],
             'description' => ['nullable', 'string'],
         ];
 
@@ -36,6 +36,7 @@ class StoreExpenseRequest extends FormRequest
             'amount.required' => 'Amount is required.',
             'amount.numeric' => 'Amount must be a number.',
             'amount.gt' => 'Amount must be a positive number.',
+            'amount.max' => 'Amount must not exceed 999999.99.',
             'description.string' => 'Description must be a string.',
             'sector_id.required' => 'Sector is required.',
             'sector_id.integer' => 'The selected sector_id is invalid.',

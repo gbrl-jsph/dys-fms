@@ -17,7 +17,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
-            'role' => ['required', 'string', 'in:Business Owner,Event Manager,Employee/Staff'],
+            'role' => ['required', 'string', 'in:Event Manager,Employee/Staff'],
             'sector_id' => ['required', 'integer', 'exists:business_sectors,id'],
         ];
     }

@@ -11,7 +11,7 @@ class User extends Authenticatable
 {
     use HasApiTokens;
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'name',

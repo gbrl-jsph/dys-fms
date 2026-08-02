@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import 'package:dys_fms/features/users/data/models/save_user_request.dart';
 import 'package:dys_fms/features/users/data/models/user_account.dart';
 import 'package:dys_fms/features/users/data/repositories/users_repository.dart';
@@ -26,34 +28,34 @@ const Map<String, dynamic> pedroUserJson = {
 };
 
 List<UserAccount> buildUsersList() => const [
-      UserAccount(
-        id: 1,
-        name: 'Juan Dela Cruz',
-        email: 'owner@dys.com',
-        role: 'Business Owner',
-        sectorId: null,
-        sectorName: null,
-        accountStatus: 'Active',
-      ),
-      UserAccount(
-        id: 2,
-        name: 'Maria Santos',
-        email: 'maria@dys.com',
-        role: 'Event Manager',
-        sectorId: 2,
-        sectorName: 'B&DYS',
-        accountStatus: 'Active',
-      ),
-      UserAccount(
-        id: 3,
-        name: 'Pedro Reyes',
-        email: 'pedro@dys.com',
-        role: 'Employee/Staff',
-        sectorId: 1,
-        sectorName: 'DYS Events',
-        accountStatus: 'Inactive',
-      ),
-    ];
+  UserAccount(
+    id: 1,
+    name: 'Juan Dela Cruz',
+    email: 'owner@dys.com',
+    role: 'Business Owner',
+    sectorId: null,
+    sectorName: null,
+    accountStatus: 'Active',
+  ),
+  UserAccount(
+    id: 2,
+    name: 'Maria Santos',
+    email: 'maria@dys.com',
+    role: 'Event Manager',
+    sectorId: 2,
+    sectorName: 'B&DYS',
+    accountStatus: 'Active',
+  ),
+  UserAccount(
+    id: 3,
+    name: 'Pedro Reyes',
+    email: 'pedro@dys.com',
+    role: 'Employee/Staff',
+    sectorId: 1,
+    sectorName: 'DYS Events',
+    accountStatus: 'Inactive',
+  ),
+];
 
 /// In-memory [UsersRepository] fake with overridable callbacks.
 class FakeUsersRepository implements UsersRepository {
@@ -62,7 +64,10 @@ class FakeUsersRepository implements UsersRepository {
   Future<UserAccount> Function(SaveUserRequest request)? onCreateUser;
   Future<UserAccount> Function(int id, SaveUserRequest request)? onUpdateUser;
   Future<UserAccount> Function(int id, String accountStatus)?
-      onUpdateUserStatus;
+  onUpdateUserStatus;
+
+  @override
+  late final Dio dio = Dio();
 
   @override
   Future<List<UserAccount>> getUsers() => onGetUsers!();

@@ -10,13 +10,13 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        id: json['id'] as int,
-        name: json['name'] as String,
-        email: json['email'] as String,
-        role: json['role'] as String,
-        sectorId: json['sector_id'] as int?,
-        accountStatus: json['account_status'] as String,
-      );
+    id: json['id'] as int,
+    name: json['name'] as String,
+    email: json['email'] as String,
+    role: json['role'] as String,
+    sectorId: json['sector_id'] as int?,
+    accountStatus: json['account_status'] as String,
+  );
 
   final int id;
   final String name;

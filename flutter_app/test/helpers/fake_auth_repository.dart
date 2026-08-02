@@ -16,13 +16,13 @@ const Map<String, dynamic> ownerUserJson = {
 
 /// Sample successful login response per the API spec.
 LoginResponse buildLoginResponse() => LoginResponse.fromJson({
-      'data': {
-        'user': ownerUserJson,
-        'token': '1|test-token',
-        'default_sector': {'id': 1, 'name': 'DYS Events'},
-      },
-      'message': 'Login successful.',
-    });
+  'data': {
+    'user': ownerUserJson,
+    'token': '1|test-token',
+    'default_sector': {'id': 1, 'name': 'DYS Events'},
+  },
+  'message': 'Login successful.',
+});
 
 /// 401 DioException matching the backend's error message.
 DioException buildUnauthorizedException() {
@@ -44,6 +44,9 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> Function()? onLogout;
   Future<bool> Function()? onIsAuthenticated;
   Future<UserModel?> Function()? onGetStoredUser;
+
+  @override
+  late final Dio dio = Dio();
 
   @override
   Future<LoginResponse> login(String email, String password) =>

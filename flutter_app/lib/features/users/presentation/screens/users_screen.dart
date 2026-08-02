@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../config/business_sectors.dart';
-import '../../../../config/theme.dart';
-import '../../../../shared/widgets/loading_button.dart';
-import '../../../../shared/widgets/section_label.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_radius.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_typography.dart';
+import '../../../../core/constants/business_sectors.dart';
+import '../../../../core/utils/initials.dart';
+import '../../../../core/widgets/app_avatar.dart';
+import '../../../../core/widgets/app_error_container.dart';
+import '../../../../core/widgets/app_field_label.dart';
+import '../../../../core/widgets/app_success_container.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/loading_button.dart';
+import '../../../../core/widgets/section_label.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/save_user_request.dart';
 import '../../data/models/user_account.dart';
@@ -78,6 +87,12 @@ class _UsersScreenState extends State<UsersScreen> {
   }
 
   void _startEdit(UserAccount user) {
+    // The Business Owner's own account cannot be edited or deactivated
+    // (BR-44); selecting the row is a no-op so the form never receives
+    // the "Business Owner" role (not offered by the role dropdown).
+    final int? currentUserId = context.read<AuthProvider>().state.user?.id;
+    if (user.id == currentUserId) return;
+
     setState(() {
       _editingUserId = user.id;
       _nameController.text = user.name;
@@ -92,13 +107,17 @@ class _UsersScreenState extends State<UsersScreen> {
     context.read<UsersProvider>().clearSuccess();
   }
 
-  bool _validate() {
+  bool _validate(List<UserAccount> users) {
     final String name = _nameController.text.trim();
     final String email = _emailController.text.trim();
 
     setState(() {
-      _nameError = name.isEmpty ? 'Name is required.' : null;
-      _emailError = _validateEmail(email);
+      _nameError = name.isEmpty
+          ? 'Name is required.'
+          : name.length > 255
+          ? 'Name must not exceed 255 characters.'
+          : null;
+      _emailError = _validateEmail(email, users);
       _roleError = _selectedRole == null ? 'Role is required.' : null;
       _sectorError = _selectedSectorId == null ? 'Sector is required.' : null;
     });
@@ -109,16 +128,23 @@ class _UsersScreenState extends State<UsersScreen> {
         _sectorError == null;
   }
 
-  String? _validateEmail(String email) {
+  /// Email rules per the Validation Rules Matrix (UI layer):
+  /// required, valid format, and unique except the editing user's own.
+  String? _validateEmail(String email, List<UserAccount> users) {
     if (email.isEmpty) return 'Email is required.';
-    final bool valid =
-        RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$').hasMatch(email);
-    return valid ? null : 'Enter a valid email address.';
+    final bool valid = RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$').hasMatch(email);
+    if (!valid) return 'Enter a valid email address.';
+    final bool duplicate = users.any(
+      (UserAccount user) =>
+          user.email.toLowerCase() == email.toLowerCase() &&
+          user.id != _editingUserId,
+    );
+    return duplicate ? 'Email has already been taken.' : null;
   }
 
   void _submitSave(UsersProvider provider) {
     if (provider.state.isSubmitting) return;
-    if (!_validate()) return;
+    if (!_validate(provider.state.users)) return;
 
     provider.clearSuccess();
 
@@ -140,10 +166,7 @@ class _UsersScreenState extends State<UsersScreen> {
   void _submitStatus(UsersProvider provider, UserAccount user) {
     if (provider.state.isSubmitting) return;
     provider.clearSuccess();
-    provider.updateUserStatus(
-      user.id,
-      user.isActive ? 'Inactive' : 'Active',
-    );
+    provider.updateUserStatus(user.id, user.isActive ? 'Inactive' : 'Active');
   }
 
   @override
@@ -167,7 +190,7 @@ class _UsersScreenState extends State<UsersScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _AppBar(initials: _initials(authProvider.state.user?.name)),
+              _AppBar(initials: initialsFor(authProvider.state.user?.name)),
               const SizedBox(height: AppSpacing.sp3),
               const SectionLabel('User List'),
               const SizedBox(height: AppSpacing.sp2),
@@ -226,14 +249,14 @@ class _UsersScreenState extends State<UsersScreen> {
               if (state.successMessage != null ||
                   state.lastTemporaryPassword != null) ...[
                 const SizedBox(height: AppSpacing.sp3),
-                _SuccessContainer(
+                AppSuccessContainer(
                   message: state.successMessage ?? '',
                   temporaryPassword: state.lastTemporaryPassword,
                 ),
               ],
               if (state.error != null) ...[
                 const SizedBox(height: AppSpacing.sp3),
-                _ErrorContainer(message: state.error!),
+                AppErrorContainer(message: state.error!),
               ],
               const SizedBox(height: AppSpacing.sp3),
               Text(
@@ -246,17 +269,6 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
       ),
     );
-  }
-
-  /// User initials from the first letters of the first and last words.
-  String _initials(String? name) {
-    if (name == null || name.isEmpty) return '';
-    final List<String> parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
-        .toUpperCase();
   }
 }
 
@@ -277,18 +289,7 @@ class _AppBar extends StatelessWidget {
             style: Theme.of(context).textTheme.displaySmall,
           ),
         ),
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: AppColors.primaryContainer,
-          child: Text(
-            initials,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryContainerInk,
-                ),
-          ),
-        ),
+        AppAvatar(initials: initials),
       ],
     );
   }
@@ -396,10 +397,10 @@ class _HeaderText extends StatelessWidget {
     return Text(
       text.toUpperCase(),
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: AppColors.inkSecondary,
-            fontWeight: FontWeight.w700,
-            letterSpacing: AppTypography.letterSpacingTableHeader,
-          ),
+        color: AppColors.inkSecondary,
+        fontWeight: FontWeight.w700,
+        letterSpacing: AppTypography.letterSpacingTableHeader,
+      ),
     );
   }
 }
@@ -459,25 +460,25 @@ class _UserForm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _FieldLabel('Name'),
-          TextField(
+          AppTextField(
+            label: 'Name',
             controller: nameController,
             enabled: !isSubmitting,
-            decoration: const InputDecoration(hintText: 'Full name'),
+            hintText: 'Full name',
+            errorText: nameError,
             onChanged: onNameChanged,
           ),
-          if (nameError != null) _ErrorContainer(message: nameError!),
           const SizedBox(height: AppSpacing.sp4),
-          const _FieldLabel('Email'),
-          TextField(
+          AppTextField(
+            label: 'Email',
             controller: emailController,
             enabled: !isSubmitting,
             keyboardType: TextInputType.emailAddress,
             autocorrect: false,
-            decoration: const InputDecoration(hintText: 'Email address'),
+            hintText: 'Email address',
+            errorText: emailError,
             onChanged: onEmailChanged,
           ),
-          if (emailError != null) _ErrorContainer(message: emailError!),
           const SizedBox(height: AppSpacing.sp4),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,11 +487,13 @@ class _UserForm extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _FieldLabel('Role'),
+                    const AppFieldLabel('Role'),
                     DropdownButtonFormField<String>(
                       initialValue: selectedRole,
                       isExpanded: true,
-                      decoration: const InputDecoration(hintText: 'Select role'),
+                      decoration: const InputDecoration(
+                        hintText: 'Select role',
+                      ),
                       items: const [
                         DropdownMenuItem(
                           value: 'Event Manager',
@@ -504,7 +507,7 @@ class _UserForm extends StatelessWidget {
                       onChanged: isSubmitting ? null : onRoleChanged,
                     ),
                     if (roleError != null)
-                      _ErrorContainer(message: roleError!),
+                      AppErrorContainer(message: roleError!),
                   ],
                 ),
               ),
@@ -513,12 +516,13 @@ class _UserForm extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const _FieldLabel('Sector'),
+                    const AppFieldLabel('Sector'),
                     DropdownButtonFormField<int>(
                       initialValue: selectedSectorId,
                       isExpanded: true,
-                      decoration:
-                          const InputDecoration(hintText: 'Select sector'),
+                      decoration: const InputDecoration(
+                        hintText: 'Select sector',
+                      ),
                       items: [
                         for (final BusinessSectorData sector
                             in BusinessSectorsConfig.sectors)
@@ -530,7 +534,7 @@ class _UserForm extends StatelessWidget {
                       onChanged: isSubmitting ? null : onSectorChanged,
                     ),
                     if (sectorError != null)
-                      _ErrorContainer(message: sectorError!),
+                      AppErrorContainer(message: sectorError!),
                   ],
                 ),
               ),
@@ -600,112 +604,6 @@ class _StatusButton extends StatelessWidget {
         side: BorderSide(color: color, width: 1.5),
       ),
       child: Text(isActive ? 'Deactivate' : 'Activate'),
-    );
-  }
-}
-
-/// Form field label (wireframe `.field-label`).
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sp2),
-      child: Text(text, style: Theme.of(context).textTheme.labelMedium),
-    );
-  }
-}
-
-/// Validation / error message container per UI Style Guide:
-/// `--danger-container` background, warning icon + `--danger` text.
-class _ErrorContainer extends StatelessWidget {
-  const _ErrorContainer({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.sp1),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sp3,
-          vertical: 10,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.dangerContainer,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 14,
-              color: AppColors.danger,
-            ),
-            const SizedBox(width: AppSpacing.sp2),
-            Flexible(
-              child: Text(
-                message,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.danger),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Inline success feedback; shows the one-time temporary password when the
-/// account was just created (FRS: "System displays the temporary credentials").
-class _SuccessContainer extends StatelessWidget {
-  const _SuccessContainer({
-    required this.message,
-    this.temporaryPassword,
-  });
-
-  final String message;
-  final String? temporaryPassword;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sp3,
-        vertical: 10,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.successContainer,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.check_circle_outline,
-            size: 14,
-            color: AppColors.success,
-          ),
-          const SizedBox(width: AppSpacing.sp2),
-          Flexible(
-            child: Text(
-              temporaryPassword == null
-                  ? message
-                  : '$message Temporary password: $temporaryPassword',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.success),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

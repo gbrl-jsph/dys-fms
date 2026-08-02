@@ -449,4 +449,27 @@ class UserManagementTest extends TestCase
                 'message' => 'User not found.',
             ]);
     }
+
+    public function test_updating_user_with_business_owner_role_returns_422(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->putJson("/api/users/{$this->maria->id}", [
+                'name' => 'Maria Santos',
+                'email' => 'maria@dys.com',
+                'role' => 'Business Owner',
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(422)
+            ->assertJson([
+                'message' => 'The selected role is invalid.',
+                'errors' => [
+                    'role' => ['The selected role is invalid.'],
+                ],
+            ]);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->maria->id,
+            'role' => 'Event Manager',
+        ]);
+    }
 }

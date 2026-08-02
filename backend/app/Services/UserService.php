@@ -67,6 +67,12 @@ class UserService
             abort(403, 'Forbidden.');
         }
 
+        // Defense in depth: the Business Owner role must never be assigned
+        // through this endpoint (BR-33), even if validation is bypassed.
+        if ($data['role'] === 'Business Owner') {
+            abort(422, 'The selected role is invalid.');
+        }
+
         $user->update([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -74,7 +80,7 @@ class UserService
             'sector_id' => $data['sector_id'],
         ]);
 
-        return $this->format($user) + ['updated_at' => null];
+        return $this->format($user) + ['updated_at' => $user->updated_at];
     }
 
     public function updateStatus(int $id, string $status): array

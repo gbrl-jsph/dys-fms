@@ -566,4 +566,38 @@ class PayrollManagementTest extends TestCase
                 'message' => 'Unauthenticated.',
             ]);
     }
+
+    public function test_calculating_payroll_with_overflowing_salary_returns_422(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/payroll', [
+                'user_id' => $this->ana->id,
+                'hours_worked' => 99999999.99,
+                'hourly_rate' => 2.00,
+                'pay_period' => '2026-07-15',
+            ])
+            ->assertStatus(422)
+            ->assertJson([
+                'errors' => [
+                    'hours_worked' => ['Computed salary must not exceed 99999999.99.'],
+                ],
+            ]);
+
+        $this->assertDatabaseCount('payroll_records', 0);
+        $this->assertDatabaseCount('expenses', 0);
+    }
+
+    public function test_calculating_payroll_at_salary_limit_is_allowed(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/payroll', [
+                'user_id' => $this->ana->id,
+                'hours_worked' => 99999999.99,
+                'hourly_rate' => 1.00,
+                'pay_period' => '2026-07-15',
+            ])
+            ->assertStatus(201);
+
+        $this->assertDatabaseCount('payroll_records', 1);
+    }
 }

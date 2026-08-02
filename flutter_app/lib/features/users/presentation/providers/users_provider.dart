@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../../../../core/network/api_error_mapper.dart';
+import '../../../../data/api/api_error_mapper.dart';
 import '../../data/models/save_user_request.dart';
 import '../../data/models/user_account.dart';
 import '../../data/repositories/users_repository.dart';
@@ -55,7 +55,10 @@ class UsersProvider extends ChangeNotifier {
         lastTemporaryPassword: account.temporaryPassword,
       );
     } catch (error) {
-      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
+      _state = _state.copyWith(
+        isSubmitting: false,
+        error: apiErrorMessage(error),
+      );
     }
 
     notifyListeners();
@@ -79,7 +82,10 @@ class UsersProvider extends ChangeNotifier {
         successMessage: 'User updated successfully.',
       );
     } catch (error) {
-      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
+      _state = _state.copyWith(
+        isSubmitting: false,
+        error: apiErrorMessage(error),
+      );
     }
 
     notifyListeners();
@@ -103,7 +109,10 @@ class UsersProvider extends ChangeNotifier {
         successMessage: 'User status updated successfully.',
       );
     } catch (error) {
-      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
+      _state = _state.copyWith(
+        isSubmitting: false,
+        error: apiErrorMessage(error),
+      );
     }
 
     notifyListeners();

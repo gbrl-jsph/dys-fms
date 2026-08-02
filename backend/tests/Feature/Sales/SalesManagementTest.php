@@ -448,4 +448,22 @@ class SalesManagementTest extends TestCase
                 'message' => 'Unauthenticated.',
             ]);
     }
+
+    public function test_recording_sale_with_amount_over_database_limit_returns_422(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/sales', [
+                'amount' => 1000000.00,
+                'description' => 'Over the limit',
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(422)
+            ->assertJson([
+                'errors' => [
+                    'amount' => ['Amount must not exceed 999999.99.'],
+                ],
+            ]);
+
+        $this->assertDatabaseCount('sales_transactions', 0);
+    }
 }

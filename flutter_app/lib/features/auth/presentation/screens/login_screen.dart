@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../config/theme.dart';
-import '../../../../shared/widgets/loading_button.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_radius.dart';
+import '../../../../core/constants/app_shadows.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/widgets/app_error_container.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/loading_button.dart';
 import '../providers/auth_provider.dart';
 
 /// Login screen per UI Style Guide (Screen 1) and blueprint §4.9.
 ///
-/// Navigation after successful login is handled by the GoRouter
-/// redirect (see AppRouter): once [AuthProvider] flips
+/// Email + password fields with Show/Hide password toggle, inline
+/// validation (email required, valid format, password required), a
+/// loading state on the Log In button, and the inline server error
+/// container. Navigation after successful login is handled by the
+/// GoRouter redirect (see AppRouter): once [AuthProvider] flips
 /// `isAuthenticated`, `/login` automatically redirects to `/dashboard`.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   String? _emailError;
   String? _passwordError;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -35,8 +44,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final String password = _passwordController.text;
 
     final String? emailError = _validateEmail(email);
-    final String? passwordError =
-        password.isEmpty ? 'Password is required.' : null;
+    final String? passwordError = password.isEmpty
+        ? 'Password is required.'
+        : null;
 
     setState(() {
       _emailError = emailError;
@@ -50,8 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _validateEmail(String email) {
     if (email.isEmpty) return 'Email is required.';
-    final bool valid =
-        RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$').hasMatch(email);
+    final bool valid = RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$').hasMatch(email);
     return valid ? null : 'Enter a valid email address.';
   }
 
@@ -69,37 +78,46 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const _LoginHero(),
-              const _FieldLabel('Email'),
-              TextField(
+              AppTextField(
+                label: 'Email',
                 controller: _emailController,
                 enabled: !isLoading,
                 keyboardType: TextInputType.emailAddress,
                 autocorrect: false,
-                decoration: const InputDecoration(hintText: 'Enter email'),
+                hintText: 'Enter email',
+                errorText: _emailError,
                 onChanged: (_) {
                   if (_emailError != null) {
                     setState(() => _emailError = null);
                   }
                 },
               ),
-              if (_emailError != null)
-                _ErrorContainer(message: _emailError!),
               const SizedBox(height: AppSpacing.sp4),
-              const _FieldLabel('Password'),
-              TextField(
+              AppTextField(
+                label: 'Password',
                 controller: _passwordController,
                 enabled: !isLoading,
-                obscureText: true,
+                obscureText: _obscurePassword,
                 keyboardType: TextInputType.visiblePassword,
-                decoration: const InputDecoration(hintText: 'Enter password'),
+                hintText: 'Enter password',
+                errorText: _passwordError,
+                suffixIcon: IconButton(
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                  tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                ),
                 onChanged: (_) {
                   if (_passwordError != null) {
                     setState(() => _passwordError = null);
                   }
                 },
+                onSubmitted: (_) => _submit(),
               ),
-              if (_passwordError != null)
-                _ErrorContainer(message: _passwordError!),
               const SizedBox(height: AppSpacing.sp4),
               LoadingButton(
                 label: 'Log In',
@@ -108,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               if (serverError != null) ...[
                 const SizedBox(height: AppSpacing.sp4),
-                _ErrorContainer(message: serverError, centered: true),
+                AppErrorContainer(message: serverError, centered: true),
               ],
             ],
           ),
@@ -127,8 +145,10 @@ class _LoginHero extends StatelessWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding:
-          const EdgeInsets.only(top: AppSpacing.sp6, bottom: AppSpacing.sp5),
+      padding: const EdgeInsets.only(
+        top: AppSpacing.sp6,
+        bottom: AppSpacing.sp5,
+      ),
       child: Column(
         children: [
           Container(
@@ -142,8 +162,9 @@ class _LoginHero extends StatelessWidget {
             ),
             child: Text(
               'DYS',
-              style: textTheme.displaySmall
-                  ?.copyWith(color: AppColors.inkOnPrimary),
+              style: textTheme.displaySmall?.copyWith(
+                color: AppColors.inkOnPrimary,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.sp4),
@@ -155,72 +176,9 @@ class _LoginHero extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'Management System',
-            style: textTheme.bodyLarge
-                ?.copyWith(color: AppColors.inkSecondary),
+            style: textTheme.bodyLarge?.copyWith(color: AppColors.inkSecondary),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Form field label (wireframe `.field-label`).
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sp2),
-      child: Text(text, style: Theme.of(context).textTheme.labelMedium),
-    );
-  }
-}
-
-/// Validation / error message container per UI Style Guide:
-/// `--danger-container` background, warning icon + `--danger` text.
-class _ErrorContainer extends StatelessWidget {
-  const _ErrorContainer({required this.message, this.centered = false});
-
-  final String message;
-  final bool centered;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.sp1),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sp3,
-          vertical: 10,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.dangerContainer,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-        child: Row(
-          mainAxisAlignment:
-              centered ? MainAxisAlignment.center : MainAxisAlignment.start,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 14,
-              color: AppColors.danger,
-            ),
-            const SizedBox(width: AppSpacing.sp2),
-            Flexible(
-              child: Text(
-                message,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: AppColors.danger),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

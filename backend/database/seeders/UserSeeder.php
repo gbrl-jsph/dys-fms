@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
             'role' => 'Business Owner',
             'sector_id' => null,
             'account_status' => 'Active',
+            'updated_at' => now(),
         ]);
     }
 }
