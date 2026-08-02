@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' show PathMetric;
 
 import 'package:flutter/material.dart';
@@ -39,32 +40,36 @@ class AppChartPlaceholder extends StatelessWidget {
           color: AppColors.borderStrong,
           radius: AppRadius.lg,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.bar_chart,
-              size: 28,
-              color: AppColors.inkMuted.withValues(alpha: 0.55),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.bar_chart,
+                  size: 28,
+                  color: AppColors.inkMuted.withValues(alpha: 0.55),
+                ),
+                const SizedBox(height: AppSpacing.sp2),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sp1),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: AppTypography.caption,
+                    color: AppColors.inkMuted,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.sp2),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.ink,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sp1),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: AppTypography.caption,
-                color: AppColors.inkMuted,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -100,10 +105,11 @@ class _DashedBorderPainter extends CustomPainter {
     for (final PathMetric metric in path.computeMetrics()) {
       double distance = 0;
       while (distance < metric.length) {
-        canvas.drawPath(
-          metric.extractPath(distance, distance + dashLength),
-          paint,
-        );
+        // Clamp the end of each dash to the path length: extractPath
+        // requires an end within bounds, otherwise the painter throws
+        // and the placeholder fails to render (last dash overrun).
+        final double end = math.min(distance + dashLength, metric.length);
+        canvas.drawPath(metric.extractPath(distance, end), paint);
         distance += dashLength + gapLength;
       }
     }

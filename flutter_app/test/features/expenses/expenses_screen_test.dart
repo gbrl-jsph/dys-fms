@@ -60,7 +60,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const ExpensesScreen(),
         ),
       ),
@@ -117,7 +117,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const ExpensesScreen(),
         ),
       ),

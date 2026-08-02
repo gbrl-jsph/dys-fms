@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dys_fms/core/theme/app_theme.dart';
+import 'package:dys_fms/core/theme/theme_controller.dart';
+import 'package:dys_fms/core/theme/theme_mode_store.dart';
 import 'package:dys_fms/core/widgets/app_avatar.dart';
 import 'package:dys_fms/features/auth/data/models/user_model.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
@@ -64,7 +66,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const DashboardScreen(),
         ),
       ),
@@ -128,7 +130,7 @@ void main() {
           ),
         ],
         child: MaterialApp.router(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           routerConfig: router,
         ),
       ),
@@ -214,7 +216,7 @@ void main() {
           ),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const DashboardScreen(),
         ),
       ),
@@ -271,9 +273,12 @@ void main() {
           ChangeNotifierProvider<DashboardProvider>.value(
             value: dashboardProvider,
           ),
+          ChangeNotifierProvider<ThemeController>.value(
+            value: ThemeController(ThemeModeStore()),
+          ),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const DashboardScreen(),
         ),
       ),
@@ -329,9 +334,12 @@ void main() {
           ChangeNotifierProvider<DashboardProvider>.value(
             value: dashboardProvider,
           ),
+          ChangeNotifierProvider<ThemeController>.value(
+            value: ThemeController(ThemeModeStore()),
+          ),
         ],
         child: MaterialApp.router(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           routerConfig: router,
         ),
       ),

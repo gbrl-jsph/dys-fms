@@ -54,4 +54,12 @@ class UserController extends Controller
             'message' => 'User status updated successfully.',
         ]);
     }
+
+    public function resetPassword(int $id): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->userService->resetPassword($id),
+            'message' => 'Temporary password reset successfully.',
+        ]);
+    }
 }

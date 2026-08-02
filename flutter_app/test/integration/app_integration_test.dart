@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:dys_fms/app.dart';
+import 'package:dys_fms/core/theme/theme_controller.dart';
+import 'package:dys_fms/core/theme/theme_mode_store.dart';
 import 'package:dys_fms/core/widgets/app_avatar.dart';
 import 'package:dys_fms/data/api/api_client.dart';
 import 'package:dys_fms/features/auth/data/repositories/auth_repository.dart';
@@ -295,6 +297,7 @@ void main() {
       payrollProvider: PayrollProvider(PayrollRepository(ApiClient.instance)),
       reportsProvider: ReportsProvider(ReportsRepository(ApiClient.instance)),
       sectorsProvider: SectorsProvider(SectorsRepository(ApiClient.instance)),
+      themeController: ThemeController(ThemeModeStore()),
       router: AppRouter.create(authProvider),
     );
   }

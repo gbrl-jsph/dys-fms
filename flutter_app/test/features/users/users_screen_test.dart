@@ -47,7 +47,7 @@ void main() {
           ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
           ChangeNotifierProvider<UsersProvider>.value(value: usersProvider),
         ],
-        child: MaterialApp(theme: AppTheme.build(), home: const UsersScreen()),
+        child: MaterialApp(theme: AppTheme.build(Brightness.light), home: const UsersScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -134,7 +134,7 @@ void main() {
           ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
           ChangeNotifierProvider<UsersProvider>.value(value: usersProvider),
         ],
-        child: MaterialApp(theme: AppTheme.build(), home: const UsersScreen()),
+        child: MaterialApp(theme: AppTheme.build(Brightness.light), home: const UsersScreen()),
       ),
     );
     await tester.pump();
@@ -244,6 +244,7 @@ void main() {
           sectorName: 'B&DYS',
           accountStatus: 'Active',
           temporaryPassword: 'Temp@12345',
+          passwordSent: true,
         );
       };
 
@@ -271,7 +272,8 @@ void main() {
       expect(sentRequest?.sectorId, 2);
       expect(
         find.text(
-          'User account created successfully. Temporary password: Temp@12345',
+          'User account created successfully. Temporary password '
+          'emailed to rosa@dys.com. Temporary password: Temp@12345',
         ),
         findsOneWidget,
       );
@@ -293,6 +295,7 @@ void main() {
           sectorName: 'B&DYS',
           accountStatus: 'Active',
           temporaryPassword: 'Gen@12345',
+          passwordSent: true,
         );
       };
 
@@ -315,7 +318,8 @@ void main() {
       expect(createCalled, isTrue);
       expect(
         find.text(
-          'User account created successfully. Temporary password: Gen@12345',
+          'User account created successfully. Temporary password '
+          'emailed to rosa@dys.com. Temporary password: Gen@12345',
         ),
         findsOneWidget,
       );
@@ -418,6 +422,45 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(updatedStatus, 'Active');
+  });
+
+  testWidgets('reset temporary password button submits the reset flow', (
+    WidgetTester tester,
+  ) async {
+    int? resetId;
+    fakeUsersRepository.onResetPassword = (id) async {
+      resetId = id;
+      return UserAccount(
+        id: id,
+        name: 'Maria Santos',
+        email: 'maria@dys.com',
+        role: 'Event Manager',
+        sectorId: 2,
+        sectorName: 'B&DYS',
+        accountStatus: 'Active',
+        temporaryPassword: 'New@12345',
+        passwordSent: true,
+      );
+    };
+
+    await pumpScreen(tester);
+
+    await tester.tap(find.text('Maria Santos'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Reset Temporary Password'), findsOneWidget);
+
+    await tester.tap(find.text('Reset Temporary Password'));
+    await tester.pumpAndSettle();
+
+    expect(resetId, 2);
+    expect(
+      find.text(
+        'Temporary password reset successfully. New password '
+        'emailed to maria@dys.com. Temporary password: New@12345',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('add user resets the form from edit mode', (

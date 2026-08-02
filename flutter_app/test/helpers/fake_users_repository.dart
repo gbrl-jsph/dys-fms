@@ -65,6 +65,7 @@ class FakeUsersRepository implements UsersRepository {
   Future<UserAccount> Function(int id, SaveUserRequest request)? onUpdateUser;
   Future<UserAccount> Function(int id, String accountStatus)?
   onUpdateUserStatus;
+  Future<UserAccount> Function(int id)? onResetPassword;
 
   @override
   late final Dio dio = Dio();
@@ -86,4 +87,7 @@ class FakeUsersRepository implements UsersRepository {
   @override
   Future<UserAccount> updateUserStatus(int id, String accountStatus) =>
       onUpdateUserStatus!(id, accountStatus);
+
+  @override
+  Future<UserAccount> resetPassword(int id) => onResetPassword!(id);
 }

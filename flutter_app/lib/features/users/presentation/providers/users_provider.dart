@@ -35,7 +35,10 @@ class UsersProvider extends ChangeNotifier {
   }
 
   /// POST /api/users — create an account; surfaces the one-time temporary
-  /// password returned by the backend and refreshes the list.
+  /// password returned by the backend and refreshes the list. When the
+  /// backend confirms the password was emailed, the message reflects it;
+  /// otherwise the owner is told to share the password shown below
+  /// (fail-soft email delivery).
   Future<void> createUser(SaveUserRequest request) async {
     _state = _state.copyWith(
       isSubmitting: true,
@@ -51,7 +54,11 @@ class UsersProvider extends ChangeNotifier {
       _state = _state.copyWith(
         isSubmitting: false,
         users: users,
-        successMessage: 'User account created successfully.',
+        successMessage: account.passwordSent == true
+            ? 'User account created successfully. Temporary password '
+                  'emailed to ${account.email}.'
+            : 'User account created successfully. Email delivery failed — '
+                  'share the temporary password below.',
         lastTemporaryPassword: account.temporaryPassword,
       );
     } catch (error) {
@@ -107,6 +114,40 @@ class UsersProvider extends ChangeNotifier {
         isSubmitting: false,
         users: users,
         successMessage: 'User status updated successfully.',
+      );
+    } catch (error) {
+      _state = _state.copyWith(
+        isSubmitting: false,
+        error: apiErrorMessage(error),
+      );
+    }
+
+    notifyListeners();
+  }
+
+  /// POST /api/users/{id}/reset-password — generate a fresh one-time
+  /// temporary password; surfaces it once and refreshes the list.
+  Future<void> resetPassword(int id) async {
+    _state = _state.copyWith(
+      isSubmitting: true,
+      error: null,
+      successMessage: null,
+      lastTemporaryPassword: null,
+    );
+    notifyListeners();
+
+    try {
+      final account = await _usersRepository.resetPassword(id);
+      final users = await _usersRepository.getUsers();
+      _state = _state.copyWith(
+        isSubmitting: false,
+        users: users,
+        successMessage: account.passwordSent == true
+            ? 'Temporary password reset successfully. New password '
+                  'emailed to ${account.email}.'
+            : 'Temporary password reset successfully. Email delivery '
+                  'failed — share the new password below.',
+        lastTemporaryPassword: account.temporaryPassword,
       );
     } catch (error) {
       _state = _state.copyWith(

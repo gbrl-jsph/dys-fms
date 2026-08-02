@@ -9,7 +9,7 @@ class ApiConfig {
   ApiConfig._();
 
   /// Base URL for all API requests (dev default per Phase 1 Implementation Plan §4.2).
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://192.168.1.34:8000/api';
 
   /// Connection and receive timeout for all HTTP requests (30 seconds).
   static const Duration timeout = Duration(seconds: 30);
@@ -28,6 +28,11 @@ class ApiConfig {
 
   /// PATCH /api/users/{id}/status — activate/deactivate a user.
   static String userStatusEndpoint(int id) => '/users/$id/status';
+
+  /// POST /api/users/{id}/reset-password — generate a new one-time
+  /// temporary password for a user.
+  static String userResetPasswordEndpoint(int id) =>
+      '/users/$id/reset-password';
 
   /// GET /api/reports — generate a report (type: summary/sales/expenses/analytics).
   static const String reportsEndpoint = '/reports';

@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{user}', [UserController::class, 'show']);
         Route::put('/{user}', [UserController::class, 'update']);
         Route::patch('/{user}/status', [UserController::class, 'updateStatus']);
+        Route::post('/{user}/reset-password', [UserController::class, 'resetPassword']);
     });
 
     Route::middleware('sales')->prefix('sales')->group(function () {

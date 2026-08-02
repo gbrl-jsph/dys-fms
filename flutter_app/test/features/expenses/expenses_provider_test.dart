@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dys_fms/core/events/financial_events.dart';
 import 'package:dys_fms/data/api/api_client.dart';
 import 'package:dys_fms/features/expenses/data/models/save_expense_request.dart';
 import 'package:dys_fms/features/expenses/data/repositories/expenses_repository.dart';
@@ -149,5 +150,46 @@ void main() {
     await provider.loadExpenses();
 
     expect(provider.state.error, 'Something went wrong. Please try again.');
+  });
+
+  test('recordExpense() notifies financial events after a success', () async {
+    final FinancialEvents events = FinancialEvents();
+    int notifications = 0;
+    events.addListener(() => notifications++);
+    provider = ExpensesProvider(repository, financialEvents: events);
+
+    adapter.onRequest = (options) async {
+      if (options.method == 'POST') {
+        return jsonResponse(201, {
+          'data': expenseJson,
+          'message': 'Expense recorded successfully.',
+        });
+      }
+      return jsonResponse(200, {
+        'data': [expenseJson],
+        'message': 'Expenses retrieved successfully.',
+      });
+    };
+
+    await provider.recordExpense(
+      const SaveExpenseRequest(amount: 100, sectorId: 1),
+    );
+
+    expect(notifications, 1);
+  });
+
+  test('recordExpense() does not notify financial events on failure', () async {
+    final FinancialEvents events = FinancialEvents();
+    int notifications = 0;
+    events.addListener(() => notifications++);
+    provider = ExpensesProvider(repository, financialEvents: events);
+
+    adapter.onRequest = (options) async =>
+        jsonResponse(403, {'message': 'Forbidden.'});
+
+    await provider.recordExpense(const SaveExpenseRequest(amount: 100));
+
+    expect(provider.state.error, 'Forbidden.');
+    expect(notifications, 0);
   });
 }

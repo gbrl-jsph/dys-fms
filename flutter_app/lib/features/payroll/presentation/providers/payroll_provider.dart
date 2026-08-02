@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/events/financial_events.dart';
 import '../../../../data/api/api_error_mapper.dart';
 import '../../data/models/payroll_record.dart';
 import '../../data/models/save_payroll_request.dart';
@@ -9,11 +10,16 @@ import '../../domain/payroll_state.dart';
 /// Payroll state (Phase 5, FR-006).
 ///
 /// Delegates all data access to [PayrollRepository]; exposes only the
-/// state and methods required by the Payroll screen.
+/// state and methods required by the Payroll screen. A successful
+/// [calculatePayroll] notifies the optional [FinancialEvents] channel so
+/// the Dashboard summary refreshes immediately.
 class PayrollProvider extends ChangeNotifier {
-  PayrollProvider(this._payrollRepository);
+  PayrollProvider(this._payrollRepository, {FinancialEvents? financialEvents}) {
+    _financialEvents = financialEvents;
+  }
 
   final PayrollRepository _payrollRepository;
+  FinancialEvents? _financialEvents;
 
   PayrollState _state = const PayrollState();
 
@@ -63,6 +69,7 @@ class PayrollProvider extends ChangeNotifier {
             'Payroll calculated and saved successfully. Expense record '
             'auto-created.',
       );
+      _financialEvents?.notifyDataChanged();
     } catch (error) {
       _state = _state.copyWith(
         isSubmitting: false,

@@ -64,7 +64,7 @@ void main() {
           ChangeNotifierProvider<ReportsProvider>.value(value: reportsProvider),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const ReportsScreen(),
         ),
       ),
@@ -307,7 +307,7 @@ void main() {
           ChangeNotifierProvider<ReportsProvider>.value(value: reportsProvider),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const ReportsScreen(),
         ),
       ),

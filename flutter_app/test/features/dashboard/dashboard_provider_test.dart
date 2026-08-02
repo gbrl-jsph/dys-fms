@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dys_fms/core/events/financial_events.dart';
 import 'package:dys_fms/data/api/api_client.dart';
 import 'package:dys_fms/features/dashboard/data/models/financial_summary.dart';
 import 'package:dys_fms/features/dashboard/data/repositories/dashboard_repository.dart';
@@ -92,5 +93,26 @@ void main() {
     provider.clearError();
 
     expect(provider.state.error, isNull);
+  });
+
+  test('reloads the summary for the current sector on financial events', () async {
+    final FinancialEvents events = FinancialEvents();
+    provider = DashboardProvider(repository, financialEvents: events);
+
+    int requestCount = 0;
+    adapter.onRequest = (options) async {
+      requestCount++;
+      return jsonResponse(200, summaryResponseBody);
+    };
+
+    await provider.loadSummary(sectorId: 1);
+    expect(requestCount, 1);
+
+    events.notifyDataChanged();
+    await pumpEventQueue();
+
+    expect(requestCount, 2);
+    expect(provider.state.summary?.sectorId, 1);
+    expect(provider.state.summary?.sectorName, 'DYS Events');
   });
 }

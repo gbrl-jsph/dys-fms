@@ -56,13 +56,17 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
-# The following section is specific to Flutter packages.
+  # The following section is specific to Flutter packages.
 flutter:
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # Business sector logos (Dashboard sector chip, Sector Switcher).
+  assets:
+    - assets/sectors/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

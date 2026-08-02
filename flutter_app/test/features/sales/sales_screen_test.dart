@@ -57,7 +57,7 @@ void main() {
           ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
           ChangeNotifierProvider<SalesProvider>.value(value: salesProvider),
         ],
-        child: MaterialApp(theme: AppTheme.build(), home: const SalesScreen()),
+        child: MaterialApp(theme: AppTheme.build(Brightness.light), home: const SalesScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -109,7 +109,7 @@ void main() {
           ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
           ChangeNotifierProvider<SalesProvider>.value(value: salesProvider),
         ],
-        child: MaterialApp(theme: AppTheme.build(), home: const SalesScreen()),
+        child: MaterialApp(theme: AppTheme.build(Brightness.light), home: const SalesScreen()),
       ),
     );
     await tester.pump();

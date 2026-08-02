@@ -27,7 +27,7 @@
         <env name="DB_PORT" value="3306"/>
         <env name="DB_DATABASE" value="dys_fms_testing"/>
         <env name="DB_USERNAME" value="dys_fms"/>
-        <env name="DB_PASSWORD" value="password"/>
+        <env name="DB_PASSWORD" value="cf93570504adb84f015461c1ffa650b7"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="PIPELINE_DISPATCHER" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>

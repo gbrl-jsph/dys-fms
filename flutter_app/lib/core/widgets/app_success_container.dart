@@ -33,7 +33,7 @@ class AppSuccessContainer extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle_outline,
             size: 14,
             color: AppColors.success,

@@ -169,6 +169,13 @@ class _UsersScreenState extends State<UsersScreen> {
     provider.updateUserStatus(user.id, user.isActive ? 'Inactive' : 'Active');
   }
 
+  void _submitResetPassword(UsersProvider provider) {
+    final int? userId = _editingUserId;
+    if (userId == null || provider.state.isSubmitting) return;
+    provider.clearSuccess();
+    provider.resetPassword(userId);
+  }
+
   @override
   Widget build(BuildContext context) {
     final AuthProvider authProvider = context.watch<AuthProvider>();
@@ -244,6 +251,9 @@ class _UsersScreenState extends State<UsersScreen> {
                 onSave: () => _submitSave(usersProvider),
                 onToggleStatus: isEditing
                     ? () => _submitStatus(usersProvider, editingUser)
+                    : null,
+                onResetPassword: isEditing
+                    ? () => _submitResetPassword(usersProvider)
                     : null,
               ),
               if (state.successMessage != null ||
@@ -427,6 +437,7 @@ class _UserForm extends StatelessWidget {
     required this.onGeneratePassword,
     required this.onSave,
     required this.onToggleStatus,
+    required this.onResetPassword,
   });
 
   final bool isEditing;
@@ -447,6 +458,7 @@ class _UserForm extends StatelessWidget {
   final VoidCallback? onGeneratePassword;
   final VoidCallback onSave;
   final VoidCallback? onToggleStatus;
+  final VoidCallback? onResetPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -575,6 +587,14 @@ class _UserForm extends StatelessWidget {
               ],
             ],
           ),
+          if (isEditing) ...[
+            const SizedBox(height: AppSpacing.sp3),
+            OutlinedButton.icon(
+              onPressed: isSubmitting ? null : onResetPassword,
+              icon: const Icon(Icons.password, size: 16),
+              label: const Text('Reset Temporary Password'),
+            ),
+          ],
         ],
       ),
     );

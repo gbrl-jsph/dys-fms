@@ -1,5 +1,6 @@
 import 'package:provider/provider.dart';
 
+import '../core/theme/theme_controller.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
 import '../features/dashboard/presentation/providers/dashboard_provider.dart';
 import '../features/expenses/presentation/providers/expenses_provider.dart';
@@ -19,6 +20,7 @@ import '../features/users/presentation/providers/users_provider.dart';
 /// `ChangeNotifierProvider<dynamic>` is the lowest common supertype of
 /// the registered providers; MultiProvider accepts it covariantly.
 List<ChangeNotifierProvider<dynamic>> appProviders({
+  required ThemeController themeController,
   required AuthProvider authProvider,
   required UsersProvider usersProvider,
   required DashboardProvider dashboardProvider,
@@ -29,6 +31,7 @@ List<ChangeNotifierProvider<dynamic>> appProviders({
   required SectorsProvider sectorsProvider,
 }) {
   return [
+    ChangeNotifierProvider<ThemeController>.value(value: themeController),
     ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
     ChangeNotifierProvider<UsersProvider>.value(value: usersProvider),
     ChangeNotifierProvider<DashboardProvider>.value(value: dashboardProvider),

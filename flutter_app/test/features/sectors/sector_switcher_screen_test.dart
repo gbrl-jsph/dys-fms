@@ -141,7 +141,7 @@ void main() {
           ),
         ],
         child: MaterialApp.router(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           routerConfig: router,
         ),
       ),

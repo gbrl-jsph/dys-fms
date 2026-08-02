@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\User;
 
+use App\Mail\TemporaryPasswordMail;
 use App\Models\User;
 use App\Models\BusinessSector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -338,6 +340,7 @@ class UserManagementTest extends TestCase
             ['patchJson', "/api/users/{$this->maria->id}/status", [
                 'account_status' => 'Inactive',
             ]],
+            ['postJson', "/api/users/{$this->maria->id}/reset-password", []],
         ];
 
         $nonOwners = [
@@ -372,6 +375,143 @@ class UserManagementTest extends TestCase
             'role' => 'Event Manager',
             'sector_id' => $this->eventsSector->id,
         ])->assertStatus(401);
+    }
+
+    public function test_owner_can_reset_temporary_password_that_allows_login_and_invalidates_old(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson("/api/users/{$this->maria->id}/reset-password");
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                    'role',
+                    'sector_id',
+                    'account_status',
+                    'temporary_password',
+                    'password_sent',
+                ],
+                'message',
+            ])
+            ->assertJson([
+                'data' => [
+                    'id' => $this->maria->id,
+                    'role' => 'Event Manager',
+                    'account_status' => 'Active',
+                ],
+                'message' => 'Temporary password reset successfully.',
+            ]);
+
+        $temporaryPassword = $response->json('data.temporary_password');
+        $this->assertIsString($temporaryPassword);
+        $this->assertGreaterThanOrEqual(8, strlen($temporaryPassword));
+        $this->assertMatchesRegularExpression('/[A-Z]/', $temporaryPassword);
+        $this->assertMatchesRegularExpression('/[a-z]/', $temporaryPassword);
+        $this->assertMatchesRegularExpression('/[0-9]/', $temporaryPassword);
+        $this->assertMatchesRegularExpression('/[^A-Za-z0-9]/', $temporaryPassword);
+
+        $this->postJson('/api/login', [
+            'email' => 'maria@dys.com',
+            'password' => $temporaryPassword,
+        ])->assertStatus(200);
+
+        $this->postJson('/api/login', [
+            'email' => 'maria@dys.com',
+            'password' => 'SecurePass123',
+        ])->assertStatus(401);
+
+        $this->assertTrue(Hash::check(
+            $temporaryPassword,
+            User::find($this->maria->id)->password
+        ));
+    }
+
+    public function test_owner_cannot_reset_own_password(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson("/api/users/{$this->owner->id}/reset-password")
+            ->assertStatus(403)
+            ->assertJson([
+                'message' => 'Forbidden.',
+            ]);
+
+        $this->assertTrue(Hash::check(
+            'SecurePass123',
+            User::find($this->owner->id)->password
+        ));
+    }
+
+    public function test_reset_password_for_nonexistent_user_returns_404(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users/999/reset-password')
+            ->assertStatus(404)
+            ->assertJson([
+                'message' => 'User not found.',
+            ]);
+    }
+
+    public function test_creating_user_emails_the_temporary_password(): void
+    {
+        Mail::fake();
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users', [
+                'name' => 'Rosa Martinez',
+                'email' => 'rosa@dys.com',
+                'role' => 'Event Manager',
+                'sector_id' => $this->eventsSector->id,
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'data' => [
+                    'password_sent' => true,
+                ],
+            ]);
+
+        $temporaryPassword = $response->json('data.temporary_password');
+
+        Mail::assertSent(TemporaryPasswordMail::class, function (TemporaryPasswordMail $mail) use ($temporaryPassword) {
+            return $mail->hasTo('rosa@dys.com')
+                && $mail->user->email === 'rosa@dys.com'
+                && $mail->temporaryPassword === $temporaryPassword;
+        });
+    }
+
+    public function test_creating_user_survives_mail_delivery_failure(): void
+    {
+        Mail::shouldReceive('to')
+            ->once()
+            ->andReturnSelf();
+        Mail::shouldReceive('send')
+            ->once()
+            ->andThrow(new \RuntimeException('Connection refused'));
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users', [
+                'name' => 'Rosa Martinez',
+                'email' => 'rosa@dys.com',
+                'role' => 'Event Manager',
+                'sector_id' => $this->eventsSector->id,
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'data' => [
+                    'name' => 'Rosa Martinez',
+                    'password_sent' => false,
+                ],
+            ]);
+
+        $this->assertNotNull($response->json('data.temporary_password'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'rosa@dys.com',
+            'account_status' => 'Active',
+        ]);
     }
 
     public function test_owner_can_list_all_users_with_denormalized_sector_names(): void

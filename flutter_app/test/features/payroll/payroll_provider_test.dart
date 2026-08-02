@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:dys_fms/core/events/financial_events.dart';
 import 'package:dys_fms/data/api/api_client.dart';
 import 'package:dys_fms/features/payroll/data/models/save_payroll_request.dart';
 import 'package:dys_fms/features/payroll/data/repositories/payroll_repository.dart';
@@ -173,5 +174,61 @@ void main() {
     await provider.loadPayroll();
 
     expect(provider.state.error, 'Something went wrong. Please try again.');
+  });
+
+  test('calculatePayroll() notifies financial events after a success', () async {
+    final FinancialEvents events = FinancialEvents();
+    int notifications = 0;
+    events.addListener(() => notifications++);
+    provider = PayrollProvider(repository, financialEvents: events);
+
+    adapter.onRequest = (options) async {
+      if (options.method == 'POST') {
+        return jsonResponse(201, {
+          'data': payrollJson,
+          'message':
+              'Payroll calculated and saved successfully. Expense record '
+              'auto-created.',
+        });
+      }
+      return jsonResponse(200, {
+        'data': [payrollJson],
+        'message': 'Payroll records retrieved successfully.',
+      });
+    };
+
+    await provider.calculatePayroll(
+      SavePayrollRequest(
+        userId: 3,
+        hoursWorked: 160,
+        hourlyRate: 125,
+        payPeriod: DateTime(2026, 7, 15),
+      ),
+      sectorId: 1,
+    );
+
+    expect(notifications, 1);
+  });
+
+  test('calculatePayroll() does not notify financial events on failure', () async {
+    final FinancialEvents events = FinancialEvents();
+    int notifications = 0;
+    events.addListener(() => notifications++);
+    provider = PayrollProvider(repository, financialEvents: events);
+
+    adapter.onRequest = (options) async =>
+        jsonResponse(403, {'message': 'Forbidden.'});
+
+    await provider.calculatePayroll(
+      SavePayrollRequest(
+        userId: 3,
+        hoursWorked: 160,
+        hourlyRate: 125,
+        payPeriod: DateTime(2026, 7, 15),
+      ),
+    );
+
+    expect(provider.state.error, 'Forbidden.');
+    expect(notifications, 0);
   });
 }

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app.dart';
+import 'core/events/financial_events.dart';
+import 'core/theme/theme_controller.dart';
+import 'core/theme/theme_mode_store.dart';
 import 'data/api/api_client.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/data/storage/secure_storage.dart';
@@ -30,6 +33,14 @@ Future<void> main() async {
   // Wire secure storage as the token provider for the auth interceptor.
   ApiClient.init(tokenProvider: secureStorage.getToken);
 
+  // App-wide theme mode (Light / Dark / System), restored from storage.
+  final ThemeController themeController = ThemeController(ThemeModeStore());
+  await themeController.initialize();
+
+  // Event channel that keeps the Dashboard summary in sync with new
+  // sale / expense / payroll records.
+  final FinancialEvents financialEvents = FinancialEvents();
+
   final AuthRepository authRepository = AuthRepository(
     ApiClient.instance,
     secureStorage,
@@ -44,22 +55,30 @@ Future<void> main() async {
   );
   final DashboardProvider dashboardProvider = DashboardProvider(
     dashboardRepository,
+    financialEvents: financialEvents,
   );
 
   final SalesRepository salesRepository = SalesRepository(ApiClient.instance);
-  final SalesProvider salesProvider = SalesProvider(salesRepository);
+  final SalesProvider salesProvider = SalesProvider(
+    salesRepository,
+    financialEvents: financialEvents,
+  );
 
   final ExpensesRepository expensesRepository = ExpensesRepository(
     ApiClient.instance,
   );
   final ExpensesProvider expensesProvider = ExpensesProvider(
     expensesRepository,
+    financialEvents: financialEvents,
   );
 
   final PayrollRepository payrollRepository = PayrollRepository(
     ApiClient.instance,
   );
-  final PayrollProvider payrollProvider = PayrollProvider(payrollRepository);
+  final PayrollProvider payrollProvider = PayrollProvider(
+    payrollRepository,
+    financialEvents: financialEvents,
+  );
 
   final ReportsRepository reportsRepository = ReportsRepository(
     ApiClient.instance,
@@ -78,6 +97,7 @@ Future<void> main() async {
 
   runApp(
     App(
+      themeController: themeController,
       authProvider: authProvider,
       usersProvider: usersProvider,
       dashboardProvider: dashboardProvider,

@@ -7,6 +7,7 @@ import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_shadows.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/business_sectors.dart';
+import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/initials.dart';
 import '../../../../core/utils/sector_context.dart';
@@ -15,6 +16,7 @@ import '../../../../core/widgets/app_chart_placeholder.dart';
 import '../../../../core/widgets/app_error_container.dart';
 import '../../../../core/widgets/app_loading_indicator.dart';
 import '../../../../core/widgets/section_label.dart';
+import '../../../../core/widgets/sector_logo.dart';
 import '../../../auth/domain/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/financial_summary.dart';
@@ -106,8 +108,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: AppSpacing.sp4),
             _SectorChip(
+              sectorId: sectorIdFor(auth),
               sectorName: _sectorName(auth),
-              accent: BusinessSectorsConfig.accentFor(sectorIdFor(auth)),
               isInteractive: isBusinessOwner,
               onTap: isBusinessOwner
                   ? () => context.go('/sector-switcher')
@@ -164,9 +166,21 @@ class _AvatarMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Profile',
       onSelected: (String value) {
-        if (value == 'logout') onLogout();
+        final ThemeController themeController = context.read<ThemeController>();
+        switch (value) {
+          case 'theme-light':
+            themeController.setMode(ThemeMode.light);
+          case 'theme-dark':
+            themeController.setMode(ThemeMode.dark);
+          case 'theme-system':
+            themeController.setMode(ThemeMode.system);
+          case 'logout':
+            onLogout();
+        }
       },
       itemBuilder: (BuildContext context) => [
+        ..._themeItems(context.read<ThemeController>().mode),
+        const PopupMenuDivider(),
         PopupMenuItem<String>(
           enabled: false,
           child: Column(
@@ -204,6 +218,38 @@ class _AvatarMenu extends StatelessWidget {
       child: AppAvatar(initials: initialsFor(name)),
     );
   }
+
+  /// Light / Dark / System theme mode options with the active mode
+  /// checkmarked (global preference, persisted on the device).
+  static List<PopupMenuEntry<String>> _themeItems(ThemeMode currentMode) {
+    return [
+      for (final (ThemeMode mode, String label, IconData icon) in const [
+        (ThemeMode.light, 'Light mode', Icons.light_mode_outlined),
+        (ThemeMode.dark, 'Dark mode', Icons.dark_mode_outlined),
+        (ThemeMode.system, 'System default', Icons.brightness_auto_outlined),
+      ])
+        PopupMenuItem<String>(
+          value: mode == ThemeMode.light
+              ? 'theme-light'
+              : mode == ThemeMode.dark
+              ? 'theme-dark'
+              : 'theme-system',
+          child: Row(
+            children: [
+              Icon(icon, size: 18),
+              const SizedBox(width: AppSpacing.sp2),
+              Expanded(child: Text(label)),
+              if (mode == currentMode)
+                Icon(
+                  Icons.check,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+            ],
+          ),
+        ),
+    ];
+  }
 }
 
 /// Sector chip (ui-style-guide.md: `.sector-chip`).
@@ -213,14 +259,14 @@ class _AvatarMenu extends StatelessWidget {
 /// read-only for Event Managers and Employees.
 class _SectorChip extends StatelessWidget {
   const _SectorChip({
+    required this.sectorId,
     required this.sectorName,
-    required this.accent,
     required this.isInteractive,
     required this.onTap,
   });
 
+  final int? sectorId;
   final String sectorName;
-  final Color accent;
   final bool isInteractive;
   final VoidCallback? onTap;
 
@@ -243,15 +289,7 @@ class _SectorChip extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(Icons.grid_view_rounded, size: 14, color: accent),
-              ),
+              SectorLogo(sectorId: sectorId, size: 24),
               const SizedBox(width: AppSpacing.sp2),
               Expanded(
                 child: Text(
@@ -264,7 +302,7 @@ class _SectorChip extends StatelessWidget {
                 ),
               ),
               if (isInteractive)
-                const Icon(
+                Icon(
                   Icons.keyboard_arrow_down,
                   size: 18,
                   color: AppColors.inkSecondary,

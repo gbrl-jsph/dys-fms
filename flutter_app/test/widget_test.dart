@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:dys_fms/app.dart';
+import 'package:dys_fms/core/theme/theme_controller.dart';
+import 'package:dys_fms/core/theme/theme_mode_store.dart';
 import 'package:dys_fms/data/api/api_client.dart';
 import 'package:dys_fms/features/auth/data/repositories/auth_repository.dart';
 import 'package:dys_fms/features/auth/data/storage/secure_storage.dart';
@@ -52,6 +54,7 @@ void main() {
     final SectorsProvider sectorsProvider = SectorsProvider(
       SectorsRepository(ApiClient.instance),
     );
+    final ThemeController themeController = ThemeController(ThemeModeStore());
 
     await tester.pumpWidget(
       App(
@@ -63,6 +66,7 @@ void main() {
         payrollProvider: payrollProvider,
         reportsProvider: reportsProvider,
         sectorsProvider: sectorsProvider,
+        themeController: themeController,
         router: AppRouter.create(authProvider),
       ),
     );

@@ -35,7 +35,7 @@ class AppErrorContainer extends StatelessWidget {
               ? MainAxisAlignment.center
               : MainAxisAlignment.start,
           children: [
-            const Icon(Icons.error_outline, size: 14, color: AppColors.danger),
+            Icon(Icons.error_outline, size: 14, color: AppColors.danger),
             const SizedBox(width: AppSpacing.sp2),
             Flexible(
               child: Text(

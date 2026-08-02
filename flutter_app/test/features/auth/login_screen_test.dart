@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dys_fms/app.dart';
+import 'package:dys_fms/core/theme/theme_controller.dart';
+import 'package:dys_fms/core/theme/theme_mode_store.dart';
 import 'package:dys_fms/features/auth/data/models/login_response.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dys_fms/features/auth/presentation/screens/login_screen.dart';
@@ -208,6 +210,7 @@ void main() {
         payrollProvider: payrollProvider,
         reportsProvider: reportsProvider,
         sectorsProvider: sectorsProvider,
+        themeController: ThemeController(ThemeModeStore()),
         router: router,
       ),
     );

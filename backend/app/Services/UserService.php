@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\TemporaryPasswordMail;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class UserService
 {
@@ -43,6 +46,11 @@ class UserService
 
         $user->refresh();
 
+        // Fail-soft email delivery: account creation always succeeds even
+        // when the mail transport is unavailable; the caller surfaces
+        // `password_sent` so the owner can share the password manually.
+        $passwordSent = $this->sendTemporaryPassword($user, $temporaryPassword);
+
         return [
             'id' => $user->id,
             'name' => $user->name,
@@ -51,6 +59,7 @@ class UserService
             'sector_id' => $user->sector_id,
             'account_status' => $user->account_status,
             'temporary_password' => $temporaryPassword,
+            'password_sent' => $passwordSent,
             'created_at' => Carbon::parse($user->created_at)->toIso8601String(),
         ];
     }
@@ -106,6 +115,65 @@ class UserService
             'account_status' => $user->account_status,
             'updated_at' => $user->updated_at,
         ];
+    }
+
+    /**
+     * Generates a fresh temporary password, hashes and saves it, and
+     * returns it exactly once in the response (it is never stored in
+     * plaintext). The Business Owner account cannot be reset through
+     * this endpoint (BR-33/BR-44 defense in depth).
+     */
+    public function resetPassword(int $id): array
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404, 'User not found.');
+        }
+
+        if ($user->role === 'Business Owner') {
+            abort(403, 'Forbidden.');
+        }
+
+        $temporaryPassword = $this->generateTemporaryPassword();
+
+        $user->update(['password' => Hash::make($temporaryPassword)]);
+
+        $passwordSent = $this->sendTemporaryPassword($user, $temporaryPassword);
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'sector_id' => $user->sector_id,
+            'account_status' => $user->account_status,
+            'temporary_password' => $temporaryPassword,
+            'password_sent' => $passwordSent,
+        ];
+    }
+
+    /**
+     * Emails the one-time temporary password. Returns `true` when the
+     * mailer accepted the message; failures are logged and swallowed so
+     * account creation / reset never breaks because of mail delivery.
+     */
+    private function sendTemporaryPassword(User $user, string $temporaryPassword): bool
+    {
+        try {
+            Mail::to($user->email)->send(
+                new TemporaryPasswordMail($user, $temporaryPassword)
+            );
+
+            return true;
+        } catch (\Throwable $exception) {
+            Log::warning('Temporary password email could not be sent.', [
+                'user_id' => $user->id,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 
     private function format(User $user): array

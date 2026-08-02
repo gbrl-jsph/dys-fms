@@ -66,4 +66,16 @@ class UsersRepository extends Repository {
 
     return UserAccount.fromJson(body['data'] as Map<String, dynamic>);
   }
+
+  /// POST /api/users/{id}/reset-password — generate a fresh one-time
+  /// temporary password. The response contains the password exactly once
+  /// (`temporary_password`).
+  Future<UserAccount> resetPassword(int id) async {
+    final dynamic response = await dio.post<dynamic>(
+      ApiConfig.userResetPasswordEndpoint(id),
+    );
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+
+    return UserAccount.fromJson(body['data'] as Map<String, dynamic>);
+  }
 }

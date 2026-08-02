@@ -13,6 +13,7 @@ class UserAccount {
     this.sectorName,
     required this.accountStatus,
     this.temporaryPassword,
+    this.passwordSent,
     this.createdAt,
   });
 
@@ -25,6 +26,7 @@ class UserAccount {
     sectorName: json['sector_name'] as String?,
     accountStatus: json['account_status'] as String,
     temporaryPassword: json['temporary_password'] as String?,
+    passwordSent: json['password_sent'] as bool?,
     createdAt: json['created_at'] as String?,
   );
 
@@ -38,6 +40,10 @@ class UserAccount {
 
   /// Present only in the POST /users creation response (returned once).
   final String? temporaryPassword;
+
+  /// Whether the backend accepted the temporary-password email for
+  /// delivery (create/reset responses only). `null` for older responses.
+  final bool? passwordSent;
 
   final String? createdAt;
 

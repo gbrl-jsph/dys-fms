@@ -68,6 +68,7 @@ void main() {
         sectorName: 'B&DYS',
         accountStatus: 'Active',
         temporaryPassword: 'Temp@12345',
+        passwordSent: true,
       );
       fakeRepository.onGetUsers = () async => buildUsersList();
 
@@ -84,12 +85,44 @@ void main() {
       expect(provider.state.error, isNull);
       expect(
         provider.state.successMessage,
-        'User account created successfully.',
+        'User account created successfully. Temporary password '
+        'emailed to rosa@dys.com.',
       );
       expect(provider.state.lastTemporaryPassword, 'Temp@12345');
       expect(provider.state.users, hasLength(3));
     },
   );
+
+  test('createUser reports fail-soft delivery when email was not sent', () async {
+    fakeRepository.onCreateUser = (request) async => UserAccount(
+      id: 4,
+      name: request.name,
+      email: request.email,
+      role: request.role,
+      sectorId: request.sectorId,
+      sectorName: 'B&DYS',
+      accountStatus: 'Active',
+      temporaryPassword: 'Temp@12345',
+      passwordSent: false,
+    );
+    fakeRepository.onGetUsers = () async => buildUsersList();
+
+    await provider.createUser(
+      const SaveUserRequest(
+        name: 'Rosa Martinez',
+        email: 'rosa@dys.com',
+        role: 'Event Manager',
+        sectorId: 2,
+      ),
+    );
+
+    expect(
+      provider.state.successMessage,
+      'User account created successfully. Email delivery failed — '
+      'share the temporary password below.',
+    );
+    expect(provider.state.lastTemporaryPassword, 'Temp@12345');
+  });
 
   test('createUser sets an error message on failure', () async {
     fakeRepository.onCreateUser = (_) async {
@@ -177,6 +210,72 @@ void main() {
     };
 
     await provider.updateUserStatus(1, 'Inactive');
+
+    expect(provider.state.error, 'Forbidden.');
+    expect(provider.state.successMessage, isNull);
+    expect(provider.state.isSubmitting, isFalse);
+  });
+
+  test('resetPassword surfaces the new password and refreshes the list', () async {
+    int? resetId;
+    fakeRepository.onResetPassword = (id) async {
+      resetId = id;
+      return UserAccount(
+        id: id,
+        name: 'Maria Santos',
+        email: 'maria@dys.com',
+        role: 'Event Manager',
+        sectorId: 2,
+        sectorName: 'B&DYS',
+        accountStatus: 'Active',
+        temporaryPassword: 'New@12345',
+        passwordSent: true,
+      );
+    };
+    fakeRepository.onGetUsers = () async => buildUsersList();
+
+    await provider.resetPassword(2);
+
+    expect(resetId, 2);
+    expect(
+      provider.state.successMessage,
+      'Temporary password reset successfully. New password '
+      'emailed to maria@dys.com.',
+    );
+    expect(provider.state.lastTemporaryPassword, 'New@12345');
+    expect(provider.state.users, hasLength(3));
+  });
+
+  test('resetPassword reports fail-soft delivery when email was not sent', () async {
+    fakeRepository.onResetPassword = (id) async => UserAccount(
+      id: id,
+      name: 'Maria Santos',
+      email: 'maria@dys.com',
+      role: 'Event Manager',
+      sectorId: 2,
+      sectorName: 'B&DYS',
+      accountStatus: 'Active',
+      temporaryPassword: 'New@12345',
+      passwordSent: false,
+    );
+    fakeRepository.onGetUsers = () async => buildUsersList();
+
+    await provider.resetPassword(2);
+
+    expect(
+      provider.state.successMessage,
+      'Temporary password reset successfully. Email delivery failed — '
+      'share the new password below.',
+    );
+    expect(provider.state.lastTemporaryPassword, 'New@12345');
+  });
+
+  test('resetPassword failure surfaces the backend message', () async {
+    fakeRepository.onResetPassword = (_) async {
+      throw buildBadResponseException(403, {'message': 'Forbidden.'});
+    };
+
+    await provider.resetPassword(1);
 
     expect(provider.state.error, 'Forbidden.');
     expect(provider.state.successMessage, isNull);

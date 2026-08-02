@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/events/financial_events.dart';
 import '../../../../data/api/api_error_mapper.dart';
 import '../../data/models/save_sale_request.dart';
 import '../../data/models/sales_transaction.dart';
@@ -9,11 +10,16 @@ import '../../domain/sales_state.dart';
 /// Sales state (Phase 3, FR-004).
 ///
 /// Delegates all data access to [SalesRepository]; exposes only the
-/// state and methods required by the Sales screen.
+/// state and methods required by the Sales screen. A successful
+/// [recordSale] notifies the optional [FinancialEvents] channel so the
+/// Dashboard summary refreshes immediately.
 class SalesProvider extends ChangeNotifier {
-  SalesProvider(this._salesRepository);
+  SalesProvider(this._salesRepository, {FinancialEvents? financialEvents}) {
+    _financialEvents = financialEvents;
+  }
 
   final SalesRepository _salesRepository;
+  FinancialEvents? _financialEvents;
 
   SalesState _state = const SalesState();
 
@@ -57,6 +63,7 @@ class SalesProvider extends ChangeNotifier {
         sales: sales,
         successMessage: 'Sale recorded successfully.',
       );
+      _financialEvents?.notifyDataChanged();
     } catch (error) {
       _state = _state.copyWith(
         isSubmitting: false,

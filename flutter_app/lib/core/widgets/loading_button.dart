@@ -25,7 +25,7 @@ class LoadingButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: loading ? null : onPressed,
       child: loading
-          ? const SizedBox(
+          ? SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(

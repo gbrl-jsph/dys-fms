@@ -12,6 +12,7 @@ import '../../../../core/widgets/app_error_container.dart';
 import '../../../../core/widgets/app_screen_header.dart';
 import '../../../../core/widgets/loading_button.dart';
 import '../../../../core/widgets/section_label.dart';
+import '../../../../core/widgets/sector_logo.dart';
 import '../../../auth/data/models/login_response.dart';
 import '../../../auth/domain/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -258,20 +259,6 @@ class _SectorCard extends StatelessWidget {
   final bool selectable;
   final VoidCallback? onTap;
 
-  /// Per-sector icon from the sector-switcher.html wireframe.
-  static IconData _iconFor(int sectorId) {
-    switch (sectorId) {
-      case 2:
-        return Icons.card_giftcard;
-      case 3:
-        return Icons.local_cafe_outlined;
-      case 4:
-        return Icons.videocam_outlined;
-      default:
-        return Icons.wb_sunny_outlined;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
@@ -291,15 +278,7 @@ class _SectorCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(_iconFor(sector.id), size: 20, color: accent),
-              ),
+              SectorLogo(sectorId: sector.id, size: 40),
               const SizedBox(width: AppSpacing.sp3),
               Expanded(
                 child: Column(

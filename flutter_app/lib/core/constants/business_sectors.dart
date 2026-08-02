@@ -10,13 +10,16 @@ import 'app_colors.dart';
 class BusinessSectorsConfig {
   BusinessSectorsConfig._();
 
-  static const List<BusinessSectorData> sectors = [
+  /// Rebuilt on each access so the signature accents resolve against the
+  /// active color palette (light / dark) instead of freezing at first use.
+  static List<BusinessSectorData> get sectors => [
     BusinessSectorData(
       id: 1,
       name: 'DYS Events',
       description: 'Event coordination and styling main branch',
       accent: AppColors.sectorEvents,
       accentContainer: AppColors.sectorEventsContainer,
+      logoAsset: 'assets/sectors/sector_dys_events.jpg',
     ),
     BusinessSectorData(
       id: 2,
@@ -24,6 +27,7 @@ class BusinessSectorsConfig {
       description: 'Souvenirs',
       accent: AppColors.sectorBDys,
       accentContainer: AppColors.sectorBDysContainer,
+      logoAsset: 'assets/sectors/sector_bandys.jpg',
     ),
     BusinessSectorData(
       id: 3,
@@ -31,6 +35,7 @@ class BusinessSectorsConfig {
       description: 'Grazing tables and celebration drinks',
       accent: AppColors.sectorFlavors,
       accentContainer: AppColors.sectorFlavorsContainer,
+      logoAsset: 'assets/sectors/sector_flavors.jpg',
     ),
     BusinessSectorData(
       id: 4,
@@ -38,6 +43,7 @@ class BusinessSectorsConfig {
       description: 'Video guestbook',
       accent: AppColors.sectorSnapDys,
       accentContainer: AppColors.sectorSnapDysContainer,
+      logoAsset: 'assets/sectors/sector_snapdys.jpg',
     ),
   ];
 
@@ -52,12 +58,38 @@ class BusinessSectorsConfig {
 
   /// Sector signature accent color for a sector id (UI Style Guide
   /// Color Palette), falling back to [fallback] when unknown.
-  static Color accentFor(int? id, {Color fallback = AppColors.primary}) {
-    if (id == null) return fallback;
+  static Color accentFor(int? id, {Color? fallback}) {
+    if (id == null) return fallback ?? AppColors.palette.primary;
     for (final BusinessSectorData sector in sectors) {
       if (sector.id == id) return sector.accent;
     }
-    return fallback;
+    return fallback ?? AppColors.palette.primary;
+  }
+
+  /// Sector logo asset path for a sector id, falling back to an empty
+  /// string when the sector is unknown (the logo widget then renders its
+  /// icon fallback).
+  static String logoAssetFor(int? id) {
+    if (id == null) return '';
+    for (final BusinessSectorData sector in sectors) {
+      if (sector.id == id) return sector.logoAsset;
+    }
+    return '';
+  }
+
+  /// Per-sector icon fallback (sector-switcher.html wireframe), used by
+  /// the logo widget and the switcher cards when no logo is available.
+  static IconData iconFor(int? id) {
+    switch (id) {
+      case 2:
+        return Icons.card_giftcard;
+      case 3:
+        return Icons.local_cafe_outlined;
+      case 4:
+        return Icons.videocam_outlined;
+      default:
+        return Icons.wb_sunny_outlined;
+    }
   }
 }
 
@@ -69,6 +101,7 @@ class BusinessSectorData {
     required this.accent,
     required this.accentContainer,
     this.description,
+    this.logoAsset = '',
   });
 
   final int id;
@@ -80,4 +113,7 @@ class BusinessSectorData {
 
   /// Sector signature container (background) color.
   final Color accentContainer;
+
+  /// Bundled sector logo asset path; empty when unavailable.
+  final String logoAsset;
 }

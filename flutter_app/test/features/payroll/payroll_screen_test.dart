@@ -76,7 +76,7 @@ void main() {
           ChangeNotifierProvider<PayrollProvider>.value(value: payrollProvider),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const PayrollScreen(),
         ),
       ),
@@ -137,7 +137,7 @@ void main() {
           ChangeNotifierProvider<PayrollProvider>.value(value: payrollProvider),
         ],
         child: MaterialApp(
-          theme: AppTheme.build(),
+          theme: AppTheme.build(Brightness.light),
           home: const PayrollScreen(),
         ),
       ),

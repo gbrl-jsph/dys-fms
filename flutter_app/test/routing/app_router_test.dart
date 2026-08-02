@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:dys_fms/app.dart';
+import 'package:dys_fms/core/theme/theme_controller.dart';
+import 'package:dys_fms/core/theme/theme_mode_store.dart';
 import 'package:dys_fms/features/auth/data/models/user_model.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dys_fms/features/dashboard/data/models/financial_summary.dart';
@@ -114,6 +116,7 @@ void main() {
         payrollProvider: payrollProvider,
         reportsProvider: reportsProvider,
         sectorsProvider: sectorsProvider,
+        themeController: ThemeController(ThemeModeStore()),
         router: router,
       ),
     );
