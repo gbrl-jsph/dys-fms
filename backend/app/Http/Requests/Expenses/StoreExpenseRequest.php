@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Requests\Expenses;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreExpenseRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Amount and description follow the Expenses validation rules matrix.
+     * sector_id is required for the Business Owner only; for the Event
+     * Manager it is ignored/overridden with the assigned sector (TC-FR005-02).
+     */
+    public function rules(): array
+    {
+        $rules = [
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'description' => ['nullable', 'string'],
+        ];
+
+        if ($this->user()?->role === 'Business Owner') {
+            $rules['sector_id'] = ['required', 'integer', 'exists:business_sectors,id'];
+        }
+
+        return $rules;
+    }
+
+    public function messages(): array
+    {
+        return [
+            'amount.required' => 'Amount is required.',
+            'amount.numeric' => 'Amount must be a number.',
+            'amount.gt' => 'Amount must be a positive number.',
+            'description.string' => 'Description must be a string.',
+            'sector_id.required' => 'Sector is required.',
+            'sector_id.integer' => 'The selected sector_id is invalid.',
+            'sector_id.exists' => 'The selected sector_id is invalid.',
+        ];
+    }
+}
