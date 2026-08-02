@@ -151,7 +151,7 @@ The DYS FMS is **ready for deployment with conditions**. The 5 High risks are co
 | Facts verified against codebase | `config/database.php` (default `mysql`), `.env` (`DB_CONNECTION=mysql`), `api_config.dart` (hardcoded `http://localhost:8000/api`), 6 migrations, 3 seeders, Sanctum middleware, Dio connection-error mapping, pagination, payroll transaction |
 | Facts verified against approved docs | Validation Rules Matrix v1.1 (60 rules, BR-01..44, SV-01..12), FRS FR-001..08, RTM v2.0, TCS v2.0 |
 | Risks documented | 28 (all grounded; no invented features or technologies) |
-| Files created | `.ai/development/risk-assessment.md` (this document) |
+| Files created | `memory/development/risk-assessment.md` (this document) |
 | Source code modified | None |
 
 ## 9. Assumptions

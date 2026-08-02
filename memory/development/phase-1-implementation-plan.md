@@ -2,7 +2,7 @@
 
 **Project:** DYS Financial Management System (DYS FMS)
 **Phase:** 1 of 10 — Authentication & Core Setup
-**Source:** `.ai/development/development-roadmap.md` (Phase 1), `.ai/development/development-execution-plan.md`
+**Source:** `memory/development/development-roadmap.md` (Phase 1), `memory/development/development-execution-plan.md`
 
 ---
 

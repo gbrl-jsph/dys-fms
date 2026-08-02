@@ -3,7 +3,7 @@
 ## 2026-07-29
 
 ### Requirements Traceability Matrix (RTM) Created
-- Created `.ai/blueprint/requirements-traceability-matrix.md` — v1.0, Draft — master verification document tracing all 8 FRs across 20 artifacts
+- Created `memory/blueprint/requirements-traceability-matrix.md` — v1.0, Draft — master verification document tracing all 8 FRs across 20 artifacts
 - 8 FRs mapped to: 10 use cases, 8 screens, 16 API endpoints, 5 database tables, 7 validation rule categories (59 rules), 10 development phases
 - 42 placeholder test case IDs generated for future Test Case Specification
 - 200+ traceability links verified across all blueprint documents
@@ -13,9 +13,9 @@
 - VERSION.md bumped to v3.7
 
 ### Use Case Diagram Rebuilt (Strict UML Notation)
-- Replaced Mermaid diagram with PlantUML strict UML 2.x notation at `.ai/diagrams/use-case-diagram.puml`
+- Replaced Mermaid diagram with PlantUML strict UML 2.x notation at `memory/diagrams/use-case-diagram.puml`
 - Rendered PNG (31.9 KB) and SVG (16.0 KB) via PlantUML server
-- Updated `.ai/blueprint/use-case-diagram.md` to v2.0 with PlantUML source, UML notation guide, and expanded documentation
+- Updated `memory/blueprint/use-case-diagram.md` to v2.0 with PlantUML source, UML notation guide, and expanded documentation
 - Documented conflict: use-case.md:20 lists UC6 as Event Manager only, contradicting Concept Paper, FRS FR-007, and Validation Rules Matrix (resolved per your confirmation — BO + EM both mapped to UC6)
 
 ## 2026-07-28
@@ -30,26 +30,26 @@ Explicitly excluded, per instruction: public registration, Register/Sign Up scre
 Database: added `account_status` ENUM column to the existing Users table (Active/Inactive). No new tables introduced.
 
 ### Files Updated (User Account Management)
-- `.ai/concept-paper.md` — Features, Business Rules
-- `.ai/project-memory.md` — Approved Features, Approved User Roles, Approved Workflows, Business Rules, Things AI Must NEVER Invent, Finalized Diagrams (bumped to v1.1)
-- `.ai/system-components.md` — Client Tier Components, Backend Services, User Flow, User Roles
-- `.ai/AI_INSTRUCTIONS.md` — Approved Features, Approved User Roles, Workflows, Things AI Must Never Do; version bumped 3.0 → 3.1
-- `.ai/project-index.md` — summaries for system-flowchart.md, user-flow.md, use-case-diagram.md, wireframes.md
-- `.ai/blueprint/system-architecture.md` — Client Tier Screens, Backend Services
-- `.ai/blueprint/system-flowchart.md` — added Process 7 (User Account Management Flow)
-- `.ai/blueprint/user-flow.md` — added Flow 7 (Manage User Accounts), Business Rules
-- `.ai/blueprint/use-case.md` — added Use Case 10 (Manage User Accounts), Relationships
-- `.ai/blueprint/use-case-diagram.md` — added UC10 node + Business Owner association, Actor Permissions Mapping row
-- `.ai/blueprint/wireframes.md` — added Manage Users screen description
-- `.ai/blueprint/er-diagram.md` — User entity: added account status attribute and account-creation note
-- `.ai/blueprint/database-schema.md` — Users table: added `account_status` column; Notes
-- `.ai/blueprint/consistency-review.md` — added User Account Management section, updated Final Result
-- `.ai/diagrams/system-architecture.md` — added Manage Users screen node, User Account Management service node, Screens/Services tables, RBAC block
-- `.ai/diagrams/system-flowchart.md` — added Process 7 subgraph (role-gated: Business Owner only), Process Summary, Business Rules Enforced, Decision Points
-- `.ai/diagrams/user-flow.md` — added Manage Users nodes/edges to Business Owner subgraph, Flow Summary, Screen Navigation Matrix, Business Rules Enforced
-- `.ai/diagrams/wireframes.md` — added Manage Users nav button to Owner dashboard, new Manage Users mockup section, Screen Descriptions, Navigation Mapping, Role Access Matrix, Business Rules Enforced
+- `memory/concept-paper.md` — Features, Business Rules
+- `memory/project-memory.md` — Approved Features, Approved User Roles, Approved Workflows, Business Rules, Things AI Must NEVER Invent, Finalized Diagrams (bumped to v1.1)
+- `memory/system-components.md` — Client Tier Components, Backend Services, User Flow, User Roles
+- `memory/AI_INSTRUCTIONS.md` — Approved Features, Approved User Roles, Workflows, Things AI Must Never Do; version bumped 3.0 → 3.1
+- `memory/project-index.md` — summaries for system-flowchart.md, user-flow.md, use-case-diagram.md, wireframes.md
+- `memory/blueprint/system-architecture.md` — Client Tier Screens, Backend Services
+- `memory/blueprint/system-flowchart.md` — added Process 7 (User Account Management Flow)
+- `memory/blueprint/user-flow.md` — added Flow 7 (Manage User Accounts), Business Rules
+- `memory/blueprint/use-case.md` — added Use Case 10 (Manage User Accounts), Relationships
+- `memory/blueprint/use-case-diagram.md` — added UC10 node + Business Owner association, Actor Permissions Mapping row
+- `memory/blueprint/wireframes.md` — added Manage Users screen description
+- `memory/blueprint/er-diagram.md` — User entity: added account status attribute and account-creation note
+- `memory/blueprint/database-schema.md` — Users table: added `account_status` column; Notes
+- `memory/blueprint/consistency-review.md` — added User Account Management section, updated Final Result
+- `memory/diagrams/system-architecture.md` — added Manage Users screen node, User Account Management service node, Screens/Services tables, RBAC block
+- `memory/diagrams/system-flowchart.md` — added Process 7 subgraph (role-gated: Business Owner only), Process Summary, Business Rules Enforced, Decision Points
+- `memory/diagrams/user-flow.md` — added Manage Users nodes/edges to Business Owner subgraph, Flow Summary, Screen Navigation Matrix, Business Rules Enforced
+- `memory/diagrams/wireframes.md` — added Manage Users nav button to Owner dashboard, new Manage Users mockup section, Screen Descriptions, Navigation Mapping, Role Access Matrix, Business Rules Enforced
 
-Note: `.ai/blueprint/system-flowchart.md`'s new Process 7 subgraph is physically positioned in the Mermaid source between Process 4 and Process 5 (cosmetic only — the diagram renders correctly and the process is correctly labeled "7"; file section is simply out of strict numeric order).
+Note: `memory/blueprint/system-flowchart.md`'s new Process 7 subgraph is physically positioned in the Mermaid source between Process 4 and Process 5 (cosmetic only — the diagram renders correctly and the process is correctly labeled "7"; file section is simply out of strict numeric order).
 
 ### High-Fidelity Wireframes Updated (User Account Management)
 - Created `5 - Wireframes/wireframes-hifi/users.html` — Screen 8: Manage Users (user list table, Add/Edit form, Generate Temporary Password, Save/Deactivate, bottom nav)
@@ -67,20 +67,20 @@ Supersedes any previous ambiguity regarding payroll permissions.
 - Resolves the prior Event Manager "sector-scoped payroll" model and removes Employees' separate "View Reports" capability (folded into "View Own Payroll only")
 
 ### Files Updated
-- `.ai/concept-paper.md` — Business Rules
-- `.ai/project-memory.md` — Approved User Roles, Approved Workflows, Business Rules
-- `.ai/system-components.md` — User Flow, User Roles
-- `.ai/AI_INSTRUCTIONS.md` — Approved User Roles, Workflows
-- `.ai/blueprint/user-flow.md` — Generate Reports, Payroll Processing, Business Rules
-- `.ai/blueprint/use-case.md` — Use Cases, Relationships
-- `.ai/blueprint/use-case-diagram.md` — Mermaid actor associations, Actor Permissions Mapping table
-- `.ai/blueprint/wireframes.md` — Payroll, Reports
-- `.ai/blueprint/consistency-review.md` — added Payroll & Reports Permissions section, updated Final Result
-- `.ai/diagrams/user-flow.md` — Mermaid nodes/edges, Flow Summary, Screen Navigation Matrix, Business Rules Enforced (not in original request list; included per AI_INSTRUCTIONS.md "never update only one document if the change affects multiple project artifacts" — this file contained the exact superseded "View Payroll (Sector-scoped)" wording)
-- `.ai/diagrams/system-flowchart.md` — Payroll Processing flow role gate, Process Summary, Business Rules Enforced, Decision Points (not in original request list; same rationale)
-- `.ai/diagrams/system-architecture.md` — Screens table, RBAC block (not in original request list; same rationale)
-- `.ai/diagrams/wireframes.md` — Employee dashboard mockup, Payroll mockups (added Event Manager view), Reports mockup (removed Employee version), Screen Descriptions, Role Access Matrix, Business Rules Enforced (not in original request list; same rationale)
-- `.ai/project-index.md` — reviewed, no change needed (summaries are generic and do not enumerate role-specific payroll permissions)
+- `memory/concept-paper.md` — Business Rules
+- `memory/project-memory.md` — Approved User Roles, Approved Workflows, Business Rules
+- `memory/system-components.md` — User Flow, User Roles
+- `memory/AI_INSTRUCTIONS.md` — Approved User Roles, Workflows
+- `memory/blueprint/user-flow.md` — Generate Reports, Payroll Processing, Business Rules
+- `memory/blueprint/use-case.md` — Use Cases, Relationships
+- `memory/blueprint/use-case-diagram.md` — Mermaid actor associations, Actor Permissions Mapping table
+- `memory/blueprint/wireframes.md` — Payroll, Reports
+- `memory/blueprint/consistency-review.md` — added Payroll & Reports Permissions section, updated Final Result
+- `memory/diagrams/user-flow.md` — Mermaid nodes/edges, Flow Summary, Screen Navigation Matrix, Business Rules Enforced (not in original request list; included per AI_INSTRUCTIONS.md "never update only one document if the change affects multiple project artifacts" — this file contained the exact superseded "View Payroll (Sector-scoped)" wording)
+- `memory/diagrams/system-flowchart.md` — Payroll Processing flow role gate, Process Summary, Business Rules Enforced, Decision Points (not in original request list; same rationale)
+- `memory/diagrams/system-architecture.md` — Screens table, RBAC block (not in original request list; same rationale)
+- `memory/diagrams/wireframes.md` — Employee dashboard mockup, Payroll mockups (added Event Manager view), Reports mockup (removed Employee version), Screen Descriptions, Role Access Matrix, Business Rules Enforced (not in original request list; same rationale)
+- `memory/project-index.md` — reviewed, no change needed (summaries are generic and do not enumerate role-specific payroll permissions)
 
 ## 2026-07-27
 

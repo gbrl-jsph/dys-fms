@@ -456,7 +456,7 @@ When the Business Owner creates a new account and presses **Generate Temporary P
 
 | Item | Value |
 |------|-------|
-| File created | `.ai/development/user-manual.md` (this document) |
+| File created | `memory/development/user-manual.md` (this document) |
 | Sections completed | 10 (Introduction, Getting Started, Business Owner Guide, Event Manager Guide, Employee Guide, Screen Guide, Common Error Messages, FAQ, Tips, Troubleshooting) plus Document Summary |
 | User roles covered | Business Owner, Event Manager, Employee/Staff |
 | Screens documented | 8 (Login, Dashboard, Sales, Expenses, Payroll, Reports, Business Sector Switcher, User Management) |

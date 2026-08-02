@@ -448,7 +448,7 @@ TC-FR008-F23 `integration/app_integration_test.dart`: 'owner journey: …sector 
 
 | File | Purpose |
 |------|---------|
-| `.ai/development/requirements-traceability-matrix.md` | This document — implementation-verified RTM v2.0 (supersedes `blueprint/requirements-traceability-matrix.md` v1.0 draft) |
+| `memory/development/requirements-traceability-matrix.md` | This document — implementation-verified RTM v2.0 (supersedes `blueprint/requirements-traceability-matrix.md` v1.0 draft) |
 
 No source code was modified in this task.
 

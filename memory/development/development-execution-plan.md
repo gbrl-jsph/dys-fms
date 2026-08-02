@@ -3,8 +3,8 @@
 **Version:** 1.0
 **Status:** Approved for Development
 **Project:** DYS Financial Management System (DYS FMS)
-**Source:** `.ai/development/development-roadmap.md` (v1.1, Approved)
-**Blueprint Reference:** All `.ai/blueprint/` documents
+**Source:** `memory/development/development-roadmap.md` (v1.1, Approved)
+**Blueprint Reference:** All `memory/blueprint/` documents
 
 ---
 
@@ -512,7 +512,7 @@ Flutter POST /api/business-sectors/switch { sector_id: 2 }
 
 ## 8. Testing Milestones
 
-Every phase milestone maps to specific test cases from `.ai/blueprint/test-case-specification.md` (42 total).
+Every phase milestone maps to specific test cases from `memory/blueprint/test-case-specification.md` (42 total).
 
 ### Phase 1 — Auth Tests (4 cases)
 
@@ -723,7 +723,7 @@ Only risks already documented in the approved blueprint are listed. No new risks
 
 ## Appendix C: Roadmap Audit Notes
 
-The following minor observations were identified during audit of `.ai/development/development-roadmap.md` against the approved blueprint. These do not block development:
+The following minor observations were identified during audit of `memory/development/development-roadmap.md` against the approved blueprint. These do not block development:
 
 | # | Observation | Location | Note |
 |:-:|-------------|----------|------|

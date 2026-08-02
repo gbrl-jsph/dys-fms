@@ -95,11 +95,11 @@ dys-fms/
 │   ├── android/              # Android host project (applicationId com.dys.fms.dys_fms)
 │   ├── test/                 # 216 Flutter tests (unit, widget, integration/E2E)
 │   └── pubspec.yaml          # dio, flutter_secure_storage, provider, go_router, google_fonts
-└── .ai/                      # Approved project documentation (blueprint + development artifacts)
+└── memory/                      # Approved project documentation (blueprint + development artifacts)
     └── development/          # RTM, Test Case Specification, Risk Assessment (this guide's companions)
 ```
 
-**Notes on layout:** the database schema and seeders live inside `backend/database/` (Laravel convention) — there is no separate top-level `database/` folder. Project documentation lives in `.ai/`. There is no separate `frontend/` folder; the Flutter app is `flutter_app/`.
+**Notes on layout:** the database schema and seeders live inside `backend/database/` (Laravel convention) — there is no separate top-level `database/` folder. Project documentation lives in `memory/`. There is no separate `frontend/` folder; the Flutter app is `flutter_app/`.
 
 ---
 
@@ -434,7 +434,7 @@ Run this checklist before considering a deployment complete:
 
 | Item | Value |
 |------|-------|
-| File created | `.ai/development/deployment-installation-guide.md` (this document) |
+| File created | `memory/development/deployment-installation-guide.md` (this document) |
 | Files / configuration referenced | `backend/composer.json`, `backend/.env.example`, `backend/.env`, `backend/config/database.php`, `backend/routes/api.php`, `backend/database/migrations/` (6), `backend/database/seeders/` (3), `flutter_app/pubspec.yaml`, `flutter_app/lib/data/api/api_config.dart`, `flutter_app/lib/main.dart`, `flutter_app/android/app/build.gradle.kts` |
 | Installation steps covered | Backend (clone → composer → .env → key → DB → migrate → seed → serve) and Flutter (pub get → base URL → run → build APK) |
 | Verification checklist summary | 13 checks: backend starts, DB connected, migrations complete, seeders complete, Flutter launches, login works, dashboard loads, reports load, CRUD works, role restrictions, regression gates |

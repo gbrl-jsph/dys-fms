@@ -15,7 +15,7 @@ When documents conflict, use this precedence:
 3. Approved Blueprint Documents
 4. Definition of System Components
 5. Client Interview (historical reference)
-6. Curated `.ai/` documents
+6. Curated `memory/` documents
 
 If a lower-priority document conflicts with a higher-priority one, update the lower-priority document and report the change.
 
@@ -77,7 +77,7 @@ unless explicitly approved.
 - Add payment processing or invoicing
 - Design API endpoints or database fields beyond documented scope
 - Do not modify original project files unless explicitly instructed by the user
-- By default, write AI-generated knowledge and summaries only to `.ai/`
+- By default, write AI-generated knowledge and summaries only to `memory/`
 
 Always verify consistency against the Source of Truth before making changes.
 
@@ -125,7 +125,7 @@ Whenever a requirement changes:
 
 1. Identify every affected document.
 2. Update all affected documentation.
-3. Regenerate the corresponding `.ai/` files.
+3. Regenerate the corresponding `memory/` files.
 4. Report which files changed.
 5. Perform a final consistency check before completion.
 
@@ -139,9 +139,9 @@ Last Updated: 2026-07-28
 This document governs all AI-assisted work on the DYS Financial Management System (DYS FMS).
 
 Whenever this document changes:
-- Record the change in `.ai/CHANGELOG.md`.
+- Record the change in `memory/CHANGELOG.md`.
 - Increment the version number.
-- Regenerate any affected `.ai/` documents.
+- Regenerate any affected `memory/` documents.
 - Notify the user which governance rules changed.
 
 ## Before Starting Any Task

@@ -21,7 +21,7 @@ This document presents the UML Use Case Diagram for the DYS Financial Management
 
 ## PlantUML Source
 
-The diagram is defined in `.ai/diagrams/use-case-diagram.puml` and rendered using PlantUML (UML 2.x notation).
+The diagram is defined in `memory/diagrams/use-case-diagram.puml` and rendered using PlantUML (UML 2.x notation).
 
 ```plantuml
 @startuml
@@ -186,7 +186,7 @@ Each element of this diagram has been verified against all approved blueprint do
 
 ### Issue 1: Use Case Spec — UC6 Actor Mapping
 
-**Source:** `.ai/blueprint/use-case.md` line 20
+**Source:** `memory/blueprint/use-case.md` line 20
 
 > "6. **View Reports** — Event Manager"
 
@@ -216,10 +216,10 @@ Each element of this diagram has been verified against all approved blueprint do
 
 ## Related Documents
 
-- `.ai/diagrams/use-case-diagram.puml` — PlantUML source file
-- `.ai/diagrams/use-case-diagram.png` — Rendered PNG image
-- `.ai/diagrams/use-case-diagram.svg` — Rendered SVG image
-- `.ai/blueprint/use-case.md` — Use case textual specification
-- `.ai/concept-paper.md` — Primary source of truth
-- `.ai/blueprint/functional-requirements-specification.md` — FRS
-- `.ai/project-memory.md` — Project memory
+- `memory/diagrams/use-case-diagram.puml` — PlantUML source file
+- `memory/diagrams/use-case-diagram.png` — Rendered PNG image
+- `memory/diagrams/use-case-diagram.svg` — Rendered SVG image
+- `memory/blueprint/use-case.md` — Use case textual specification
+- `memory/concept-paper.md` — Primary source of truth
+- `memory/blueprint/functional-requirements-specification.md` — FRS
+- `memory/project-memory.md` — Project memory

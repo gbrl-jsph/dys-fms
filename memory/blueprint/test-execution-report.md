@@ -31,21 +31,21 @@ This report covers all 42 test cases across all 8 Functional Requirements:
 
 | Document | File | Version |
 |----------|------|---------|
-| Concept Paper | `.ai/concept-paper.md` | Frozen |
-| Functional Requirements Specification | `.ai/blueprint/functional-requirements-specification.md` | Draft |
-| Requirements Traceability Matrix | `.ai/blueprint/requirements-traceability-matrix.md` | Draft |
-| Test Case Specification | `.ai/blueprint/test-case-specification.md` | Draft |
-| API Specification | `.ai/blueprint/api-specification.md` | Draft |
-| Validation Rules Matrix | `.ai/blueprint/validation-rules.md` | Approved |
-| Navigation Map | `.ai/blueprint/navigation-map.md` | Draft |
-| Use Case Diagram | `.ai/blueprint/use-case-diagram.md` | Draft |
-| Use Case Specification | `.ai/blueprint/use-case.md` | Draft |
-| Database Schema | `.ai/blueprint/database-schema.md` | Draft |
-| System Architecture | `.ai/blueprint/system-architecture.md` | Draft |
-| UI Style Guide | `.ai/blueprint/ui-style-guide.md` | Draft |
-| Development Roadmap | `.ai/blueprint/development-roadmap.md` | Draft |
-| Project Memory | `.ai/project-memory.md` | Draft |
-| VERSION | `.ai/VERSION.md` | Current v3.7 |
+| Concept Paper | `memory/concept-paper.md` | Frozen |
+| Functional Requirements Specification | `memory/blueprint/functional-requirements-specification.md` | Draft |
+| Requirements Traceability Matrix | `memory/blueprint/requirements-traceability-matrix.md` | Draft |
+| Test Case Specification | `memory/blueprint/test-case-specification.md` | Draft |
+| API Specification | `memory/blueprint/api-specification.md` | Draft |
+| Validation Rules Matrix | `memory/blueprint/validation-rules.md` | Approved |
+| Navigation Map | `memory/blueprint/navigation-map.md` | Draft |
+| Use Case Diagram | `memory/blueprint/use-case-diagram.md` | Draft |
+| Use Case Specification | `memory/blueprint/use-case.md` | Draft |
+| Database Schema | `memory/blueprint/database-schema.md` | Draft |
+| System Architecture | `memory/blueprint/system-architecture.md` | Draft |
+| UI Style Guide | `memory/blueprint/ui-style-guide.md` | Draft |
+| Development Roadmap | `memory/blueprint/development-roadmap.md` | Draft |
+| Project Memory | `memory/project-memory.md` | Draft |
+| VERSION | `memory/VERSION.md` | Current v3.7 |
 
 ---
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract project documents to .ai/extracted/ using Microsoft MarkItDown."""
+"""Extract project documents to memory/extracted/ using Microsoft MarkItDown."""
 
 import hashlib
 import json
@@ -11,13 +11,13 @@ from pathlib import Path
 from markitdown import MarkItDown
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-AI_DIR = REPO_ROOT / ".ai"
+AI_DIR = REPO_ROOT / "memory"
 EXTRACTED_DIR = AI_DIR / "extracted"
 BLUEPRINT_DIR = AI_DIR / "blueprint"
 HASH_FILE = AI_DIR / ".extracted_hashes.json"
 
 IGNORE_DIRS = {
-    ".git", "node_modules", ".ai", "dist", "build", "coverage",
+    ".git", "node_modules", "memory", "dist", "build", "coverage",
     ".obsidian", ".trash",
 }
 
@@ -304,7 +304,7 @@ def generate_project_index(documents: list[tuple[str, str]], errors: list[tuple[
         
         doc += f"## {out_name}\n\n"
         doc += f"- **Source**: `{rel_path}`\n"
-        doc += f"- **AI Copy**: `.ai/extracted/{out_name}`\n"
+        doc += f"- **AI Copy**: `memory/extracted/{out_name}`\n"
         doc += f"- **Summary**: {summary}\n\n"
     
     if errors:

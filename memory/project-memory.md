@@ -108,11 +108,11 @@ DYS Financial Management System (DYS FMS)
 - System Architecture HTML visualization
 
 ## Finalized Diagrams
-- System Architecture Diagram (v1.1 — amended for User Account Management) @ `.ai/diagrams/system-architecture.md`
-- System Flowchart Diagram (v1.1 — amended for User Account Management) @ `.ai/diagrams/system-flowchart.md`
-- User Flow Diagram (v1.1 — amended for User Account Management) @ `.ai/diagrams/user-flow.md`
-- Wireframes (v1.1 — amended for User Account Management) @ `.ai/diagrams/wireframes.md`
-- Use Case Diagram (v1.1 — amended for User Account Management) @ `.ai/blueprint/use-case-diagram.md`
+- System Architecture Diagram (v1.1 — amended for User Account Management) @ `memory/diagrams/system-architecture.md`
+- System Flowchart Diagram (v1.1 — amended for User Account Management) @ `memory/diagrams/system-flowchart.md`
+- User Flow Diagram (v1.1 — amended for User Account Management) @ `memory/diagrams/user-flow.md`
+- Wireframes (v1.1 — amended for User Account Management) @ `memory/diagrams/wireframes.md`
+- Use Case Diagram (v1.1 — amended for User Account Management) @ `memory/blueprint/use-case-diagram.md`
 - High-Fidelity Wireframes (updated and synchronized) @ `5 - Wireframes/wireframes-hifi/`
 
 ## Pending Deliverables
@@ -137,7 +137,7 @@ DYS Financial Management System (DYS FMS)
 3. Approved Blueprint Documents (Architecture, Flowchart, User Flow, Use Case, Wireframes, ER Diagram, Database)
 4. Definition of System Components
 5. Client Interview (Historical reference only)
-6. Curated `.ai/` documents
+6. Curated `memory/` documents
 
 ## Document Index
-Extracted documents are in `.ai/extracted/`. Curated documents are at `.ai/`.
+Extracted documents are in `memory/extracted/`. Curated documents are at `memory/`.

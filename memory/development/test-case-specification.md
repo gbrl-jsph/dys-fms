@@ -694,7 +694,7 @@ Every one of the 304 specified test cases carries its own mapping inline:
 | Test cases specified | 304 (52 functional, 73 API, 104 validation incl. BR, 53 UI, 10 integration, 12 security) + 28 regression entries |
 | Test cases invented | 0 — every case anchored to existing automated tests (RTM registry) |
 | Requirements invented | 0 |
-| Files created | `.ai/development/test-case-specification.md` (this document) |
+| Files created | `memory/development/test-case-specification.md` (this document) |
 | Source code modified | None |
 
 ---

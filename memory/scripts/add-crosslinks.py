@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add cross-link metadata to all .ai/ Markdown files."""
+"""Add cross-link metadata to all memory/ Markdown files."""
 
 from pathlib import Path
 

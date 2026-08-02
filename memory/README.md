@@ -12,7 +12,7 @@ This directory contains AI-friendly Markdown versions of every project document.
 ## Folder Layout
 
 ```
-.ai/
+memory/
 ├── README.md                  # This file
 ├── project-index.md           # Index of every document with summaries
 ├── project-memory.md          # AI context-optimized memory document
@@ -47,7 +47,7 @@ Curated documents (`concept-paper.md`, `client-interview.md`, etc.) are then gen
 ## How to Refresh
 
 ```bash
-python3 .ai/scripts/extract-docs.py
+python3 memory/scripts/extract-docs.py
 ```
 
 This will:
