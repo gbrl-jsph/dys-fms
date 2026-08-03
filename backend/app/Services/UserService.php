@@ -33,6 +33,14 @@ class UserService
 
     public function createUser(array $data): array
     {
+        // Defense in depth: reject duplicate email addresses even when
+        // validation is bypassed, so a retried request can never create
+        // a second account or deliver a second (mismatched) temporary
+        // password email. The unique DB index remains the final guard.
+        if (User::where('email', $data['email'])->exists()) {
+            abort(422, 'Email has already been taken.');
+        }
+
         $temporaryPassword = $this->generateTemporaryPassword();
 
         $user = User::create([
@@ -167,9 +175,13 @@ class UserService
 
             return true;
         } catch (\Throwable $exception) {
-            Log::warning('Temporary password email could not be sent.', [
+            // The exception is passed in the context so the default log
+            // formatter records its message, class, file/line, and the
+            // full stack trace (LineFormatter includeStacktraces=true).
+            Log::error('Temporary password email could not be sent.', [
                 'user_id' => $user->id,
-                'error' => $exception->getMessage(),
+                'email' => $user->email,
+                'exception' => $exception,
             ]);
 
             return false;

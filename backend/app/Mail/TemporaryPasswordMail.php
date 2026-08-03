@@ -13,6 +13,10 @@ use Illuminate\Queue\SerializesModels;
  * Emails the one-time temporary password when an account is created
  * (or reset). The password is delivered only through this channel and
  * is never stored in plaintext anywhere in the system.
+ *
+ * Queue-ready by design: the mailable carries the Queueable trait so
+ * switching to queued delivery (e.g. QUEUE_CONNECTION=database) is a
+ * one-line change. It is delivered synchronously via the sync driver.
  */
 class TemporaryPasswordMail extends Mailable
 {
@@ -26,7 +30,7 @@ class TemporaryPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your DYS FMS account temporary password',
+            subject: 'Your DYS Financial Management System Account',
         );
     }
 
@@ -36,6 +40,8 @@ class TemporaryPasswordMail extends Mailable
             view: 'emails.temporary_password',
             with: [
                 'userName' => $this->user->name,
+                'userRole' => $this->user->role,
+                'sectorName' => $this->user->sector?->name,
                 'temporaryPassword' => $this->temporaryPassword,
             ],
         );

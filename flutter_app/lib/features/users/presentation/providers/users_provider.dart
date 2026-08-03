@@ -36,8 +36,8 @@ class UsersProvider extends ChangeNotifier {
 
   /// POST /api/users — create an account; surfaces the one-time temporary
   /// password returned by the backend and refreshes the list. When the
-  /// backend confirms the password was emailed, the message reflects it;
-  /// otherwise the owner is told to share the password shown below
+  /// backend confirms the password was emailed, the message confirms it;
+  /// otherwise the owner is told to provide the password manually
   /// (fail-soft email delivery).
   Future<void> createUser(SaveUserRequest request) async {
     _state = _state.copyWith(
@@ -55,10 +55,11 @@ class UsersProvider extends ChangeNotifier {
         isSubmitting: false,
         users: users,
         successMessage: account.passwordSent == true
-            ? 'User account created successfully. Temporary password '
-                  'emailed to ${account.email}.'
-            : 'User account created successfully. Email delivery failed — '
-                  'share the temporary password below.',
+            ? 'Temporary password generated successfully. '
+                  "A copy has also been sent to the user's email."
+            : 'Temporary password generated successfully. The email could '
+                  'not be delivered. Please provide the temporary password '
+                  'manually.',
         lastTemporaryPassword: account.temporaryPassword,
       );
     } catch (error) {

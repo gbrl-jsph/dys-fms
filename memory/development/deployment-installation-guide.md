@@ -77,7 +77,7 @@ dys-fms/
 │   │   └── Services/               # 7 service classes (business logic + RBAC enforcement)
 │   ├── config/               # Laravel configuration (database.php: mysql driver default)
 │   ├── database/
-│   │   ├── migrations/       # 7 migrations (personal_access_tokens, business_sectors, users,
+│   │   ├── migrations/       # 8 migrations (personal_access_tokens, business_sectors, users,
 │   │   │                     #   sales_transactions, payroll_records, expenses, users.updated_at)
 │   │   └── seeders/          # BusinessSectorSeeder (4 sectors), UserSeeder (owner), DatabaseSeeder
 │   ├── routes/api.php        # All 16 approved API endpoints
@@ -157,7 +157,7 @@ DB_PASSWORD=
 php artisan migrate
 ```
 
-Applies all 7 migrations in order:
+Applies all 8 migrations in order:
 
 1. `0000_create_personal_access_tokens_table`
 2. `2026_07_30_000001_create_business_sectors_table`
@@ -166,6 +166,7 @@ Applies all 7 migrations in order:
 5. `2026_07_30_000004_create_payroll_records_table`
 6. `2026_07_30_000005_create_expenses_table`
 7. `2026_07_30_000006_add_updated_at_to_users_table`
+8. `2026_08_02_000000_expand_expenses_amount_precision` (widens `expenses.amount` to `decimal(10,2)` so the auto-recorded payroll expense supports the 99999999.99 salary limit)
 
 ### 4.7 Run seeders
 
@@ -310,6 +311,16 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 | `SESSION_LIFETIME` | `120` | Session lifetime in minutes |
 | `SANCTUM_STATEFUL_DOMAINS` | `localhost,localhost:8000` | Sanctum stateful domains |
 | `CORS_ALLOWED_ORIGINS` | `*` | CORS origins (Flutter mobile app is not browser-bound) |
+| `MAIL_MAILER` | `smtp` | Mail transport (Laravel SMTP driver) |
+| `MAIL_HOST` | *(provider host)* | SMTP server host |
+| `MAIL_PORT` | `1025` local / `587` TLS / `465` SSL | SMTP server port |
+| `MAIL_USERNAME` | *(empty local)* | SMTP username (provider credentials) |
+| `MAIL_PASSWORD` | *(empty local)* | SMTP password / app password / API key |
+| `MAIL_SCHEME` | empty or `smtps` | Empty → `smtp` (STARTTLS); `smtps` → implicit TLS (SSL) |
+| `MAIL_REQUIRE_TLS` | `false` (use `true` in production) | Reject delivery when STARTTLS is unavailable |
+| `MAIL_VERIFY_PEER` | `true` | Verify the SMTP server TLS certificate |
+| `MAIL_FROM_ADDRESS` | `noreply@dys.test` local | Global "From" address (must be provider-verified in production) |
+| `MAIL_FROM_NAME` | `"DYS Financial Management System"` | Global "From" display name |
 
 ### 7.2 Frontend — configuration used (from `flutter_app/lib/data/api/api_config.dart`)
 
@@ -320,6 +331,71 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 | Endpoint constants | `/login`, `/logout`, `/users`, `/users/{id}`, `/users/{id}/status`, `/sales`, `/expenses`, `/payroll`, `/reports`, `/business-sectors`, `/business-sectors/switch` | The 16 approved endpoints (matching `backend/routes/api.php`) |
 
 No other environment variables are used by the application.
+
+### 7.3 Email (SMTP) Configuration
+
+The backend emails temporary passwords (user creation and password reset) through the Laravel 12 mail system (`config/mail.php`, `MAIL_MAILER=smtp`, Symfony Mailer transport). Transport security is selected with these variables:
+
+- **`MAIL_SCHEME`** — empty → `smtp` (plain SMTP with opportunistic STARTTLS, typically port 587); `smtps` → implicit TLS (SSL, typically port 465). With `MAIL_PORT=465` and an empty `MAIL_SCHEME`, `smtps` is chosen automatically.
+- **`MAIL_REQUIRE_TLS`** — `true` makes delivery fail unless the server offers STARTTLS; recommended for production.
+- **`MAIL_VERIFY_PEER`** — `true` (default) verifies the SMTP server certificate; never disable outside local development.
+
+> **Note:** `MAIL_ENCRYPTION` appears in the local `.env` (`MAIL_ENCRYPTION=null`) purely as a development marker for Mailpit/Mailhog. Laravel 12 / Symfony Mailer does **not** read `MAIL_ENCRYPTION` — transport security is controlled by the variables above (verified against the installed `MailManager`/`EsmtpTransportFactory`).
+
+#### Local development (Mailpit / Mailhog)
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_SCHEME=
+MAIL_REQUIRE_TLS=false
+MAIL_VERIFY_PEER=true
+MAIL_FROM_ADDRESS=noreply@dys.test
+MAIL_FROM_NAME="DYS Financial Management System"
+```
+
+#### Production — TLS (STARTTLS, port 587)
+
+```
+MAIL_MAILER=smtp
+MAIL_HOST=<provider host, e.g. smtp.gmail.com>
+MAIL_PORT=587
+MAIL_USERNAME=<SMTP username>
+MAIL_PASSWORD=<SMTP password / app password / API key>
+MAIL_SCHEME=
+MAIL_REQUIRE_TLS=true
+MAIL_VERIFY_PEER=true
+MAIL_FROM_ADDRESS=<provider-verified sender address>
+MAIL_FROM_NAME="DYS Financial Management System"
+```
+
+#### Production — SSL (implicit TLS, port 465)
+
+Identical to the TLS configuration above, except:
+
+```
+MAIL_PORT=465
+MAIL_SCHEME=smtps
+```
+
+#### Provider reference (TLS and SSL both supported)
+
+| Provider | Host | TLS (STARTTLS, 587) | SSL (implicit, 465) | Authentication |
+|----------|------|---------------------|---------------------|----------------|
+| Gmail | `smtp.gmail.com` | Yes | Yes | Google Account app password (2FA required) |
+| Brevo | `smtp-relay.brevo.com` | Yes | Yes | Brevo SMTP key |
+| Mailgun | `smtp.mailgun.org` | Yes | Yes | Mailgun SMTP username/password |
+| Mailtrap | `live.smtp.mailtrap.io` | Yes | Yes | Mailtrap API token |
+| Resend | `smtp.resend.com` | Yes | Yes | Resend API key |
+
+**Notes:**
+
+- `MAIL_FROM_ADDRESS` must be a sender the provider accepts (Gmail: your own address; Brevo/Mailgun/Resend: a verified domain or sender).
+- SMTP credentials live only in `backend/.env` and are never committed (`.env.example` ships empty values).
+- Delivery failures are fail-soft: account creation/reset still succeed and the API returns `password_sent=false`; the log records the recipient email, user id, exception message, and full stack trace under the message `Temporary password email could not be sent.`
 
 ---
 
@@ -383,6 +459,7 @@ Recommendations below are limited to what the implemented project supports and w
 | Migrations on production | Run `php artisan migrate --step` against a verified backup; confirm `php artisan migrate:status` afterwards. | Risk DR-02 |
 | Rollback | Code/schema rollback uses Laravel's reversible migrations (`php artisan migrate:rollback`); financial records are immutable by design and are never deleted or reverted (BR-17..19). | Risk DR-06 |
 | Secrets | Never commit the real `.env`; the repository only contains `.env.example` with placeholder values. | Repository state |
+| Email / SMTP | Configure mail per §7.3: STARTTLS on port 587 (`MAIL_SCHEME` empty, `MAIL_REQUIRE_TLS=true`) or implicit TLS on port 465 (`MAIL_SCHEME=smtps`); use a provider-verified `MAIL_FROM_ADDRESS`; verify real delivery before go-live (checklist #14). | `config/mail.php`, `.env.example` |
 
 ---
 
@@ -395,7 +472,7 @@ Recommendations below are limited to what the implemented project supports and w
 | 3 | Database connection error (`SQLSTATE[HY000] [2002] Connection refused`) | MySQL not running, wrong `DB_HOST`/`DB_PORT`, or wrong credentials in `.env` | Start MySQL; check `.env` values (§7.1); confirm the database `dys_fms` exists |
 | 4 | `SQLSTATE[HY000] [1049] Unknown database 'dys_fms'` | Database not created | Run the `CREATE DATABASE` statement from §6.1 |
 | 5 | Migration failure | DB user lacks privileges, or a migration was partially applied | Grant privileges; use `php artisan migrate:rollback` for the partial batch, fix, and re-run `php artisan migrate` |
-| 6 | `php artisan migrate` says "Nothing to migrate" unexpectedly | Migrations already applied | Check `php artisan migrate:status`; the 7 migrations must show as run |
+| 6 | `php artisan migrate` says "Nothing to migrate" unexpectedly | Migrations already applied | Check `php artisan migrate:status`; the 8 migrations must show as run |
 | 7 | `flutter pub get` fails | Network issue or corrupted pub cache | Re-run `flutter pub get`; if needed, `flutter pub cache repair` then retry |
 | 8 | App shows connection error on every screen | Backend not running, or `ApiConfig.baseUrl` points to the wrong host/port | Start `php artisan serve`; verify `curl` from §8.3; correct `api_config.dart` and rebuild (the app shows the connection message by design) |
 | 9 | Login returns "Invalid username or password." | Wrong credentials, or the account is `Inactive` | Use the seeded owner credentials; reactivate the account via `PATCH /api/users/{id}/status` (the message is intentionally generic — BR-41) |
@@ -405,6 +482,7 @@ Recommendations below are limited to what the implemented project supports and w
 | 13 | API returns 422 with `errors` | Request failed validation | Check the payload against the API Specification/Validation Rules Matrix; these are the defined contract errors |
 | 14 | `flutter build apk` fails | Android SDK/Java toolchain mismatch | Install/update Android Studio SDK components and JDK; run `flutter doctor` and fix flagged items |
 | 15 | Backend tests fail on a fresh clone | Test database not set up, or PHP runtime missing | Configure the test database per the PHPUnit suite; run `php artisan test` from `backend/` on a PHP 8.2+ environment |
+| 16 | Temporary-password emails are not delivered | Wrong SMTP host/port/credentials, STARTTLS not offered (with `MAIL_REQUIRE_TLS=true`), or sender not verified by the provider | Check `backend/.env` MAIL_* values against §7.3; confirm the provider allows the `MAIL_FROM_ADDRESS`; inspect `storage/logs/laravel.log` for `Temporary password email could not be sent.` (includes user id, recipient email, exception message, and stack trace) |
 
 ---
 
@@ -415,8 +493,8 @@ Run this checklist before considering a deployment complete:
 | # | Check | Command / Method | Expected Result |
 |---|-------|------------------|-----------------|
 | 1 | Backend starts | `php artisan serve --port=8000` | Server responds on port 8000 |
-| 2 | Database connected | `php artisan migrate:status` | 7 migrations listed as run (no connection errors) |
-| 3 | Migrations complete | `php artisan migrate` | "Nothing to migrate" or all 7 applied |
+| 2 | Database connected | `php artisan migrate:status` | 8 migrations listed as run (no connection errors) |
+| 3 | Migrations complete | `php artisan migrate` | "Nothing to migrate" or all 8 applied |
 | 4 | Seeders complete | `php artisan db:seed` | 4 sectors + Business Owner created. **Not idempotent:** seeders use plain `insert()`, so a re-run fails on the unique `name`/`email` constraints — to re-seed, truncate the affected tables first (`TRUNCATE business_sectors; TRUNCATE users;`) or use `migrate:fresh --seed` |
 | 5 | API connectivity | `curl -X POST http://localhost:8000/api/login …` | HTTP 200 with `user`, `token`, `default_sector` |
 | 6 | Flutter launches | `flutter run` | App boots to the Login screen without crashes |
@@ -426,7 +504,8 @@ Run this checklist before considering a deployment complete:
 | 10 | CRUD operations function | Owner: record a sale + expense; create/edit/deactivate a user; calculate payroll; switch sector | 201/200 responses; lists refresh; auto-expense appears for payroll; sector switch reloads Dashboard/Sales/Expenses/Reports |
 | 11 | Role restrictions | Log in as EM and EE | EM: 5 tabs, read-only chip; EE: 2 tabs, view-only; forbidden routes redirect |
 | 12 | Regression gate | `cd flutter_app && flutter analyze && flutter test` | No issues; 216/216 tests pass (TCS §10 regression suite) |
-| 13 | Backend regression gate | `cd backend && php artisan test` | All 84 PHPUnit tests pass (on a PHP 8.2+ environment) |
+| 13 | Backend regression gate | `cd backend && php artisan test` | All PHPUnit tests pass (on a PHP 8.2+ environment) |
+| 14 | Email delivery (real SMTP) | Create a user (or reset a password) with the production SMTP configured in `backend/.env` | The recipient receives the temporary-password email with subject "Your DYS Financial Management System Account"; if not, fix per §7.3 and troubleshooting #16 |
 
 ---
 
@@ -435,9 +514,9 @@ Run this checklist before considering a deployment complete:
 | Item | Value |
 |------|-------|
 | File created | `memory/development/deployment-installation-guide.md` (this document) |
-| Files / configuration referenced | `backend/composer.json`, `backend/.env.example`, `backend/.env`, `backend/config/database.php`, `backend/routes/api.php`, `backend/database/migrations/` (6), `backend/database/seeders/` (3), `flutter_app/pubspec.yaml`, `flutter_app/lib/data/api/api_config.dart`, `flutter_app/lib/main.dart`, `flutter_app/android/app/build.gradle.kts` |
+| Files / configuration referenced | `backend/composer.json`, `backend/.env.example`, `backend/.env`, `backend/config/database.php`, `backend/routes/api.php`, `backend/database/migrations/` (8), `backend/database/seeders/` (3), `flutter_app/pubspec.yaml`, `flutter_app/lib/data/api/api_config.dart`, `flutter_app/lib/main.dart`, `flutter_app/android/app/build.gradle.kts` |
 | Installation steps covered | Backend (clone → composer → .env → key → DB → migrate → seed → serve) and Flutter (pub get → base URL → run → build APK) |
-| Verification checklist summary | 13 checks: backend starts, DB connected, migrations complete, seeders complete, Flutter launches, login works, dashboard loads, reports load, CRUD works, role restrictions, regression gates |
+| Verification checklist summary | 14 checks: backend starts, DB connected, migrations complete, seeders complete, Flutter launches, login works, dashboard loads, reports load, CRUD works, role restrictions, regression gates, real SMTP delivery |
 | Assumptions | See §13 |
 
 ## 13. Assumptions

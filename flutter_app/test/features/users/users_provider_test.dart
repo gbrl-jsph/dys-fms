@@ -85,8 +85,8 @@ void main() {
       expect(provider.state.error, isNull);
       expect(
         provider.state.successMessage,
-        'User account created successfully. Temporary password '
-        'emailed to rosa@dys.com.',
+        'Temporary password generated successfully. '
+        "A copy has also been sent to the user's email.",
       );
       expect(provider.state.lastTemporaryPassword, 'Temp@12345');
       expect(provider.state.users, hasLength(3));
@@ -118,8 +118,8 @@ void main() {
 
     expect(
       provider.state.successMessage,
-      'User account created successfully. Email delivery failed — '
-      'share the temporary password below.',
+      'Temporary password generated successfully. The email could not be '
+      'delivered. Please provide the temporary password manually.',
     );
     expect(provider.state.lastTemporaryPassword, 'Temp@12345');
   });

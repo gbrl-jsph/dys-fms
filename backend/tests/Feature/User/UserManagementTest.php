@@ -5,9 +5,11 @@ namespace Tests\Feature\User;
 use App\Mail\TemporaryPasswordMail;
 use App\Models\User;
 use App\Models\BusinessSector;
+use App\Services\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -478,7 +480,10 @@ class UserManagementTest extends TestCase
         Mail::assertSent(TemporaryPasswordMail::class, function (TemporaryPasswordMail $mail) use ($temporaryPassword) {
             return $mail->hasTo('rosa@dys.com')
                 && $mail->user->email === 'rosa@dys.com'
-                && $mail->temporaryPassword === $temporaryPassword;
+                && $mail->user->role === 'Event Manager'
+                && $mail->user->sector?->name === 'DYS Events'
+                && $mail->temporaryPassword === $temporaryPassword
+                && $mail->envelope()->subject === 'Your DYS Financial Management System Account';
         });
     }
 
@@ -512,6 +517,62 @@ class UserManagementTest extends TestCase
             'email' => 'rosa@dys.com',
             'account_status' => 'Active',
         ]);
+    }
+
+    public function test_retrying_creation_for_existing_email_sends_no_second_email(): void
+    {
+        Mail::fake();
+
+        $payload = [
+            'name' => 'Rosa Martinez',
+            'email' => 'rosa@dys.com',
+            'role' => 'Event Manager',
+            'sector_id' => $this->eventsSector->id,
+        ];
+
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users', $payload)
+            ->assertStatus(201);
+
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('email');
+
+        // Exactly one temporary-password email was ever sent, and the
+        // stored password still matches the one returned by the first
+        // (successful) creation — a retry can never send a stale one.
+        Mail::assertSent(TemporaryPasswordMail::class, 1);
+    }
+
+    public function test_user_service_rejects_duplicate_email_when_validation_is_bypassed(): void
+    {
+        Mail::fake();
+
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users', [
+                'name' => 'Rosa Martinez',
+                'email' => 'rosa@dys.com',
+                'role' => 'Event Manager',
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(201);
+
+        try {
+            app(UserService::class)->createUser([
+                'name' => 'Another Rosa',
+                'email' => 'rosa@dys.com',
+                'role' => 'Employee/Staff',
+                'sector_id' => $this->eventsSector->id,
+            ]);
+
+            $this->fail('Expected an HttpException for the duplicate email.');
+        } catch (HttpException $exception) {
+            $this->assertSame(422, $exception->getStatusCode());
+            $this->assertSame('Email has already been taken.', $exception->getMessage());
+        }
+
+        Mail::assertSent(TemporaryPasswordMail::class, 1);
     }
 
     public function test_owner_can_list_all_users_with_denormalized_sector_names(): void
@@ -551,7 +612,7 @@ class UserManagementTest extends TestCase
             ->putJson("/api/users/{$this->owner->id}", [
                 'name' => 'Hacked Name',
                 'email' => 'owner@dys.com',
-                'role' => 'Business Owner',
+                'role' => 'Event Manager',
                 'sector_id' => $this->eventsSector->id,
             ])->assertStatus(403)
             ->assertJson([

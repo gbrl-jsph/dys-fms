@@ -272,8 +272,8 @@ void main() {
       expect(sentRequest?.sectorId, 2);
       expect(
         find.text(
-          'User account created successfully. Temporary password '
-          'emailed to rosa@dys.com. Temporary password: Temp@12345',
+          'Temporary password generated successfully. A copy has also '
+          "been sent to the user's email. Temporary password: Temp@12345",
         ),
         findsOneWidget,
       );
@@ -318,13 +318,56 @@ void main() {
       expect(createCalled, isTrue);
       expect(
         find.text(
-          'User account created successfully. Temporary password '
-          'emailed to rosa@dys.com. Temporary password: Gen@12345',
+          'Temporary password generated successfully. A copy has also '
+          "been sent to the user's email. Temporary password: Gen@12345",
         ),
         findsOneWidget,
       );
     },
   );
+
+  testWidgets('create flow warns when the temporary password email fails', (
+    WidgetTester tester,
+  ) async {
+    fakeUsersRepository.onCreateUser = (request) async {
+      return UserAccount(
+        id: 4,
+        name: request.name,
+        email: request.email,
+        role: request.role,
+        sectorId: request.sectorId,
+        sectorName: 'B&DYS',
+        accountStatus: 'Active',
+        temporaryPassword: 'Fail@12345',
+        passwordSent: false,
+      );
+    };
+
+    await pumpScreen(tester);
+
+    await tester.enterText(find.byType(TextField).at(0), 'Rosa Martinez');
+    await tester.enterText(find.byType(TextField).at(1), 'rosa@dys.com');
+    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Event Manager').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('B&DYS').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Save Account'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Temporary password generated successfully. The email could not '
+        'be delivered. Please provide the temporary password manually. '
+        'Temporary password: Fail@12345',
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets(
     'tapping a row populates the form for editing and updates the user',
