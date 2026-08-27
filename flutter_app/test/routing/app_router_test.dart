@@ -505,4 +505,60 @@ void main() {
       expect(find.text('QUICK ACTIONS'), findsOneWidget);
     },
   );
+
+  testWidgets('unauthenticated user visiting /settings is redirected to '
+      '/login', (WidgetTester tester) async {
+    final GoRouter router = await pumpApp(tester);
+
+    router.go('/settings');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log In'), findsOneWidget);
+    expect(find.text('APPEARANCE'), findsNothing);
+  });
+
+  testWidgets('owner visiting /settings is shown the settings screen', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(tester, authenticated: true);
+
+    router.go('/settings');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Settings'), findsWidgets);
+    expect(find.text('APPEARANCE'), findsOneWidget);
+    expect(find.text('System Default'), findsOneWidget);
+    expect(find.text('Version 1.0.0'), findsOneWidget);
+  });
+
+  testWidgets('employee visiting /settings is shown the settings screen', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      authenticated: true,
+      storedUserJson: employeeUserJson,
+    );
+
+    router.go('/settings');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Settings'), findsWidgets);
+    expect(find.text('APPEARANCE'), findsOneWidget);
+    expect(find.text('Version 1.0.0'), findsOneWidget);
+  });
+
+  testWidgets('the dashboard avatar menu opens the settings screen', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(tester, authenticated: true);
+
+    await tester.tap(find.byTooltip('Profile'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    expect(router.routeInformationProvider.value.uri.path, '/settings');
+    expect(find.text('APPEARANCE'), findsOneWidget);
+  });
 }

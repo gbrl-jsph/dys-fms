@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -99,6 +100,14 @@ class _AppState extends State<App> {
             darkTheme: AppTheme.build(Brightness.dark),
             themeMode: themeController.mode,
             routerConfig: widget.router,
+            // Flip the status-bar icons with the resolved brightness so
+            // they stay readable over the scaffold surface in both modes.
+            builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+              value: resolved == Brightness.dark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark,
+              child: child!,
+            ),
           );
         },
       ),

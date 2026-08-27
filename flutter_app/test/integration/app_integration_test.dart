@@ -14,6 +14,7 @@ import 'package:dys_fms/features/auth/data/storage/secure_storage.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dys_fms/features/dashboard/data/repositories/dashboard_repository.dart';
 import 'package:dys_fms/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:dys_fms/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:dys_fms/features/expenses/data/repositories/expenses_repository.dart';
 import 'package:dys_fms/features/expenses/presentation/providers/expenses_provider.dart';
 import 'package:dys_fms/features/payroll/data/repositories/payroll_repository.dart';
@@ -24,6 +25,7 @@ import 'package:dys_fms/features/sales/data/repositories/sales_repository.dart';
 import 'package:dys_fms/features/sales/presentation/providers/sales_provider.dart';
 import 'package:dys_fms/features/sectors/data/repositories/sectors_repository.dart';
 import 'package:dys_fms/features/sectors/presentation/providers/sectors_provider.dart';
+import 'package:dys_fms/features/settings/presentation/screens/settings_screen.dart';
 import 'package:dys_fms/features/users/data/repositories/users_repository.dart';
 import 'package:dys_fms/features/users/presentation/providers/users_provider.dart';
 import 'package:dys_fms/routing/app_router.dart';
@@ -269,10 +271,12 @@ void main() {
   GoogleFonts.config.allowRuntimeFetching = false;
 
   late SecureStorage secureStorage;
+  late _InMemoryFlutterSecureStorage inMemoryStorage;
   late List<RequestOptions> requests;
 
   setUp(() {
-    secureStorage = SecureStorage(storage: _InMemoryFlutterSecureStorage());
+    inMemoryStorage = _InMemoryFlutterSecureStorage();
+    secureStorage = SecureStorage(storage: inMemoryStorage);
     requests = <RequestOptions>[];
     ApiClient.init(
       tokenProvider: secureStorage.getToken,
@@ -283,7 +287,10 @@ void main() {
   AuthProvider buildAuthProvider() =>
       AuthProvider(AuthRepository(ApiClient.instance, secureStorage));
 
-  Widget buildApp(AuthProvider authProvider) {
+  Widget buildApp(
+    AuthProvider authProvider, {
+    ThemeController? themeController,
+  }) {
     return App(
       authProvider: authProvider,
       usersProvider: UsersProvider(UsersRepository(ApiClient.instance)),
@@ -297,7 +304,9 @@ void main() {
       payrollProvider: PayrollProvider(PayrollRepository(ApiClient.instance)),
       reportsProvider: ReportsProvider(ReportsRepository(ApiClient.instance)),
       sectorsProvider: SectorsProvider(SectorsRepository(ApiClient.instance)),
-      themeController: ThemeController(ThemeModeStore()),
+      themeController:
+          themeController ??
+          ThemeController(ThemeModeStore(storage: inMemoryStorage)),
       router: AppRouter.create(authProvider),
     );
   }
@@ -305,8 +314,11 @@ void main() {
   Future<void> logIn(
     WidgetTester tester, {
     String email = 'owner@dys.com',
+    ThemeController? themeController,
   }) async {
-    await tester.pumpWidget(buildApp(buildAuthProvider()));
+    await tester.pumpWidget(
+      buildApp(buildAuthProvider(), themeController: themeController),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Log In'), findsOneWidget);
@@ -441,6 +453,60 @@ void main() {
 
     expect(find.text('Log In'), findsNothing);
     expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
+  });
+
+  testWidgets('theme preference survives logout and login', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await logIn(tester);
+
+    // Switch to dark mode from the Settings screen.
+    await tester.tap(find.byType(AppAvatar));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    expect(find.text('APPEARANCE'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(InkWell, 'Dark'));
+    await tester.pumpAndSettle();
+    expect(
+      Theme.of(
+        tester.element(find.byType(SettingsScreen)),
+      ).brightness,
+      Brightness.dark,
+    );
+
+    // Back to the dashboard, then log out (the avatar menu no longer
+    // carries theme toggles — they live on the Settings screen).
+    await tester.tap(find.byTooltip('Back to Dashboard'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(AppAvatar));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Logout'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log In'), findsOneWidget);
+    expect(await secureStorage.isLoggedIn(), isFalse);
+
+    // Log back in — the theme mode must be restored from storage.
+    final ThemeController restartedTheme = ThemeController(
+      ThemeModeStore(storage: inMemoryStorage),
+    );
+    await restartedTheme.initialize();
+    await logIn(tester, themeController: restartedTheme);
+
+    expect(restartedTheme.mode, ThemeMode.dark);
+    expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
+    expect(
+      Theme.of(
+        tester.element(find.byType(DashboardScreen)),
+      ).brightness,
+      Brightness.dark,
+    );
   });
 
   testWidgets('login and dashboard render at a mobile viewport size', (

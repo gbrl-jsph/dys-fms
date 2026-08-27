@@ -24,7 +24,7 @@ const Map<String, dynamic> loginResponseBody = {
 class FakeSecureStorage extends SecureStorage {
   String? token;
   Map<String, dynamic>? userData;
-  bool deleteAllCalled = false;
+  bool clearAuthCalled = false;
 
   @override
   Future<void> saveToken(String value) async => token = value;
@@ -43,8 +43,8 @@ class FakeSecureStorage extends SecureStorage {
   Future<Map<String, dynamic>?> getUserData() async => userData;
 
   @override
-  Future<void> deleteAll() async {
-    deleteAllCalled = true;
+  Future<void> clearAuth() async {
+    clearAuthCalled = true;
     token = null;
     userData = null;
   }
@@ -118,7 +118,7 @@ void main() {
   });
 
   test(
-    'logout() posts to /api/logout with the bearer token and clears data',
+    'logout() posts to /api/logout with the bearer token and clears auth data',
     () async {
       storage.token = '1|stored-token';
       storage.userData = {'email': 'owner@dys.com'};
@@ -133,7 +133,7 @@ void main() {
       expect(captured?.path, '/logout');
       expect(captured?.method, 'POST');
       expect(captured?.headers['Authorization'], 'Bearer 1|stored-token');
-      expect(storage.deleteAllCalled, isTrue);
+      expect(storage.clearAuthCalled, isTrue);
       expect(storage.token, isNull);
       expect(storage.userData, isNull);
     },

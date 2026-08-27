@@ -41,10 +41,11 @@ class AuthRepository extends Repository {
   }
 
   /// POST /api/logout — revoke the token (auto-attached by the
-  /// interceptor) and clear all locally stored session data.
+  /// interceptor) and clear the locally stored session data. App
+  /// preferences (e.g. theme mode) are intentionally kept.
   Future<void> logout() async {
     await dio.post<void>(ApiConfig.logoutEndpoint);
-    await _secureStorage.deleteAll();
+    await _secureStorage.clearAuth();
   }
 
   /// Returns whether a non-empty token is stored locally.

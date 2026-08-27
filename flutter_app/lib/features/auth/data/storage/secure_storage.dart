@@ -43,8 +43,14 @@ class SecureStorage {
     return jsonDecode(raw) as Map<String, dynamic>;
   }
 
-  /// Clears all stored data (used on logout).
-  Future<void> deleteAll() => _storage.deleteAll();
+  /// Clears the session keys only (`auth_token`, `user_data`), used on
+  /// logout. Deliberately not `deleteAll()`: other keys in the same
+  /// vault (e.g. `theme_mode`) are app preferences that must survive
+  /// logout / login.
+  Future<void> clearAuth() async {
+    await deleteToken();
+    await _storage.delete(key: _userDataKey);
+  }
 
   /// Checks if a token exists and is non-empty.
   Future<bool> isLoggedIn() async {

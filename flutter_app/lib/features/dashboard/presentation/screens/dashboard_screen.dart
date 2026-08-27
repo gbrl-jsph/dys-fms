@@ -7,7 +7,6 @@ import '../../../../core/constants/app_radius.dart';
 import '../../../../core/constants/app_shadows.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/business_sectors.dart';
-import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/initials.dart';
 import '../../../../core/utils/sector_context.dart';
@@ -148,8 +147,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 /// Profile avatar menu (navigation-map Rule 2: logout via the avatar
 /// menu on any authenticated screen — no dedicated screen). Shows the
-/// signed-in user and a Logout action that ends the session and returns
-/// to the Login screen.
+/// signed-in user, a Settings entry (appearance preferences live on
+/// the Settings screen) and a Logout action that ends the session and
+/// returns to the Login screen.
 class _AvatarMenu extends StatelessWidget {
   const _AvatarMenu({
     required this.name,
@@ -166,20 +166,24 @@ class _AvatarMenu extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Profile',
       onSelected: (String value) {
-        final ThemeController themeController = context.read<ThemeController>();
-        switch (value) {
-          case 'theme-light':
-            themeController.setMode(ThemeMode.light);
-          case 'theme-dark':
-            themeController.setMode(ThemeMode.dark);
-          case 'theme-system':
-            themeController.setMode(ThemeMode.system);
-          case 'logout':
-            onLogout();
+        if (value == 'logout') {
+          onLogout();
+        }
+        if (value == 'settings') {
+          context.go('/settings');
         }
       },
       itemBuilder: (BuildContext context) => [
-        ..._themeItems(context.read<ThemeController>().mode),
+        PopupMenuItem<String>(
+          value: 'settings',
+          child: const Row(
+            children: [
+              Icon(Icons.settings_outlined, size: 18),
+              SizedBox(width: AppSpacing.sp2),
+              Text('Settings'),
+            ],
+          ),
+        ),
         const PopupMenuDivider(),
         PopupMenuItem<String>(
           enabled: false,
@@ -217,38 +221,6 @@ class _AvatarMenu extends StatelessWidget {
       ],
       child: AppAvatar(initials: initialsFor(name)),
     );
-  }
-
-  /// Light / Dark / System theme mode options with the active mode
-  /// checkmarked (global preference, persisted on the device).
-  static List<PopupMenuEntry<String>> _themeItems(ThemeMode currentMode) {
-    return [
-      for (final (ThemeMode mode, String label, IconData icon) in const [
-        (ThemeMode.light, 'Light mode', Icons.light_mode_outlined),
-        (ThemeMode.dark, 'Dark mode', Icons.dark_mode_outlined),
-        (ThemeMode.system, 'System default', Icons.brightness_auto_outlined),
-      ])
-        PopupMenuItem<String>(
-          value: mode == ThemeMode.light
-              ? 'theme-light'
-              : mode == ThemeMode.dark
-              ? 'theme-dark'
-              : 'theme-system',
-          child: Row(
-            children: [
-              Icon(icon, size: 18),
-              const SizedBox(width: AppSpacing.sp2),
-              Expanded(child: Text(label)),
-              if (mode == currentMode)
-                Icon(
-                  Icons.check,
-                  size: 16,
-                  color: AppColors.primary,
-                ),
-            ],
-          ),
-        ),
-    ];
   }
 }
 

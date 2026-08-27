@@ -9,6 +9,7 @@ import '../features/payroll/presentation/screens/payroll_screen.dart';
 import '../features/reports/presentation/screens/reports_screen.dart';
 import '../features/sectors/presentation/screens/sector_switcher_screen.dart';
 import '../features/sales/presentation/screens/sales_screen.dart';
+import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/users/presentation/screens/users_screen.dart';
 
 /// GoRouter configuration (blueprint §4.8).
@@ -132,6 +133,10 @@ class AppRouter {
         GoRoute(
           path: '/sector-switcher',
           builder: (context, state) => const SectorSwitcherScreen(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
         ),
       ],
     );
