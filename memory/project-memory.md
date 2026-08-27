@@ -14,6 +14,21 @@ Related:
 ## Current Project Scope
 A centralized financial transaction monitoring and management system for DYS Event Management, built as a mobile-first application with role-based access control.
 
+## Current Business Process (AS-IS) Clarification
+**Date:** 2026-08-25
+**Source:** Authoritative clarification — AS-IS process only
+
+In the current manual business process (before the proposed digital system):
+- **Employees / Event Staff** ARE allowed to manually record expense details (e.g., when assigned to purchase supplies, they record the expense details via handwritten notes, receipts, or Messenger).
+- **Manager / Head** can perform the same expense-recording activity when assigned, AND additionally:
+  1. Supervises Employees / Event Staff
+  2. Reviews financial reports within their assigned business-sector range
+- This is the existing manual AS-IS process, not the proposed digital system.
+
+**IMPORTANT:** This AS-IS clarification does NOT automatically grant Employees/Event Staff the proposed system's digital "Record Expenses" use case. The proposed-system RBAC remains:
+- **Record Expenses in proposed system:** Business Owner + Event Manager only
+- **Employees/Event Staff:** Cannot record expenses in the proposed system unless separately authorized by a future explicit clarification
+
 ## Project Name
 DYS Financial Management System (DYS FMS)
 
@@ -86,6 +101,8 @@ DYS Financial Management System (DYS FMS)
 - Switching sectors auto-refreshes Dashboard, Sales, Expenses, and Reports
 - Payroll is calculated as Hours Worked × Hourly Rate, stored permanently, viewable historically, and automatically creates an Expense record
 - Event Managers and Employees are permanently assigned to one business sector
+
+> **AS-IS vs. Proposed-System Distinction (2026-08-25):** The above rules govern the PROPOSED DIGITAL SYSTEM. In the current manual AS-IS process, Employees/Event Staff and Manager/Head DO manually record expense details (e.g., when purchasing supplies). The AS-IS clarification does NOT change the proposed-system RBAC. See "Current Business Process (AS-IS) Clarification" section above.
 
 ## Naming Conventions
 - **Project**: DYS Financial Management System (DYS FMS) (formerly DYS Event Management System / DYS Sales Tracker Management System)

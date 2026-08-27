@@ -1,5 +1,57 @@
 # Changelog — AI Knowledge Base
 
+## 2026-08-27 — Post-v1.0.0 Verification: Expenses Hardening, Black + Gold Theme, Settings + Dark Mode
+
+> **Release baseline:** `v1.0.0` remains the current release (`flutter_app/pubspec.yaml` `1.0.0+1`, `flutter_app/lib/core/constants/app_info.dart` `1.0.0`). No new release number is issued. Items below are verified changes after that baseline, pending the next release. Knowledge-base `VERSION.md` stays at `v3.7` (`2026-07-29`) — this is a post-baseline implementation-verification entry, not a blueprint version bump.
+
+### Expenses Backend — Phase 4 Hardening (Verified)
+
+- Backend Phase 4 (`GET /api/expenses`, `POST /api/expenses`) verified against implemented code: `backend/app/Http/Controllers/Api/ExpensesController.php:18`, `backend/app/Services/ExpenseService.php:22`, `backend/app/Http/Requests/Expenses/IndexExpenseRequest.php:18`, `backend/app/Http/Requests/Expenses/StoreExpenseRequest.php:20`, `backend/app/Http/Middleware/EnsureExpenseAccess.php:10`, `backend/routes/api.php:31`, `backend/app/Models/Expense.php:8`, `backend/database/migrations/2026_07_30_000005_create_expenses_table.php:5`, `backend/database/migrations/2026_08_02_000000_expand_expenses_amount_precision.php`.
+- RBAC re-verified: Business Owner + Event Manager allowed; Employee/Staff `403` via `EnsureExpenseAccess`. Owner required `sector_id` filter; Event Manager sector always overridden to `user.sector_id` in both controller and service.
+- Server-controlled fields re-verified: `user_id` and `recorded_at` are never taken from the client (`ExpenseService.recordExpense` creates without `user_id`/`recorded_at` overrides); `payroll_record_id` stays `null` for manual entries (nullable FK, only payroll service writes it).
+- Immutability re-verified: only `GET,HEAD` and `POST` routes exist for `api/expenses`; no `PUT`/`PATCH`/`DELETE`.
+- Tests hardened with 3 additional cases in `backend/tests/Feature/Expenses/ExpenseManagementTest.php:475`: `test_client_supplied_user_id_and_recorded_at_are_ignored`, `test_client_cannot_assign_payroll_record_id_on_manual_expense`, `test_only_get_and_post_expense_routes_exist`. Full suite now `94 tests / 504 assertions` — `Expenses: 15 tests / 87 assertions` (verified via `PATH="/home/deck/.local/bin:$PATH" php backend/vendor/bin/phpunit --configuration backend/phpunit.xml --testdox`).
+
+### Black + Gold UI Theme (Verified)
+
+- Client-requested branding: primary gold `#D4AF37` (`AppColors.lightPalette.primary` / `darkPalette.primary` in `flutter_app/lib/core/constants/app_colors.dart:26,59`), hover `#C2A22B`.
+- Light theme: white/warm-gray surfaces (`#FFFFFF`/`#F7F7F4`/`#F0EFE8`), near-black text `#1C1B16`; Dark theme: near-black/charcoal surfaces (`#1A1A1A`/`#121212`/`#242420`), off-white text `#F2F2EC`. Verified in `app_colors.dart` both palettes.
+- Material 3 surface roles explicitly overridden (no seed-derived leakage) in `flutter_app/lib/core/theme/app_theme.dart:44` (`surfaceContainer*`, `surfaceDim/Bright`, `inverseSurface`, `surfaceTint: transparent`). Dialogs, menus, date pickers, snackbars, tooltips, bottom sheets, progress indicators all bound to palette tokens (`dialogTheme`, `popupMenuTheme`, `menuTheme`, `datePickerTheme`, `snackBarTheme`, `tooltipTheme`, `bottomSheetTheme`).
+- Gold applied to primary actions, selected states, navigation indicator (`navigationBarTheme.indicatorColor: palette.primary`, `AppTheme:253`), CTA shadows (`AppShadows.shadowCta` now gold `0x47D4AF37` light / `0x59D4AF37` dark in `app_shadows.dart:66`).
+- Semantic colors and sector signature colors unchanged (success/danger/warning + 4 sector pairs preserved).
+- Existing `ThemeController` / `ThemeModeStore` architecture reused (`flutter_app/lib/core/theme/theme_controller.dart:12`, `theme_mode_store.dart:7`). `Light / Dark / System Default` remain supported; `AppColors.brightness` synced from `App.resolve` (`lib/app.dart:92`) and `ThemeModeStore` persists `theme_mode` in `flutter_secure_storage`.
+- Status-bar handling brightness-aware: `AppTheme.appBarTheme.systemOverlayStyle` (`app_theme.dart:285`) + `App.builder` `AnnotatedRegion<SystemUiOverlayStyle>` (`app.dart:105`).
+- Shadows dark-mode aware via brightness getters (`AppShadows.shadow1/shadow2/shadowCta` in `app_shadows.dart:82`).
+- Flutter verification: `flutter analyze — No issues found`, `flutter test — 253 passed` (verified via `/home/deck/flutter/bin/flutter analyze` and `flutter test`).
+
+### Settings Screen + Dark Mode (Verified)
+
+- Settings screen exists: `flutter_app/lib/features/settings/presentation/screens/settings_screen.dart:22` — Appearance section (Light / Dark / System Default radio tiles via `_AppearanceTile`) + About section (`AppInfo.appName` `DYS Financial Management System`, `AppInfo.appVersion` `1.0.0` from `lib/core/constants/app_info.dart:8` mirroring `pubspec.yaml: version: 1.0.0+1`).
+- Appearance persists: `ThemeModeStore` (`secure_storage` key `theme_mode`, AES-GCM) + `ThemeController.setMode`/`initialize`; preference survives restart and logout/login (covered by `test/integration/app_integration_test.dart: theme preference survives logout and login` and `test/features/settings/settings_screen_test.dart:105` — Dark persists, System Default follows platform).
+- Dashboard avatar menu now points to Settings: `dashboard_screen.dart:166` (`_AvatarMenu` shows `Settings` + `Logout`; `onSelected` routes `context.go('/settings')`); duplicate Light/Dark/System toggles removed from that menu.
+- Routing: `app_router.dart:138` adds `GoRoute(path: '/settings', builder: SettingsScreen)` — authenticated-only (redirect to `/login` when unauthenticated, verified by router tests `unauthenticated user visiting /settings is redirected to /login`).
+- Logout does NOT delete theme: `SecureStorage.clearAuth()` (`secure_storage.dart:50` deletes only `auth_token` + `user_data`) + `AuthRepository.logout()` (`auth_repository.dart:48`) calls `clearAuth` instead of `deleteAll`; tested via `auth_repository_test.dart:120` (`clearAuthCalled`) and integration test.
+- No notification settings added — correctly excluded as not in approved scope.
+- Tests added: `test/core/theme/app_theme_test.dart` (light/dark/structure) + `test/features/settings/settings_screen_test.dart` (6 cases) + router int tests for `/settings`. Updated: `sectors` model nil handling (`business_sector.dart:30` `previousSector` now `BusinessSector?`), corresponding provider/repository test adjustments (`!`).
+
+### Ancillary Fixes Included in This Working Tree (Verified, No Behavior Change Beyond Fix)
+
+- `flutter_app/android/app/src/main/AndroidManifest.xml:5` — add `<uses-permission android:name="android.permission.INTERNET"/>` (release builds need it; debug/profile already inherit) + `android:usesCleartextTraffic="true"` for local backend URL.
+- `flutter_app/lib/features/sectors/data/models/business_sector.dart:30` — `SectorSwitchResult.previousSector` is now nullable (`BusinessSector?`) with `fromJson` null guard, matching the first-switch `null` previous.
+
+## 2026-08-25
+
+### AS-IS Process Clarification: Employee / Manager Expense Recording
+New authoritative clarification received regarding the CURRENT BUSINESS PROCESS (AS-IS):
+- Employees / Event Staff ARE allowed to manually record expense details in the current manual process (e.g., purchasing supplies and recording expense details via notes, receipts, Messenger).
+- Manager / Head can perform the same expense-recording activity when assigned, AND additionally:
+  1. Supervises Employees / Event Staff
+  2. Reviews financial reports within their assigned business-sector range
+
+**Critical distinction preserved:** This clarification applies to the AS-IS manual process only. It does NOT alter the proposed-system RBAC. The proposed system's "Record Expenses" use case remains restricted to Business Owner and Event Manager.
+
+Files updated: `project-memory.md`, `CHANGELOG.md`, `client-interview.md`
+
 ## 2026-07-29
 
 ### Requirements Traceability Matrix (RTM) Created

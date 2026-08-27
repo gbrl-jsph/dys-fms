@@ -73,8 +73,8 @@ void main() {
       expect(state.isSwitching, isFalse);
       expect(state.error, isNull);
       expect(result, isNotNull);
-      expect(result!.previousSector.id, 1);
-      expect(result.previousSector.name, 'DYS Events');
+      expect(result!.previousSector!.id, 1);
+      expect(result.previousSector!.name, 'DYS Events');
       expect(result.currentSector.id, 2);
       expect(result.currentSector.name, 'B&DYS');
     },

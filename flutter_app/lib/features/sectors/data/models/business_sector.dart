@@ -27,20 +27,22 @@ class BusinessSector {
 /// can synchronize its sector context (FR-008).
 class SectorSwitchResult {
   const SectorSwitchResult({
-    required this.previousSector,
+    this.previousSector,
     required this.currentSector,
   });
 
   factory SectorSwitchResult.fromJson(Map<String, dynamic> json) =>
       SectorSwitchResult(
-        previousSector: BusinessSector.fromJson(
-          json['previous_sector'] as Map<String, dynamic>,
-        ),
+        previousSector: json['previous_sector'] == null
+            ? null
+            : BusinessSector.fromJson(
+                json['previous_sector'] as Map<String, dynamic>,
+              ),
         currentSector: BusinessSector.fromJson(
           json['current_sector'] as Map<String, dynamic>,
         ),
       );
 
-  final BusinessSector previousSector;
+  final BusinessSector? previousSector;
   final BusinessSector currentSector;
 }

@@ -34,6 +34,10 @@ List<ExpenseRecord> buildExpensesList() => [
 class FakeExpensesRepository implements ExpensesRepository {
   Future<List<ExpenseRecord>> Function(int? sectorId)? onGetExpenses;
   Future<ExpenseRecord> Function(SaveExpenseRequest request)? onRecordExpense;
+  Future<ExpenseRecord> Function(int id, SaveExpenseRequest request)? onUpdateExpense;
+  Future<void> Function(int id)? onDeleteExpense;
+  Future<List<ExpenseRecord>> Function(int? sectorId)? onSearchExpenses;
+  Future<ExpenseRecord> Function(int id)? onGetExpense;
 
   @override
   late final Dio dio = Dio();
@@ -45,4 +49,27 @@ class FakeExpensesRepository implements ExpensesRepository {
   @override
   Future<ExpenseRecord> recordExpense(SaveExpenseRequest request) =>
       onRecordExpense!(request);
+
+  @override
+  Future<ExpenseRecord> updateExpense(int id, SaveExpenseRequest request) =>
+      onUpdateExpense != null ? onUpdateExpense!(id, request) : throw UnimplementedError();
+
+  @override
+  Future<void> deleteExpense(int id) =>
+      onDeleteExpense != null ? onDeleteExpense!(id) : throw UnimplementedError();
+
+  @override
+  Future<List<ExpenseRecord>> searchExpenses({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) =>
+      onSearchExpenses != null ? onSearchExpenses!(sectorId) : getExpenses(sectorId: sectorId);
+
+  @override
+  Future<ExpenseRecord> getExpense(int id) =>
+      onGetExpense != null ? onGetExpense!(id) : throw UnimplementedError();
 }

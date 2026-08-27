@@ -44,22 +44,32 @@ class ExpensesScreen extends StatefulWidget {
 class _ExpensesScreenState extends State<ExpensesScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   int? _selectedSectorId;
   int? _syncedSectorId;
   String? _amountError;
   String? _sectorError;
+  String _searchQuery = '';
+  ExpenseRecord? _editingRecord;
+  DateTime? _editingRecordedAt;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadExpenses());
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
   }
 
   @override
   void dispose() {
     _amountController.dispose();
     _descriptionController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -122,17 +132,220 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       amount: double.parse(_amountController.text.trim()),
       description: _descriptionController.text.trim(),
       sectorId: isBusinessOwner ? _selectedSectorId : null,
+      recordedAt: _editingRecord != null ? _editingRecordedAt : null,
     );
 
+    final int? editingId = _editingRecord?.id;
+    final int? sectorId = isBusinessOwner ? _selectedSectorId : null;
+
+    if (editingId != null) {
+      // Prevent editing payroll-generated expenses
+      if (_editingRecord?.payrollRecordId != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payroll-generated expenses cannot be edited/deleted.')),
+        );
+        return;
+      }
+      provider.updateExpense(editingId, request, sectorId: sectorId).then((_) {
+        if (!mounted) return;
+        if (provider.state.error == null) {
+          setState(() {
+            _editingRecord = null;
+            _editingRecordedAt = null;
+            _amountController.clear();
+            _descriptionController.clear();
+          });
+        }
+      });
+    } else {
+      setState(() {
+        _amountController.clear();
+        _descriptionController.clear();
+      });
+
+      provider.recordExpense(
+        request,
+        sectorId: sectorId,
+      );
+    }
+  }
+
+  void _startEdit(ExpenseRecord record) {
+    if (record.payrollRecordId != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payroll-generated expenses cannot be edited/deleted.')),
+      );
+      return;
+    }
     setState(() {
+      _editingRecord = record;
+      _amountController.text = record.amount.toString();
+      _descriptionController.text = record.description ?? '';
+      final bool isBusinessOwner = context.read<AuthProvider>().state.user?.isBusinessOwner ?? false;
+      if (isBusinessOwner) {
+        _selectedSectorId = record.sectorId;
+      }
+      _editingRecordedAt = record.recordedAt;
+      _amountError = null;
+      _sectorError = null;
+    });
+    context.read<ExpensesProvider>().clearSuccess();
+  }
+
+  void _cancelEdit() {
+    final AuthState auth = context.read<AuthProvider>().state;
+    final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
+    setState(() {
+      _editingRecord = null;
+      _editingRecordedAt = null;
       _amountController.clear();
       _descriptionController.clear();
+      if (isBusinessOwner) {
+        _selectedSectorId = sectorIdFor(auth);
+      }
+      _amountError = null;
+      _sectorError = null;
     });
+    context.read<ExpensesProvider>().clearSuccess();
+  }
 
-    provider.recordExpense(
-      request,
-      sectorId: isBusinessOwner ? _selectedSectorId : null,
+  Future<void> _pickDate() async {
+    final DateTime initial = _editingRecordedAt ?? DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
     );
+    if (picked != null) {
+      setState(() {
+        final DateTime current = _editingRecordedAt ?? DateTime.now();
+        _editingRecordedAt = DateTime(
+          picked.year,
+          picked.month,
+          picked.day,
+          current.hour,
+          current.minute,
+          current.second,
+        );
+      });
+    }
+  }
+
+  void _showExpenseDetails(ExpenseRecord record, bool isBusinessOwner) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final TextTheme textTheme = Theme.of(dialogContext).textTheme;
+        return AlertDialog(
+          title: const Text('Expense Details'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('ID: ${record.id}', style: textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Text(
+                  'Amount: ${Formatters.formatCurrency(record.amount)}',
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Text('Description: ${record.description ?? '—'}', style: textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Text('Date: ${Formatters.formatDate(record.recordedAt)}', style: textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Text('Sector: ${record.sectorName}', style: textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Text('Created by: ${record.recordedByName}', style: textTheme.bodyMedium),
+                const SizedBox(height: 8),
+                Text(
+                  'Created: ${record.createdAt != null ? Formatters.formatDate(record.createdAt!) : Formatters.formatDate(record.recordedAt)}',
+                  style: textTheme.bodyMedium,
+                ),
+                if (record.updatedAt != null) ...[
+                  const SizedBox(height: 8),
+                  Text('Updated: ${Formatters.formatDate(record.updatedAt!)}', style: textTheme.bodyMedium),
+                ] else ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Updated: ${record.createdAt != null ? Formatters.formatDate(record.createdAt!) : Formatters.formatDate(record.recordedAt)}',
+                    style: textTheme.bodyMedium,
+                  ),
+                ],
+                if (record.payrollRecordId != null) ...[
+                  const SizedBox(height: 8),
+                  Text('Payroll Record ID: ${record.payrollRecordId}', style: textTheme.bodySmall?.copyWith(color: AppColors.inkMuted)),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _startEdit(record);
+              },
+              child: const Text('Edit'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                _confirmDelete(record);
+              },
+              child: const Text('Delete'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(ExpenseRecord record) {
+    if (record.payrollRecordId != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payroll-generated expenses cannot be edited/deleted.')),
+      );
+      return;
+    }
+    final AuthState auth = context.read<AuthProvider>().state;
+    final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
+    final int? sectorId = isBusinessOwner ? _selectedSectorId : null;
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Expense'),
+          content: const Text('Are you sure you want to delete this expense?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                if (_editingRecord?.id == record.id) {
+                  _cancelEdit();
+                }
+                context.read<ExpensesProvider>().deleteExpense(record.id, sectorId: sectorId);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  List<ExpenseRecord> _filteredExpenses(List<ExpenseRecord> expenses) {
+    if (_searchQuery.isEmpty) return expenses;
+    final String query = _searchQuery.toLowerCase();
+    return expenses.where((e) => e.description?.toLowerCase().contains(query) ?? false).toList();
   }
 
   @override
@@ -142,6 +355,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     final ExpensesState state = expensesProvider.state;
     final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
     final bool isEventManager = auth.user?.isEventManager ?? false;
+    final bool isEditing = _editingRecord != null;
 
     // Keep the sector selector in sync after the Business Owner switches
     // the active sector (BR-38): the screen is kept alive in the shell,
@@ -161,6 +375,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
         expensesProvider.loadExpenses(sectorId: currentSectorId);
       });
     }
+
+    final List<ExpenseRecord> filteredExpenses = _filteredExpenses(state.expenses);
 
     return Scaffold(
       body: SafeArea(
@@ -183,6 +399,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               assignedSectorId: auth.user?.sectorId,
               selectedSectorId: _selectedSectorId,
               isSubmitting: state.isSubmitting,
+              isEditing: isEditing,
+              editingRecordedAt: _editingRecordedAt,
               amountController: _amountController,
               descriptionController: _descriptionController,
               amountError: _amountError,
@@ -193,10 +411,12 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                 }
               },
               onSectorChanged: _onSectorChanged,
+              onPickDate: _pickDate,
               onSave: () => _submitSave(
                 expensesProvider,
                 isBusinessOwner: isBusinessOwner,
               ),
+              onCancelEdit: _cancelEdit,
             ),
             if (state.successMessage != null) ...[
               const SizedBox(height: AppSpacing.sp3),
@@ -209,7 +429,19 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             const SizedBox(height: AppSpacing.sp4),
             const SectionLabel('Expense List'),
             const SizedBox(height: AppSpacing.sp2),
-            _ExpensesList(state: state, onRetry: _loadExpenses),
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: 'Search by description',
+                prefixIcon: Icon(Icons.search, size: 20),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sp2),
+            _ExpensesList(
+              state: state.copyWith(expenses: filteredExpenses),
+              onRetry: _loadExpenses,
+              onTap: (record) => _showExpenseDetails(record, isBusinessOwner),
+            ),
             const SizedBox(height: AppSpacing.sp3),
             Text(
               'Expense records are immutable after creation. Only the Business Owner and Event Managers can record expenses.',
@@ -232,13 +464,17 @@ class _RecordExpenseForm extends StatelessWidget {
     required this.assignedSectorId,
     required this.selectedSectorId,
     required this.isSubmitting,
+    required this.isEditing,
+    required this.editingRecordedAt,
     required this.amountController,
     required this.descriptionController,
     required this.amountError,
     required this.sectorError,
     required this.onAmountChanged,
     required this.onSectorChanged,
+    required this.onPickDate,
     required this.onSave,
+    required this.onCancelEdit,
   });
 
   final bool isBusinessOwner;
@@ -246,13 +482,17 @@ class _RecordExpenseForm extends StatelessWidget {
   final int? assignedSectorId;
   final int? selectedSectorId;
   final bool isSubmitting;
+  final bool isEditing;
+  final DateTime? editingRecordedAt;
   final TextEditingController amountController;
   final TextEditingController descriptionController;
   final String? amountError;
   final String? sectorError;
   final ValueChanged<String> onAmountChanged;
   final ValueChanged<int?> onSectorChanged;
+  final VoidCallback onPickDate;
   final VoidCallback onSave;
+  final VoidCallback onCancelEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +539,10 @@ class _RecordExpenseForm extends StatelessWidget {
             enabled: !isSubmitting,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             hintText: '0.00',
-            prefixIcon: const Icon(Icons.attach_money, size: 18),
+            prefixIcon: const Padding(
+              padding: EdgeInsetsDirectional.only(start: 12, end: 8),
+              child: Text('₱', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
             errorText: amountError,
             onChanged: onAmountChanged,
           ),
@@ -311,12 +554,45 @@ class _RecordExpenseForm extends StatelessWidget {
             hintText: 'Optional',
             onChanged: (_) {},
           ),
+          if (isEditing) ...[
+            const SizedBox(height: AppSpacing.sp4),
+            const AppFieldLabel('Date'),
+            InkWell(
+              onTap: isSubmitting ? null : onPickDate,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      editingRecordedAt != null
+                          ? Formatters.formatDate(editingRecordedAt!)
+                          : 'Select date',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const Icon(Icons.calendar_today_outlined, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sp3),
           LoadingButton(
-            label: 'Save Expense',
+            label: isEditing ? 'Update Expense' : 'Save Expense',
             loading: isSubmitting,
             onPressed: onSave,
           ),
+          if (isEditing) ...[
+            const SizedBox(height: AppSpacing.sp2),
+            OutlinedButton(
+              onPressed: isSubmitting ? null : onCancelEdit,
+              child: const Text('Cancel'),
+            ),
+          ],
         ],
       ),
     );
@@ -325,10 +601,11 @@ class _RecordExpenseForm extends StatelessWidget {
 
 /// Expense records list with loading / error / empty / data states.
 class _ExpensesList extends StatelessWidget {
-  const _ExpensesList({required this.state, required this.onRetry});
+  const _ExpensesList({required this.state, required this.onRetry, this.onTap});
 
   final ExpensesState state;
   final VoidCallback onRetry;
+  final ValueChanged<ExpenseRecord>? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -383,7 +660,7 @@ class _ExpensesList extends StatelessWidget {
           for (int i = 0; i < state.expenses.length; i++) ...[
             if (i > 0)
               Divider(height: 1, thickness: 1, color: AppColors.border),
-            _ExpenseRow(record: state.expenses[i]),
+            _ExpenseRow(record: state.expenses[i], onTap: onTap),
           ],
         ],
       ),
@@ -394,15 +671,16 @@ class _ExpensesList extends StatelessWidget {
 /// One expense record row: amount + description on the left,
 /// sector + recorder + date on the right.
 class _ExpenseRow extends StatelessWidget {
-  const _ExpenseRow({required this.record});
+  const _ExpenseRow({required this.record, this.onTap});
 
   final ExpenseRecord record;
+  final ValueChanged<ExpenseRecord>? onTap;
 
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
-    return Padding(
+    final Widget rowContent = Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sp3,
         vertical: AppSpacing.sp3,
@@ -452,5 +730,13 @@ class _ExpenseRow extends StatelessWidget {
         ],
       ),
     );
+
+    if (onTap != null) {
+      return InkWell(
+        onTap: () => onTap!(record),
+        child: rowContent,
+      );
+    }
+    return rowContent;
   }
 }

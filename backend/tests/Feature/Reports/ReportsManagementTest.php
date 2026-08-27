@@ -319,16 +319,11 @@ class ReportsManagementTest extends TestCase
     {
         $this->seedCrossSectorData();
 
-        $this->withHeader('Authorization', 'Bearer '.$this->authenticate('owner@dys.com'))
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->authenticate('owner@dys.com'))
             ->getJson('/api/reports?type=analytics')
             ->assertStatus(200)
             ->assertJson([
                 'data' => [
-                    'charts' => [
-                        'sales_trend' => [],
-                        'expense_breakdown' => [],
-                        'sector_comparison' => [],
-                    ],
                     'summary' => [
                         'total_sales' => 225000.0,
                         'total_expenses' => 117000.0,
@@ -337,6 +332,20 @@ class ReportsManagementTest extends TestCase
                 ],
                 'message' => 'Analytics report generated successfully.',
             ]);
+
+        $charts = $response->json('data.charts');
+        $this->assertIsArray($charts);
+        $this->assertArrayHasKey('sales_trend', $charts);
+        $this->assertArrayHasKey('expense_breakdown', $charts);
+        $this->assertArrayHasKey('sector_comparison', $charts);
+        // With seeded July data, sales_trend should have one month entry
+        $this->assertNotEmpty($charts['sales_trend']);
+        $this->assertEquals('2026-07', $charts['sales_trend'][0]['label']);
+        $this->assertEquals(225000.0, (float) $charts['sales_trend'][0]['total']);
+        $this->assertNotEmpty($charts['expense_breakdown']);
+        $this->assertEquals('2026-07', $charts['expense_breakdown'][0]['label']);
+        $this->assertEquals(117000.0, (float) $charts['expense_breakdown'][0]['total']);
+        $this->assertCount(2, $charts['sector_comparison']);
     }
 
     public function test_employee_is_forbidden_from_reports(): void

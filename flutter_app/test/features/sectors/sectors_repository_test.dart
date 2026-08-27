@@ -63,8 +63,8 @@ void main() {
     expect(captured?.path, '/business-sectors/switch');
     expect(captured?.method, 'POST');
     expect(captured?.data, {'sector_id': 2});
-    expect(result.previousSector.id, 1);
-    expect(result.previousSector.name, 'DYS Events');
+    expect(result.previousSector!.id, 1);
+    expect(result.previousSector!.name, 'DYS Events');
     expect(result.currentSector.id, 2);
     expect(result.currentSector.name, 'B&DYS');
   });

@@ -57,4 +57,62 @@ class AuthRepository extends Repository {
     if (userData == null) return null;
     return UserModel.fromJson(userData);
   }
+
+  Future<UserModel> updateProfile(String name) async {
+    final dynamic response = await dio.put<dynamic>(
+      ApiConfig.profileEndpoint,
+      data: {'name': name},
+    );
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    final UserModel updated = UserModel.fromJson(body['data'] as Map<String, dynamic>);
+    await _secureStorage.saveUserData({
+      'id': updated.id,
+      'name': updated.name,
+      'email': updated.email,
+      'role': updated.role,
+      'sector_id': updated.sectorId,
+      'account_status': updated.accountStatus,
+    });
+    return updated;
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    await dio.post<dynamic>(
+      ApiConfig.changePasswordEndpoint,
+      data: {
+        'current_password': currentPassword,
+        'new_password': newPassword,
+        'new_password_confirmation': newPasswordConfirmation,
+      },
+    );
+    await _secureStorage.clearAuth();
+  }
+
+  Future<void> forgotPassword(String email) async {
+    await dio.post<dynamic>(
+      ApiConfig.forgotPasswordEndpoint,
+      data: {'email': email},
+    );
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    await dio.post<dynamic>(
+      ApiConfig.resetPasswordEndpoint,
+      data: {
+        'email': email,
+        'token': token,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+    );
+  }
 }

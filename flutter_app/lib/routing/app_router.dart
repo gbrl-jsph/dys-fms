@@ -2,13 +2,17 @@ import 'package:go_router/go_router.dart';
 
 import '../core/widgets/app_shell.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
+import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
+import '../features/auth/presentation/screens/reset_password_screen.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/expenses/presentation/screens/expenses_screen.dart';
 import '../features/payroll/presentation/screens/payroll_screen.dart';
 import '../features/reports/presentation/screens/reports_screen.dart';
 import '../features/sectors/presentation/screens/sector_switcher_screen.dart';
 import '../features/sales/presentation/screens/sales_screen.dart';
+import '../features/settings/presentation/screens/change_password_screen.dart';
+import '../features/settings/presentation/screens/profile_screen.dart';
 import '../features/settings/presentation/screens/settings_screen.dart';
 import '../features/users/presentation/screens/users_screen.dart';
 
@@ -33,15 +37,22 @@ class AppRouter {
       redirect: (context, state) {
         final bool isAuthenticated = authProvider.state.isAuthenticated;
         final bool isOnLogin = state.matchedLocation == '/login';
+        final bool isOnForgotPassword =
+            state.matchedLocation == '/forgot-password';
+        final bool isOnResetPassword =
+            state.matchedLocation == '/reset-password';
         final bool isBusinessOwner =
             authProvider.state.user?.isBusinessOwner ?? false;
         final bool isEventManager =
             authProvider.state.user?.isEventManager ?? false;
 
         if (!isAuthenticated) {
-          return isOnLogin ? null : '/login';
+          if (isOnLogin || isOnForgotPassword || isOnResetPassword) {
+            return null;
+          }
+          return '/login';
         }
-        if (isOnLogin) {
+        if (isOnLogin || isOnForgotPassword || isOnResetPassword) {
           return '/dashboard';
         }
         if (state.matchedLocation == '/users' && !isBusinessOwner) {
@@ -131,12 +142,28 @@ class AppRouter {
           ],
         ),
         GoRoute(
+          path: '/forgot-password',
+          builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        GoRoute(
+          path: '/reset-password',
+          builder: (context, state) => const ResetPasswordScreen(),
+        ),
+        GoRoute(
           path: '/sector-switcher',
           builder: (context, state) => const SectorSwitcherScreen(),
         ),
         GoRoute(
           path: '/settings',
           builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
+        ),
+        GoRoute(
+          path: '/change-password',
+          builder: (context, state) => const ChangePasswordScreen(),
         ),
       ],
     );

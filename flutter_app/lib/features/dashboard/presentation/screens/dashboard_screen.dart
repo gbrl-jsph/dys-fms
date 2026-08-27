@@ -172,8 +172,34 @@ class _AvatarMenu extends StatelessWidget {
         if (value == 'settings') {
           context.go('/settings');
         }
+        if (value == 'profile') {
+          context.go('/profile');
+        }
+        if (value == 'change_password') {
+          context.go('/change-password');
+        }
       },
       itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          value: 'profile',
+          child: const Row(
+            children: [
+              Icon(Icons.person_outline, size: 18),
+              SizedBox(width: AppSpacing.sp2),
+              Text('Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'change_password',
+          child: const Row(
+            children: [
+              Icon(Icons.lock_outline, size: 18),
+              SizedBox(width: AppSpacing.sp2),
+              Text('Change Password'),
+            ],
+          ),
+        ),
         PopupMenuItem<String>(
           value: 'settings',
           child: const Row(

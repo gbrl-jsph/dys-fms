@@ -42,7 +42,12 @@ void main() {
       expect(report.sectorId, 1);
       expect(report.sectorName, 'DYS Events');
       expect(report.isCrossSector, isFalse);
-      expect(report.hasCharts, isFalse);
+      expect(report.hasCharts, isTrue);
+      expect(report.salesTrend, isNotEmpty);
+      expect(report.expenseBreakdown, isNotEmpty);
+      expect(report.sectorComparison, isNotEmpty);
+      expect(report.salesTrend.first.label, '2026-07');
+      expect(report.salesTrend.first.total, 150000.00);
     },
   );
 

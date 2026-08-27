@@ -40,9 +40,9 @@ class ReportsService
             return [
                 'data' => [
                     'charts' => [
-                        'sales_trend' => [],
-                        'expense_breakdown' => [],
-                        'sector_comparison' => [],
+                        'sales_trend' => $this->salesTrend($sectorId, $dateFrom, $dateTo),
+                        'expense_breakdown' => $this->expenseBreakdown($sectorId, $dateFrom, $dateTo),
+                        'sector_comparison' => $this->sectorComparison($dateFrom, $dateTo),
                     ],
                     'summary' => $summary,
                 ],
@@ -51,14 +51,28 @@ class ReportsService
         }
 
         if ($user->role === 'Business Owner' && $sectorId === null) {
+            $crossData = $this->crossSectorReport($dateFrom, $dateTo);
+            $crossData['charts'] = [
+                'sales_trend' => $this->salesTrend(null, $dateFrom, $dateTo),
+                'expense_breakdown' => $this->expenseBreakdown(null, $dateFrom, $dateTo),
+                'sector_comparison' => $this->sectorComparison($dateFrom, $dateTo),
+            ];
+
             return [
-                'data' => $this->crossSectorReport($dateFrom, $dateTo),
+                'data' => $crossData,
                 'message' => 'Cross-sector report generated successfully.',
             ];
         }
 
+        $sectorData = $this->sectorReport($sectorId, $dateFrom, $dateTo);
+        $sectorData['charts'] = [
+            'sales_trend' => $this->salesTrend($sectorId, $dateFrom, $dateTo),
+            'expense_breakdown' => $this->expenseBreakdown($sectorId, $dateFrom, $dateTo),
+            'sector_comparison' => $this->sectorComparison($dateFrom, $dateTo, $sectorId),
+        ];
+
         return [
-            'data' => $this->sectorReport($sectorId, $dateFrom, $dateTo),
+            'data' => $sectorData,
             'message' => 'Report generated successfully.',
         ];
     }
@@ -179,5 +193,109 @@ class ReportsService
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
         ];
+    }
+
+    private function salesTrend(?int $sectorId, ?string $dateFrom, ?string $dateTo): array
+    {
+        $query = $this->salesQuery($dateFrom, $dateTo);
+        if ($sectorId !== null) {
+            $query->where('sector_id', $sectorId);
+        }
+
+        $records = $query->get(['amount', 'recorded_at']);
+
+        if ($records->isEmpty()) {
+            return [];
+        }
+
+        $grouped = $records->groupBy(function ($record) {
+            return \Carbon\Carbon::parse($record->recorded_at)->format('Y-m');
+        });
+
+        return $grouped->map(function ($group, string $period) {
+            return [
+                'label' => $period,
+                'total' => round((float) $group->sum('amount'), 2),
+            ];
+        })->sortBy('label')->values()->all();
+    }
+
+    private function expenseBreakdown(?int $sectorId, ?string $dateFrom, ?string $dateTo): array
+    {
+        $query = $this->expenseQuery($dateFrom, $dateTo);
+        if ($sectorId !== null) {
+            $query->where('sector_id', $sectorId);
+        }
+
+        $records = $query->get(['amount', 'recorded_at']);
+
+        if ($records->isEmpty()) {
+            return [];
+        }
+
+        $grouped = $records->groupBy(function ($record) {
+            return \Carbon\Carbon::parse($record->recorded_at)->format('Y-m');
+        });
+
+        return $grouped->map(function ($group, string $period) {
+            return [
+                'label' => $period,
+                'total' => round((float) $group->sum('amount'), 2),
+            ];
+        })->sortBy('label')->values()->all();
+    }
+
+    private function sectorComparison(?string $dateFrom, ?string $dateTo, ?int $singleSectorId = null): array
+    {
+        if ($singleSectorId !== null) {
+            $sector = BusinessSector::findOrFail($singleSectorId);
+            $sales = (float) $this->salesQuery($dateFrom, $dateTo)->where('sector_id', $singleSectorId)->sum('amount');
+            $expenses = (float) $this->expenseQuery($dateFrom, $dateTo)->where('sector_id', $singleSectorId)->sum('amount');
+
+            return [
+                [
+                    'id' => $sector->id,
+                    'name' => $sector->name,
+                    'total_sales' => $sales,
+                    'total_expenses' => $expenses,
+                    'net_balance' => round($sales - $expenses, 2),
+                ],
+            ];
+        }
+
+        $salesTotals = $this->salesQuery($dateFrom, $dateTo)
+            ->selectRaw('sector_id, SUM(amount) as total')
+            ->groupBy('sector_id')
+            ->pluck('total', 'sector_id');
+
+        $expenseTotals = $this->expenseQuery($dateFrom, $dateTo)
+            ->selectRaw('sector_id, SUM(amount) as total')
+            ->groupBy('sector_id')
+            ->pluck('total', 'sector_id');
+
+        $sectorIds = $salesTotals->keys()->merge($expenseTotals->keys())
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($sectorIds->isEmpty()) {
+            return [];
+        }
+
+        $sectorNames = BusinessSector::whereIn('id', $sectorIds)->pluck('name', 'id');
+
+        return $sectorIds->map(function (int $id) use ($salesTotals, $expenseTotals, $sectorNames) {
+            $sales = (float) ($salesTotals[$id] ?? 0);
+            $expenses = (float) ($expenseTotals[$id] ?? 0);
+
+            return [
+                'id' => $id,
+                'name' => $sectorNames[$id] ?? "Sector {$id}",
+                'total_sales' => $sales,
+                'total_expenses' => $expenses,
+                'net_balance' => round($sales - $expenses, 2),
+            ];
+        })->values()->all();
     }
 }

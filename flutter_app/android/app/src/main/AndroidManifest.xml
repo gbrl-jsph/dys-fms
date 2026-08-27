@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required so the release build can open network connections to the
+         DYS FMS backend API. (Debug and profile builds inherit this from
+         their own manifests but release does not merge those.) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="dys_fms"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

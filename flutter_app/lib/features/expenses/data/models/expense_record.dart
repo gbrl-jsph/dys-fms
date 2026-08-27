@@ -14,6 +14,8 @@ class ExpenseRecord {
     required this.sectorName,
     this.payrollRecordId,
     required this.recordedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory ExpenseRecord.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,12 @@ class ExpenseRecord {
       sectorName: sector['name'] as String,
       payrollRecordId: json['payroll_record_id'] as int?,
       recordedAt: DateTime.parse(json['recorded_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String)
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'] as String)
+          : null,
     );
   }
 
@@ -53,4 +61,8 @@ class ExpenseRecord {
 
   /// Server-assigned timestamp (`recorded_at`).
   final DateTime recordedAt;
+
+  /// Created / updated timestamps (may be null for legacy payloads).
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 }

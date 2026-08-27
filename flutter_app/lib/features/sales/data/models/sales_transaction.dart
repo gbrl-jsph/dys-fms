@@ -13,6 +13,8 @@ class SalesTransaction {
     required this.sectorId,
     required this.sectorName,
     required this.recordedAt,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory SalesTransaction.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,12 @@ class SalesTransaction {
       sectorId: sector['id'] as int,
       sectorName: sector['name'] as String,
       recordedAt: DateTime.parse(json['recorded_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'] as String)
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'] as String)
+          : null,
     );
   }
 
@@ -47,4 +55,8 @@ class SalesTransaction {
 
   /// Server-assigned timestamp (`recorded_at`).
   final DateTime recordedAt;
+
+  /// Created / updated timestamps (may be null for legacy payloads).
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 }

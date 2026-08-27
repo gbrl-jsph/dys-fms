@@ -44,6 +44,10 @@ class FakeAuthRepository implements AuthRepository {
   Future<void> Function()? onLogout;
   Future<bool> Function()? onIsAuthenticated;
   Future<UserModel?> Function()? onGetStoredUser;
+  Future<UserModel> Function(String name)? onUpdateProfile;
+  Future<void> Function(String currentPassword, String newPassword, String newPasswordConfirmation)? onChangePassword;
+  Future<void> Function(String email)? onForgotPassword;
+  Future<void> Function(String email, String token, String password, String passwordConfirmation)? onResetPassword;
 
   @override
   late final Dio dio = Dio();
@@ -60,4 +64,33 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<UserModel?> getStoredUser() => onGetStoredUser!();
+
+  @override
+  Future<UserModel> updateProfile(String name) =>
+      onUpdateProfile != null ? onUpdateProfile!(name) : throw UnimplementedError();
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) =>
+      onChangePassword != null
+          ? onChangePassword!(currentPassword, newPassword, newPasswordConfirmation)
+          : throw UnimplementedError();
+
+  @override
+  Future<void> forgotPassword(String email) =>
+      onForgotPassword != null ? onForgotPassword!(email) : throw UnimplementedError();
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) =>
+      onResetPassword != null
+          ? onResetPassword!(email, token, password, passwordConfirmation)
+          : throw UnimplementedError();
 }

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dys_fms/core/theme/app_theme.dart';
+import 'package:dys_fms/core/widgets/app_report_charts.dart';
 import 'package:dys_fms/features/auth/data/models/login_response.dart';
 import 'package:dys_fms/features/auth/data/models/user_model.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
@@ -87,7 +88,7 @@ void main() {
     expect(find.text('Sales graph placeholder'), findsNothing);
   });
 
-  testWidgets('generating a summary report shows the placeholders and the '
+  testWidgets('generating a summary report shows the charts and the '
       'financial summary', (WidgetTester tester) async {
     String? sentType;
     int? sentSector;
@@ -105,13 +106,13 @@ void main() {
 
     expect(sentType, 'summary');
     expect(sentSector, 1);
-    expect(find.text('Sales graph placeholder'), findsOneWidget);
-    expect(find.text('Expense chart placeholder'), findsOneWidget);
+    expect(find.byType(ReportBarChart), findsOneWidget);
+    expect(find.byType(ReportPieChart), findsOneWidget);
     expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
-    expect(find.text('₱150,000.00'), findsOneWidget);
-    expect(find.text('₱85,000.00'), findsOneWidget);
-    expect(find.text('₱65,000.00'), findsOneWidget);
-    expect(find.text('₱40,000.00'), findsOneWidget);
+    expect(find.text('₱150,000.00'), findsWidgets);
+    expect(find.text('₱85,000.00'), findsWidgets);
+    expect(find.text('₱65,000.00'), findsWidgets);
+    expect(find.text('₱40,000.00'), findsWidgets);
     expect(find.text('No report yet'), findsNothing);
   });
 
@@ -198,7 +199,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentType, 'sales');
-    expect(find.text('Sales graph placeholder'), findsOneWidget);
+    expect(find.byType(ReportBarChart), findsOneWidget);
   });
 
   testWidgets('the Owner can generate an expenses report', (
@@ -222,11 +223,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentType, 'expenses');
-    expect(find.text('Expense chart placeholder'), findsOneWidget);
+    expect(find.byType(ReportPieChart), findsOneWidget);
   });
 
   testWidgets('the Owner can generate an analytics report with the analytics '
-      'placeholders', (WidgetTester tester) async {
+      'charts', (WidgetTester tester) async {
     String? sentType;
     fakeReportsRepository.onGetReport =
         ({required type, dateFrom, dateTo, sectorId}) async {
@@ -245,11 +246,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentType, 'analytics');
-    expect(find.text('Sales trend placeholder'), findsOneWidget);
-    expect(find.text('Expense breakdown placeholder'), findsOneWidget);
-    expect(find.text('Sector comparison placeholder'), findsOneWidget);
-    expect(find.text('Sales graph placeholder'), findsNothing);
-    expect(find.text('₱225,000.00'), findsOneWidget);
+    expect(find.byType(ReportBarChart), findsOneWidget);
+    expect(find.byType(ReportPieChart), findsOneWidget);
+    expect(find.byType(ReportSectorChart), findsOneWidget);
+    expect(find.text('₱225,000.00'), findsWidgets);
   });
 
   testWidgets('the Event Manager has no Analytics option, no sector selector, '
@@ -286,7 +286,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(sentSector, isNull);
-    expect(find.text('₱150,000.00'), findsOneWidget);
+    expect(find.text('₱150,000.00'), findsWidgets);
   });
 
   testWidgets('shows the loading indicator while the report generates', (
@@ -325,7 +325,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(find.text('₱150,000.00'), findsOneWidget);
+    expect(find.text('₱150,000.00'), findsWidgets);
   });
 
   testWidgets('backend error is shown with a retry action', (
@@ -353,7 +353,7 @@ void main() {
     await tester.tap(find.text('Retry'));
     await tester.pumpAndSettle();
 
-    expect(find.text('₱150,000.00'), findsOneWidget);
+    expect(find.text('₱150,000.00'), findsWidgets);
     expect(find.text('Something went wrong. Please try again.'), findsNothing);
   });
 

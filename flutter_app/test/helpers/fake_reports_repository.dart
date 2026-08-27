@@ -13,6 +13,23 @@ const Map<String, dynamic> summaryReportJson = {
     'payroll_expenses': 40000.00,
   },
   'period': {'date_from': '2026-01-01', 'date_to': '2026-07-28'},
+  'charts': {
+    'sales_trend': [
+      {'label': '2026-07', 'total': 150000.00},
+    ],
+    'expense_breakdown': [
+      {'label': '2026-07', 'total': 85000.00},
+    ],
+    'sector_comparison': [
+      {
+        'id': 1,
+        'name': 'DYS Events',
+        'total_sales': 150000.00,
+        'total_expenses': 85000.00,
+        'net_balance': 65000.00,
+      },
+    ],
+  },
 };
 
 /// Sample cross-sector payload (Owner without sector_id).
@@ -40,14 +57,57 @@ const Map<String, dynamic> crossSectorReportJson = {
     'net_balance': 108000.00,
   },
   'period': {'date_from': '2026-01-01', 'date_to': '2026-07-28'},
+  'charts': {
+    'sales_trend': [
+      {'label': '2026-07', 'total': 225000.00},
+    ],
+    'expense_breakdown': [
+      {'label': '2026-07', 'total': 117000.00},
+    ],
+    'sector_comparison': [
+      {
+        'id': 1,
+        'name': 'DYS Events',
+        'total_sales': 150000.00,
+        'total_expenses': 85000.00,
+        'net_balance': 65000.00,
+      },
+      {
+        'id': 2,
+        'name': 'B&DYS',
+        'total_sales': 75000.00,
+        'total_expenses': 32000.00,
+        'net_balance': 43000.00,
+      },
+    ],
+  },
 };
 
 /// Sample analytics payload (Business Owner only).
 const Map<String, dynamic> analyticsReportJson = {
   'charts': {
-    'sales_trend': [],
-    'expense_breakdown': [],
-    'sector_comparison': [],
+    'sales_trend': [
+      {'label': '2026-07', 'total': 225000.00},
+    ],
+    'expense_breakdown': [
+      {'label': '2026-07', 'total': 117000.00},
+    ],
+    'sector_comparison': [
+      {
+        'id': 1,
+        'name': 'DYS Events',
+        'total_sales': 150000.00,
+        'total_expenses': 85000.00,
+        'net_balance': 65000.00,
+      },
+      {
+        'id': 2,
+        'name': 'B&DYS',
+        'total_sales': 75000.00,
+        'total_expenses': 32000.00,
+        'net_balance': 43000.00,
+      },
+    ],
   },
   'summary': {
     'total_sales': 225000.00,

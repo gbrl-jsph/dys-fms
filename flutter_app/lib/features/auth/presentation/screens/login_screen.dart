@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -118,7 +119,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
                 onSubmitted: (_) => _submit(),
               ),
-              const SizedBox(height: AppSpacing.sp4),
+              const SizedBox(height: AppSpacing.sp2),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: isLoading ? null : () => context.push('/forgot-password'),
+                  child: const Text('Forgot Password?'),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.sp2),
               LoadingButton(
                 label: 'Log In',
                 loading: isLoading,

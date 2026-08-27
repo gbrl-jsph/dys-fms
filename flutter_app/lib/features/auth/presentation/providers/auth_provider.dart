@@ -65,6 +65,85 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfile(String name) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+
+    try {
+      final updated = await _authRepository.updateProfile(name);
+      _state = _state.copyWith(isLoading: false, user: updated);
+    } catch (error) {
+      _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+
+    try {
+      await _authRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        newPasswordConfirmation: newPasswordConfirmation,
+      );
+      _state = const AuthState();
+      notifyListeners();
+    } catch (error) {
+      _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+
+    try {
+      await _authRepository.forgotPassword(email);
+      _state = _state.copyWith(isLoading: false);
+    } catch (error) {
+      _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+      notifyListeners();
+      rethrow;
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+
+    try {
+      await _authRepository.resetPassword(
+        email: email,
+        token: token,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
+      _state = _state.copyWith(isLoading: false);
+    } catch (error) {
+      _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+      notifyListeners();
+      rethrow;
+    }
+
+    notifyListeners();
+  }
+
   /// Updates the client-side sector context after a successful sector
   /// switch (FR-008).
   ///

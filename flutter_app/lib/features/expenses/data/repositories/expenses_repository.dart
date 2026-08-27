@@ -43,4 +43,51 @@ class ExpensesRepository extends Repository {
 
     return ExpenseRecord.fromJson(body['data'] as Map<String, dynamic>);
   }
+
+  Future<ExpenseRecord> getExpense(int id) async {
+    final dynamic response = await dio.get<dynamic>(ApiConfig.expenseEndpoint(id));
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    return ExpenseRecord.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  Future<ExpenseRecord> updateExpense(int id, SaveExpenseRequest request) async {
+    final dynamic response = await dio.put<dynamic>(
+      ApiConfig.expenseEndpoint(id),
+      data: request.toJson(),
+    );
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    return ExpenseRecord.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  Future<void> deleteExpense(int id) async {
+    await dio.delete<dynamic>(ApiConfig.expenseEndpoint(id));
+  }
+
+  Future<List<ExpenseRecord>> searchExpenses({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) async {
+    final dynamic response = await dio.get<dynamic>(
+      ApiConfig.expensesEndpoint,
+      queryParameters: {
+        'sector_id': ?sectorId,
+        'search': ?search,
+        'date_from': ?dateFrom,
+        'date_to': ?dateTo,
+        'amount_min': ?amountMin,
+        'amount_max': ?amountMax,
+      },
+    );
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    final List<dynamic> list = body['data'] as List<dynamic>;
+    return list
+        .map(
+          (dynamic item) => ExpenseRecord.fromJson(item as Map<String, dynamic>),
+        )
+        .toList();
+  }
 }

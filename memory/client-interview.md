@@ -23,10 +23,13 @@ The client requires a centralized system to manage financial transactions across
 - Interactive visual analytics dashboard
 - Sales and expense recording
 
-## Business Processes
+## Business Processes (AS-IS — Current Manual Process)
 - Business Owner oversees all sectors
-- Event Manager handles day-to-day operations within assigned sectors
-- Employees/Event Staff perform operational tasks with limited system access
+- Manager / Head handles day-to-day operations within assigned sectors; supervises Employees / Event Staff; reviews financial reports within their assigned sector range
+- Employees / Event Staff perform operational tasks including manually recording expense details when assigned (e.g., purchasing supplies, recording via notes, receipts, Messenger)
+- Event Manager can perform the same expense-recording activity as Employees when assigned
+
+*Note (2026-08-25): This AS-IS process description was clarified by authoritative confirmation. The proposed digital system's RBAC does not automatically mirror all AS-IS activities — "Record Expenses" in the proposed system remains restricted to Business Owner and Event Manager.*
 
 ## Important Notes
 - The system must support multiple business sectors under a single organization

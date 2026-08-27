@@ -32,13 +32,15 @@ class AuthState {
   /// Error message to display.
   final String? error;
 
+  static const Object _sentinel = Object();
+
   AuthState copyWith({
     bool? isLoading,
     bool? isAuthenticated,
     UserModel? user,
     String? token,
     DefaultSector? defaultSector,
-    String? error,
+    Object? error = _sentinel,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
@@ -46,7 +48,7 @@ class AuthState {
       user: user ?? this.user,
       token: token ?? this.token,
       defaultSector: defaultSector ?? this.defaultSector,
-      error: error ?? this.error,
+      error: identical(error, _sentinel) ? this.error : error as String?,
     );
   }
 }

@@ -6,6 +6,7 @@ use App\Models\BusinessSector;
 use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -469,5 +470,85 @@ class ExpenseManagementTest extends TestCase
             ]);
 
         $this->assertDatabaseCount('expenses', 0);
+    }
+
+    public function test_client_supplied_user_id_and_recorded_at_are_ignored(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/expenses', [
+                'amount' => 2500.00,
+                'description' => 'Spoof attempt',
+                'sector_id' => $this->eventsSector->id,
+                'user_id' => $this->maria->id,
+                'recorded_at' => '1999-01-01 00:00:00',
+            ])
+            ->assertStatus(201)
+            ->assertJson([
+                'data' => [
+                    'recorded_by' => [
+                        'id' => $this->owner->id,
+                        'name' => 'Juan Dela Cruz',
+                    ],
+                ],
+            ]);
+
+        // user_id always comes from the authenticated user.
+        $this->assertDatabaseHas('expenses', [
+            'id' => $response->json('data.id'),
+            'user_id' => $this->owner->id,
+        ]);
+
+        // recorded_at is generated server-side; the client value is ignored.
+        $isRecent = $this->app['db']->selectOne(
+            'SELECT ABS(TIMESTAMPDIFF(SECOND, recorded_at, NOW())) < 120 AS recent FROM expenses WHERE id = ?',
+            [$response->json('data.id')]
+        );
+        $this->assertSame(1, (int) $isRecent->recent,
+            'recorded_at must be set server-side to the current timestamp'
+        );
+    }
+
+    public function test_client_cannot_assign_payroll_record_id_on_manual_expense(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/expenses', [
+                'amount' => 1200.00,
+                'description' => 'Manual entry',
+                'sector_id' => $this->eventsSector->id,
+                'payroll_record_id' => 999,
+            ])
+            ->assertStatus(201)
+            ->assertJson([
+                'data' => [
+                    'payroll_record_id' => null,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('expenses', [
+            'user_id' => $this->owner->id,
+            'sector_id' => $this->eventsSector->id,
+            'amount' => 1200.00,
+            'description' => 'Manual entry',
+            'payroll_record_id' => null,
+        ]);
+    }
+
+    public function test_only_get_and_post_expense_routes_exist(): void
+    {
+        $expenseRoutes = collect($this->app['router']->getRoutes())
+            ->filter(fn (Route $route) => str_starts_with((string) $route->uri, 'api/expenses'))
+            ->map(fn (Route $route) => $route->uri.':'.implode(',', $route->methods()))
+            ->values()
+            ->all();
+
+        // Expenses now support soft-delete edit/delete (see audit requirement).
+        $this->assertEquals([
+            'api/expenses:GET,HEAD',
+            'api/expenses:POST',
+            'api/expenses/{expense}:GET,HEAD',
+            'api/expenses/{expense}:PUT',
+            'api/expenses/{expense}:PATCH',
+            'api/expenses/{expense}:DELETE',
+        ], $expenseRoutes);
     }
 }

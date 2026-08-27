@@ -43,4 +43,47 @@ class SalesRepository extends Repository {
 
     return SalesTransaction.fromJson(body['data'] as Map<String, dynamic>);
   }
+
+  Future<SalesTransaction> getSale(int id) async {
+    final dynamic response = await dio.get<dynamic>(ApiConfig.saleEndpoint(id));
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    return SalesTransaction.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  Future<SalesTransaction> updateSale(int id, SaveSaleRequest request) async {
+    final dynamic response = await dio.put<dynamic>(
+      ApiConfig.saleEndpoint(id),
+      data: request.toJson(),
+    );
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    return SalesTransaction.fromJson(body['data'] as Map<String, dynamic>);
+  }
+
+  Future<void> deleteSale(int id) async {
+    await dio.delete<dynamic>(ApiConfig.saleEndpoint(id));
+  }
+
+  Future<List<SalesTransaction>> searchSales({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) async {
+    final dynamic response = await dio.get<dynamic>(
+      ApiConfig.salesEndpoint,
+      queryParameters: {
+        'sector_id': ?sectorId,
+        'search': ?search,
+        'date_from': ?dateFrom,
+        'date_to': ?dateTo,
+        'amount_min': ?amountMin,
+        'amount_max': ?amountMax,
+      },
+    );
+    final Map<String, dynamic> body = response.data as Map<String, dynamic>;
+    final List<dynamic> list = body['data'] as List<dynamic>;
+    return list.map((dynamic item) => SalesTransaction.fromJson(item as Map<String, dynamic>)).toList();
+  }
 }

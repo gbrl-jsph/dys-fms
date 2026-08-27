@@ -8,10 +8,10 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/business_sectors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/sector_context.dart';
-import '../../../../core/widgets/app_chart_placeholder.dart';
 import '../../../../core/widgets/app_empty_state.dart';
 import '../../../../core/widgets/app_error_container.dart';
 import '../../../../core/widgets/app_field_label.dart';
+import '../../../../core/widgets/app_report_charts.dart';
 import '../../../../core/widgets/app_screen_header.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/loading_button.dart';
@@ -364,9 +364,10 @@ class _ReportForm extends StatelessWidget {
 
 /// Report output area: loading / error / empty / generated states.
 ///
-/// Charts are wireframe placeholders only (no chart rendering); the
-/// analytics report type swaps the Sales/Expense placeholders for the
-/// three analytics chart placeholders.
+/// Real charts are rendered from [ReportData] — sales trend (bar),
+/// expense breakdown (pie/donut), and sector comparison (bar). Empty
+/// datasets show an inline "No data to display" chart container
+/// rather than crashing or showing stale data.
 class _ReportContent extends StatelessWidget {
   const _ReportContent({
     required this.state,
@@ -426,38 +427,31 @@ class _ReportContent extends StatelessWidget {
         if (isAnalytics) ...[
           const SectionLabel('Sales Trend'),
           const SizedBox(height: AppSpacing.sp2),
-          const AppChartPlaceholder(
-            title: 'Sales trend placeholder',
-            subtitle: 'Line / bar chart',
+          ReportBarChart(
+            points: report.salesTrend,
+            title: 'Sales Trend',
+            barColor: AppColors.primary,
           ),
           const SizedBox(height: AppSpacing.sp4),
           const SectionLabel('Expense Breakdown'),
           const SizedBox(height: AppSpacing.sp2),
-          const AppChartPlaceholder(
-            title: 'Expense breakdown placeholder',
-            subtitle: 'Pie / donut chart',
-          ),
+          ReportPieChart(points: report.expenseBreakdown),
           const SizedBox(height: AppSpacing.sp4),
           const SectionLabel('Sector Comparison'),
           const SizedBox(height: AppSpacing.sp2),
-          const AppChartPlaceholder(
-            title: 'Sector comparison placeholder',
-            subtitle: 'Bar chart',
-          ),
+          ReportSectorChart(sectors: report.sectorComparison),
         ] else ...[
           const SectionLabel('Sales Graph'),
           const SizedBox(height: AppSpacing.sp2),
-          const AppChartPlaceholder(
-            title: 'Sales graph placeholder',
-            subtitle: 'Line / bar chart',
+          ReportBarChart(
+            points: report.salesTrend,
+            title: 'Sales Graph',
+            barColor: AppColors.primary,
           ),
           const SizedBox(height: AppSpacing.sp4),
           const SectionLabel('Expense Chart'),
           const SizedBox(height: AppSpacing.sp2),
-          const AppChartPlaceholder(
-            title: 'Expense chart placeholder',
-            subtitle: 'Pie / donut chart',
-          ),
+          ReportPieChart(points: report.expenseBreakdown),
         ],
         const SizedBox(height: AppSpacing.sp4),
         const SectionLabel('Financial Summary'),

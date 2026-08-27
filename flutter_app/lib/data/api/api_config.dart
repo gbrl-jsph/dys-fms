@@ -8,7 +8,9 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Base URL for all API requests (dev default per Phase 1 Implementation Plan §4.2).
+  /// Base URL for all API requests (QA — phone on same Wi-Fi as dev PC).
+  /// Must be http://192.168.1.34:8000/api with `php artisan serve --host=0.0.0.0`
+  /// because 127.0.0.1 on phone is the phone itself. See DEPLOYMENT.md.
   static const String baseUrl = 'http://192.168.1.34:8000/api';
 
   /// Connection and receive timeout for all HTTP requests (30 seconds).
@@ -40,8 +42,20 @@ class ApiConfig {
   /// GET /api/sales, POST /api/sales — list and record sales transactions.
   static const String salesEndpoint = '/sales';
 
+  /// GET /api/sales/{id}, PUT /api/sales/{id}, DELETE /api/sales/{id}
+  static String saleEndpoint(int id) => '/sales/$id';
+
   /// GET /api/expenses, POST /api/expenses — list and record expenses.
   static const String expensesEndpoint = '/expenses';
+
+  /// GET /api/expenses/{id}, PUT /api/expenses/{id}, DELETE /api/expenses/{id}
+  static String expenseEndpoint(int id) => '/expenses/$id';
+
+  /// GET /api/profile, PUT /api/profile, POST /api/change-password
+  static const String profileEndpoint = '/profile';
+  static const String changePasswordEndpoint = '/change-password';
+  static const String forgotPasswordEndpoint = '/forgot-password';
+  static const String resetPasswordEndpoint = '/reset-password';
 
   /// GET /api/payroll, POST /api/payroll — list payroll records and
   /// calculate/save payroll.

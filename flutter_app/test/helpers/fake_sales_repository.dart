@@ -32,6 +32,10 @@ List<SalesTransaction> buildSalesList() => [
 class FakeSalesRepository implements SalesRepository {
   Future<List<SalesTransaction>> Function(int? sectorId)? onGetSales;
   Future<SalesTransaction> Function(SaveSaleRequest request)? onRecordSale;
+  Future<SalesTransaction> Function(int id, SaveSaleRequest request)? onUpdateSale;
+  Future<void> Function(int id)? onDeleteSale;
+  Future<List<SalesTransaction>> Function(int? sectorId)? onSearchSales;
+  Future<SalesTransaction> Function(int id)? onGetSale;
 
   @override
   late final Dio dio = Dio();
@@ -43,4 +47,27 @@ class FakeSalesRepository implements SalesRepository {
   @override
   Future<SalesTransaction> recordSale(SaveSaleRequest request) =>
       onRecordSale!(request);
+
+  @override
+  Future<SalesTransaction> updateSale(int id, SaveSaleRequest request) =>
+      onUpdateSale != null ? onUpdateSale!(id, request) : throw UnimplementedError();
+
+  @override
+  Future<void> deleteSale(int id) =>
+      onDeleteSale != null ? onDeleteSale!(id) : throw UnimplementedError();
+
+  @override
+  Future<List<SalesTransaction>> searchSales({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) =>
+      onSearchSales != null ? onSearchSales!(sectorId) : getSales(sectorId: sectorId);
+
+  @override
+  Future<SalesTransaction> getSale(int id) =>
+      onGetSale != null ? onGetSale!(id) : throw UnimplementedError();
 }

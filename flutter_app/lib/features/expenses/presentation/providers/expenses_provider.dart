@@ -28,16 +28,91 @@ class ExpensesProvider extends ChangeNotifier {
   /// GET /api/expenses — load expense records for the current sector
   /// context. [sectorId] is the Business Owner's selected sector; it is
   /// null for the Event Manager (server-scoped to the assigned sector).
-  Future<void> loadExpenses({int? sectorId}) async {
+  Future<void> loadExpenses({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) async {
     _state = _state.copyWith(isLoading: true, error: null);
     notifyListeners();
 
     try {
       final List<ExpenseRecord> expenses = await _expensesRepository
           .getExpenses(sectorId: sectorId);
+      List<ExpenseRecord> filtered = expenses;
+      if (search != null && search.isNotEmpty) {
+        filtered = filtered
+            .where(
+              (e) => e.description?.toLowerCase().contains(search.toLowerCase()) ?? false,
+            )
+            .toList();
+      }
+      _state = _state.copyWith(isLoading: false, expenses: filtered);
+    } catch (error) {
+      _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> searchExpenses({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+
+    try {
+      final List<ExpenseRecord> expenses = await _expensesRepository.searchExpenses(
+        sectorId: sectorId,
+        search: search,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        amountMin: amountMin,
+        amountMax: amountMax,
+      );
       _state = _state.copyWith(isLoading: false, expenses: expenses);
     } catch (error) {
       _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> updateExpense(int id, SaveExpenseRequest request, {int? sectorId}) async {
+    _state = _state.copyWith(isSubmitting: true, error: null, successMessage: null);
+    notifyListeners();
+
+    try {
+      await _expensesRepository.updateExpense(id, request);
+      final List<ExpenseRecord> expenses = await _expensesRepository.getExpenses(sectorId: sectorId);
+      _state = _state.copyWith(isSubmitting: false, expenses: expenses, successMessage: 'Expense updated successfully.');
+      _financialEvents?.notifyDataChanged();
+    } catch (error) {
+      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> deleteExpense(int id, {int? sectorId}) async {
+    _state = _state.copyWith(isSubmitting: true, error: null, successMessage: null);
+    notifyListeners();
+
+    try {
+      await _expensesRepository.deleteExpense(id);
+      final List<ExpenseRecord> expenses = await _expensesRepository.getExpenses(sectorId: sectorId);
+      _state = _state.copyWith(isSubmitting: false, expenses: expenses, successMessage: 'Expense deleted successfully.');
+      _financialEvents?.notifyDataChanged();
+    } catch (error) {
+      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
     }
 
     notifyListeners();

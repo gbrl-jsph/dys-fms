@@ -28,13 +28,54 @@ class SalesProvider extends ChangeNotifier {
   /// GET /api/sales — load sales transactions for the current sector
   /// context. [sectorId] is the Business Owner's selected sector; it is
   /// null for the Event Manager (server-scoped to the assigned sector).
-  Future<void> loadSales({int? sectorId}) async {
+  Future<void> loadSales({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) async {
     _state = _state.copyWith(isLoading: true, error: null);
     notifyListeners();
 
     try {
       final List<SalesTransaction> sales = await _salesRepository.getSales(
         sectorId: sectorId,
+      );
+      // Client-side filtering for search/date/amount when server doesn't support it
+      // (server now supports it, but we keep client-side as fallback for empty search)
+      List<SalesTransaction> filtered = sales;
+      if (search != null && search.isNotEmpty) {
+        filtered = filtered.where((s) => s.description?.toLowerCase().contains(search.toLowerCase()) ?? false).toList();
+      }
+      _state = _state.copyWith(isLoading: false, sales: filtered);
+    } catch (error) {
+      _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> searchSales({
+    int? sectorId,
+    String? search,
+    String? dateFrom,
+    String? dateTo,
+    double? amountMin,
+    double? amountMax,
+  }) async {
+    _state = _state.copyWith(isLoading: true, error: null);
+    notifyListeners();
+
+    try {
+      final List<SalesTransaction> sales = await _salesRepository.searchSales(
+        sectorId: sectorId,
+        search: search,
+        dateFrom: dateFrom,
+        dateTo: dateTo,
+        amountMin: amountMin,
+        amountMax: amountMax,
       );
       _state = _state.copyWith(isLoading: false, sales: sales);
     } catch (error) {
@@ -69,6 +110,38 @@ class SalesProvider extends ChangeNotifier {
         isSubmitting: false,
         error: apiErrorMessage(error),
       );
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> updateSale(int id, SaveSaleRequest request, {int? sectorId}) async {
+    _state = _state.copyWith(isSubmitting: true, error: null, successMessage: null);
+    notifyListeners();
+
+    try {
+      await _salesRepository.updateSale(id, request);
+      final List<SalesTransaction> sales = await _salesRepository.getSales(sectorId: sectorId);
+      _state = _state.copyWith(isSubmitting: false, sales: sales, successMessage: 'Sale updated successfully.');
+      _financialEvents?.notifyDataChanged();
+    } catch (error) {
+      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> deleteSale(int id, {int? sectorId}) async {
+    _state = _state.copyWith(isSubmitting: true, error: null, successMessage: null);
+    notifyListeners();
+
+    try {
+      await _salesRepository.deleteSale(id);
+      final List<SalesTransaction> sales = await _salesRepository.getSales(sectorId: sectorId);
+      _state = _state.copyWith(isSubmitting: false, sales: sales, successMessage: 'Sale deleted successfully.');
+      _financialEvents?.notifyDataChanged();
+    } catch (error) {
+      _state = _state.copyWith(isSubmitting: false, error: apiErrorMessage(error));
     }
 
     notifyListeners();

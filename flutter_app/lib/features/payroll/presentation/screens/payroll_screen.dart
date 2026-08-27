@@ -379,7 +379,10 @@ class _CalculatePayrollForm extends StatelessWidget {
             enabled: !isSubmitting,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             hintText: '0.00',
-            prefixIcon: const Icon(Icons.attach_money, size: 18),
+            prefixIcon: const Padding(
+              padding: EdgeInsetsDirectional.only(start: 12, end: 8),
+              child: Text('₱', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
             errorText: rateError,
             onChanged: onRateChanged,
           ),
