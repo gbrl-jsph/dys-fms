@@ -40,7 +40,7 @@ fi
 
 php artisan config:cache || true
 php artisan route:cache || true
-php artisan view:cache || true
+# view:cache removed — API-only backend has no Blade views (causes "View path not found" 500 on /up)
 
 # Permissions again (volume mounts may reset)
 chown -R www-data:www-data storage bootstrap/cache || true
