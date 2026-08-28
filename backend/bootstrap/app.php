@@ -9,11 +9,15 @@ use App\Http\Middleware\EnsureSectorAccess;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         api: __DIR__.'/../routes/api.php',
-        health: '/up',
+        health: null,
+        then: function () {
+            Route::get('/up', fn () => response()->json(['status' => 'up']));
+        },
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
