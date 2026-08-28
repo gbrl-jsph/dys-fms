@@ -14,13 +14,15 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Temporary production diagnostic — requires X-Diagnostic-Key: DYS_DIAGNOSTIC_KEY
-// No auth:sanctum, no token creation, read-only, safe metadata only
+// No auth:sanctum, no token creation, read-only, safe metadata only.
+// NEVER returns token content, token hash, passwords, APP_KEY, DB credentials, or secrets.
 Route::get('/_diagnostics/auth', function (\Illuminate\Http\Request $request) {
     $expected = env('DYS_DIAGNOSTIC_KEY');
     if (!$expected || $request->header('X-Diagnostic-Key') !== $expected) {
         return response()->json(['message' => 'Not Found'], 404);
     }
 
+    // --- Safe Authorization header metadata (no secrets) ---
     $hasAuthHeader = $request->hasHeader('Authorization');
     $authScheme = 'none';
     if ($hasAuthHeader) {
@@ -34,6 +36,26 @@ Route::get('/_diagnostics/auth', function (\Illuminate\Http\Request $request) {
         }
     }
 
+    $bearerToken = $request->bearerToken();
+    $bearerTokenDetected = $bearerToken !== null;
+    $bearerTokenLength = $bearerTokenDetected ? strlen($bearerToken) : 0;
+    // Sanctum plainTextToken format: "{id}|{token}|{hash}" — contains two pipes
+    $bearerTokenHasPipe = $bearerTokenDetected && str_contains($bearerToken, '|');
+    // Token ID portion (first segment before pipe) should be numeric
+    $bearerTokenIdNumeric = false;
+    if ($bearerTokenHasPipe) {
+        $segments = explode('|', $bearerToken);
+        $bearerTokenIdNumeric = isset($segments[0]) && ctype_digit($segments[0]);
+    }
+
+    // --- Raw PHP server variables (booleans only) ---
+    $phpServerVars = [
+        'has_HTTP_AUTHORIZATION'       => isset($_SERVER['HTTP_AUTHORIZATION']),
+        'has_REDIRECT_HTTP_AUTHORIZATION' => isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']),
+        'request_bearer_token'         => $request->bearerToken() !== null,
+    ];
+
+    // --- Safe database metadata (counts only, no PII) ---
     $canQueryPats = false;
     try {
         \Illuminate\Support\Facades\DB::table('personal_access_tokens')->limit(1)->get();
@@ -43,22 +65,37 @@ Route::get('/_diagnostics/auth', function (\Illuminate\Http\Request $request) {
     }
 
     $data = [
-        'db' => \Illuminate\Support\Facades\DB::connection()->getDatabaseName(),
-        'host' => \Illuminate\Support\Facades\DB::connection()->getConfig('host'),
-        'default_connection' => config('database.default'),
-        'hasDbUrl' => filled(env('DB_URL')) ? 'DB_URL is set (overrides DB_*)' : 'DB_URL not set',
-        'users' => \Illuminate\Support\Facades\DB::table('users')->count(),
-        'business_sectors' => \Illuminate\Support\Facades\DB::table('business_sectors')->count(),
-        'personal_access_tokens' => $canQueryPats ? \Illuminate\Support\Facades\DB::table('personal_access_tokens')->count() : 'unqueryable',
-        'owner_id' => \Illuminate\Support\Facades\DB::table('users')->where('email', 'owner@dys.com')->value('id'),
-        'sanctum_stateful' => implode(',', config('sanctum.stateful', [])),
-        'session_driver' => config('session.driver'),
-        'has_auth_header' => $hasAuthHeader,
-        'auth_scheme' => $authScheme,
-        'can_query_pats' => $canQueryPats,
+        // Authorization header analysis
+        'has_authorization_header'  => $hasAuthHeader,
+        'authorization_scheme'      => $authScheme,
+        'bearer_token_detected'     => $bearerTokenDetected,
+        'bearer_token_length'       => $bearerTokenLength,
+        'bearer_token_has_pipe'     => $bearerTokenHasPipe,
+        'bearer_token_id_numeric'   => $bearerTokenIdNumeric,
+
+        // PHP server variable check (booleans only)
+        'php_server'                => $phpServerVars,
+
+        // DB health (counts only)
+        'db'                        => \Illuminate\Support\Facades\DB::connection()->getDatabaseName(),
+        'host'                      => \Illuminate\Support\Facades\DB::connection()->getConfig('host'),
+        'default_connection'        => config('database.default'),
+        'hasDbUrl'                  => filled(env('DB_URL')) ? 'DB_URL is set (overrides DB_*)' : 'DB_URL not set',
+        'users_count'               => \Illuminate\Support\Facades\DB::table('users')->count(),
+        'business_sectors_count'    => \Illuminate\Support\Facades\DB::table('business_sectors')->count(),
+        'personal_access_tokens_count' => $canQueryPats ? \Illuminate\Support\Facades\DB::table('personal_access_tokens')->count() : 'unqueryable',
+        'owner_id'                  => \Illuminate\Support\Facades\DB::table('users')->where('email', 'owner@dys.com')->value('id'),
+        'can_query_pats'            => $canQueryPats,
     ];
 
-    \Illuminate\Support\Facades\Log::info('diag auth', $data);
+    \Illuminate\Support\Facades\Log::info('diag auth', [
+        'has_auth_header' => $hasAuthHeader,
+        'auth_scheme'     => $authScheme,
+        'bearer_detected' => $bearerTokenDetected,
+        'bearer_length'   => $bearerTokenLength,
+        'php_http_auth'   => isset($_SERVER['HTTP_AUTHORIZATION']),
+        'php_redirect'    => isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']),
+    ]);
 
     return response()->json($data);
 });
