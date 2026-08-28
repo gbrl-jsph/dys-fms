@@ -64,7 +64,7 @@ void main() {
   setUp(() {
     adapter = FakeHttpClientAdapter();
     storage = FakeSecureStorage();
-    ApiClient.init(tokenProvider: storage.getToken, httpClientAdapter: adapter);
+    ApiClient.init(tokenProvider: storage.getToken, tokenClearer: storage.deleteToken, httpClientAdapter: adapter);
     repository = AuthRepository(ApiClient.instance, storage);
   });
 

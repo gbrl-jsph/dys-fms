@@ -15,7 +15,7 @@ void main() {
 
   setUp(() {
     adapter = FakeHttpClientAdapter();
-    ApiClient.init(tokenProvider: () async => null, httpClientAdapter: adapter);
+    ApiClient.init(tokenProvider: () async => null, tokenClearer: () async {}, httpClientAdapter: adapter);
     repository = ExpensesRepository(ApiClient.instance);
   });
 

@@ -31,7 +31,10 @@ Future<void> main() async {
   final SecureStorage secureStorage = SecureStorage();
 
   // Wire secure storage as the token provider for the auth interceptor.
-  ApiClient.init(tokenProvider: secureStorage.getToken);
+  ApiClient.init(
+    tokenProvider: secureStorage.getToken,
+    tokenClearer: secureStorage.deleteToken,
+  );
 
   // App-wide theme mode (Light / Dark / System), restored from storage.
   final ThemeController themeController = ThemeController(ThemeModeStore());

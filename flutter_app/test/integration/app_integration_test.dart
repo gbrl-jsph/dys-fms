@@ -280,6 +280,7 @@ void main() {
     requests = <RequestOptions>[];
     ApiClient.init(
       tokenProvider: secureStorage.getToken,
+      tokenClearer: secureStorage.deleteToken,
       httpClientAdapter: buildBackendAdapter(requests),
     );
   });

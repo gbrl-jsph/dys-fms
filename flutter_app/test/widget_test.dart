@@ -29,7 +29,7 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
 
     final SecureStorage secureStorage = SecureStorage();
-    ApiClient.init(tokenProvider: secureStorage.getToken);
+    ApiClient.init(tokenProvider: secureStorage.getToken, tokenClearer: secureStorage.deleteToken);
     final AuthProvider authProvider = AuthProvider(
       AuthRepository(ApiClient.instance, secureStorage),
     );

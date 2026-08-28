@@ -11,6 +11,7 @@ import 'auth_interceptor.dart';
 class ApiClient {
   ApiClient._({
     required Future<String?> Function() tokenProvider,
+    required Future<void> Function() tokenClearer,
     HttpClientAdapter? httpClientAdapter,
   }) {
     _dio = Dio(
@@ -23,7 +24,10 @@ class ApiClient {
           'Accept': 'application/json',
         },
       ),
-    )..interceptors.add(AuthInterceptor(tokenProvider: tokenProvider));
+    )..interceptors.add(AuthInterceptor(
+        tokenProvider: tokenProvider,
+        tokenClearer: tokenClearer,
+      ));
 
     if (httpClientAdapter != null) {
       _dio.httpClientAdapter = httpClientAdapter;
@@ -50,10 +54,12 @@ class ApiClient {
   /// test-only override used to serve canned HTTP responses.
   static void init({
     required Future<String?> Function() tokenProvider,
+    required Future<void> Function() tokenClearer,
     HttpClientAdapter? httpClientAdapter,
   }) {
     _instance = ApiClient._(
       tokenProvider: tokenProvider,
+      tokenClearer: tokenClearer,
       httpClientAdapter: httpClientAdapter,
     );
   }

@@ -8,10 +8,8 @@
 class ApiConfig {
   ApiConfig._();
 
-  /// Base URL for all API requests (QA — phone on same Wi-Fi as dev PC).
-  /// Must be http://192.168.1.34:8000/api with `php artisan serve --host=0.0.0.0`
-  /// because 127.0.0.1 on phone is the phone itself. See DEPLOYMENT.md.
-  static const String baseUrl = 'http://192.168.1.34:8000/api';
+  /// Base URL for all API requests (production).
+  static const String baseUrl = 'https://dys-fms.onrender.com/api';
 
   /// Connection and receive timeout for all HTTP requests (30 seconds).
   static const Duration timeout = Duration(seconds: 30);
