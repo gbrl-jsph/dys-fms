@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
             ['email' => 'owner@dys.com'],
             [
                 'name' => 'Juan Dela Cruz',
-                'password' => Hash::make('SecurePass123'),
+                'password' => Hash::make(env('OWNER_PASSWORD', 'SecurePass123')),
                 'role' => 'Business Owner',
                 'sector_id' => null,
                 'account_status' => 'Active',
