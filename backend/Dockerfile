@@ -1,7 +1,7 @@
 # DYS FMS Backend — Production Dockerfile
 # Minimal deployment config for Render / Koyeb / Fly.io / any Docker host.
-# Preserves Laravel 12 + PHP 8.2 + MySQL + Sanctum. No arch changes.
-FROM php:8.2-apache AS base
+# Preserves Laravel 12 + PHP 8.4 + MySQL + Sanctum. No arch changes.
+FROM php:8.4-apache AS base
 
 # System deps + Apache
 RUN apt-get update && apt-get install -y --no-install-recommends \
