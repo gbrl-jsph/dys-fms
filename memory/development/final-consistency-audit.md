@@ -23,7 +23,7 @@
 
 | Severity | Count | Meaning |
 |----------|:-----:|---------|
-| HIGH | 1 | Security issue: privilege escalation via `PUT /users/{id}` |
+| HIGH | 1 (~~0~~) | ~~Security issue: privilege escalation via `PUT /users/{id}`~~ — **Resolved** (H-1 verified not present in current codebase) |
 | MEDIUM | 15 | Functional gaps, doc-vs-implementation mismatches, UI edge cases |
 | LOW | 24 | Cosmetic, maintainability, minor doc mismatches |
 | INFO | 18 | Fully consistent areas, intentional behavior, doc-internal contradictions |
@@ -37,7 +37,7 @@
 
 | # | Area | Finding | Evidence | Recommended fix |
 |---|------|---------|----------|-----------------|
-| H-1 | Backend / Security | **Role escalation: `PUT /users/{id}` allows assigning the `Business Owner` role**, creating a second Owner with full user-management + payroll rights. Violates BR-33, BR-02, the API spec (role = Event Manager / Employee/Staff only), and the Validation Rules Matrix. Not covered by any test. | `backend/app/Http/Requests/Users/UpdateUserRequest.php:20` (`in:Business Owner,Event Manager,Employee/Staff`); `backend/app/Services/UserService.php:66-68` only blocks when the *target's current* role is Owner | Restrict rule to `in:Event Manager,Employee/Staff` (matching `StoreUserRequest`); add a service-level guard; add a regression test (Update-role-as-owner → 422) |
+| ~~H-1~~ | ~~Backend / Security~~ | ~~**Role escalation: `PUT /users/{id}` allows assigning the `Business Owner` role**~~ **RESOLVED** — Verified not present: `UpdateUserRequest.php:20` restricts `in:Event Manager,Employee/Staff`; `UserService.php:89` has defense-in-depth rejection of Business Owner role; PHPUnit `test_updating_user_with_business_owner_role_returns_422` passes. | ~~`in:Business Owner,Event Manager,Employee/Staff`~~ `in:Event Manager,Employee/Staff` (already correct); service guard at line 89; regression test at `UserManagementTest.php:654` | No change needed — already implemented |
 
 ### 3.2 MEDIUM
 
@@ -107,7 +107,7 @@
 15. **Sector name wording** (concept paper "DYS Event Management" vs seed "DYS Events") — implementation follows the API spec/seed.
 16. **Reports default state** (empty-state vs wireframe placeholders) and minor label deviations ("Save Sale" vs "Save Sale Record", "Sales List" vs "Recent transactions", show/hide password toggle) — implementation is internally consistent; doc-only alignment needed.
 17. **Sector switch orchestration** lives in the screen (acceptable coordination); switch is stateless, no confirmation dialog (BR-39 ✓).
-18. **Risk Assessment:** remains valid; SR-04 (broken authorization) covers the class of H-1 but the specific update-role vector should be noted in the mitigation.
+18. **Risk Assessment:** remains valid; SR-04 (broken authorization) covers the class of H-1 ~~(recommend noting the update-role vector)~~ — H-1 has been verified as already mitigated (defense-in-depth at request + service layers).
 
 ---
 
@@ -117,7 +117,7 @@
 |----------|---------|-------|
 | RTM v2.0 | Consistent except FR-008 refresh claim | FR-008 row (line 155) and TCS TC-FUN-F08-02 / TC-VAL-BR-38 claim all four screens auto-refresh; implementation refreshes only Dashboard (M-1). RTM FR-002 quick actions and 2-tab employee nav match the implementation. Test-count registry verified (79 PHPUnit + 207 Flutter). |
 | TCS v2.0 | Consistent except TC-FUN-F08-02 | All 304 cases match implemented behavior/messages/status codes (incl. short-form messages); TC-FUN-F08-02 asserts the unimplemented 4-screen refresh (M-1). |
-| Risk Assessment | Valid | All 28 risks still stand; H-1 strengthens SR-04 (recommend noting the update-role vector). |
+| Risk Assessment | Valid | All 28 risks still stand; ~~H-1 strengthens SR-04 (recommend noting the update-role vector)~~ H-1 verified mitigated. |
 | Deployment Guide | 1 error | §11 checklist #4 "re-seeding is idempotent-safe" is false (M-3). Everything else verified. |
 | User Manual | 1 error | §5.2 Employee Dashboard summary-card claim is false (M-2); all other sections, messages, and behaviors verified against source. |
 
@@ -142,7 +142,7 @@
 - Requirements: 8/8 FRs implemented, 0 unsupported features
 - API: 16/16 endpoints, auth matrix exact; contract wording mismatches (doc-side) + 1 response shape (`updated_at`)
 - Tests: 100% green (Flutter); backend suite blocked only by environment
-- Gaps requiring code changes: H-1 (security hardening), M-1 (BR-38 refresh), M-4 (UI edge case), M-12/M-13 (overflow → 422), M-11 (name cap) — small, localized fixes
+- Gaps requiring code changes: ~~H-1 (security hardening)~~, M-1 (BR-38 refresh), M-4 (UI edge case), M-12/M-13 (overflow → 422), M-11 (name cap) — small, localized fixes
 - Remaining gaps are documentation corrections (M-2, M-3, M-5, M-6, M-7, M-8, M-9, M-10, M-14, M-15 + LOW items)
 
 ---
@@ -152,7 +152,7 @@
 ### Needs minor fixes
 
 **Before final commit:**
-1. **Fix H-1** (restrict update role rule + service guard + regression test) — required, security.
+1. ~~**Fix H-1** (restrict update role rule + service guard + regression test) — required, security.~~ **Resolved:** `UpdateUserRequest` already restricts to `in:Event Manager,Employee/Staff`; service defense-in-depth at line 89; test at `UserManagementTest.php:654` passes.
 2. **Fix M-1** (reload Sales/Expenses/Reports after sector switch) or amend RTM/TCS BR-38 wording — required for doc-truth compliance.
 3. **Fix M-4** (block owner self-edit/deactivate in UI).
 4. **Correct M-2 and M-3** (User Manual §5.2; Deployment Guide seeder claim) — required for doc accuracy.
