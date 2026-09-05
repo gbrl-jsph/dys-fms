@@ -12,7 +12,7 @@
 | **Project name** | DYS Financial Management System (DYS FMS) |
 | **Client** | Mrs. Divine Samonte, DYS Event Management |
 | **Purpose** | Centralized mobile-first financial transaction monitoring across 4 business sectors |
-| **Current version** | App `1.0.0+1` (`pubspec.yaml`); Git tags `v1.0.0`, `v1.0.1`, `v1.1.0`; HEAD `32d3421` on `origin/main` |
+| **Current version** | App `1.0.0+1` (`pubspec.yaml`); Git tags `v1.0.0`, `v1.0.1`, `v1.1.0`; HEAD `36325d6` on `origin/main` |
 | **Development status** | All 8 FRs implemented; all 10 roadmap phases complete; 253 Flutter + 94 backend tests green |
 | **Tech stack** | Backend: `Laravel 12`, `PHP ^8.2`, `Sanctum ^4.0`, `MySQL`, `PHPUnit ^11`; Frontend: `Flutter 3.44.x / Dart ^3.12.2`, `provider 6.1.2`, `go_router 14.6.2`, `dio 5.7.0`, `flutter_secure_storage 9.2.2`, `google_fonts 6.2.1`, `fl_chart 1.2.0`; Infra: Docker PHP 8.4, Apache, Render |
 | **Architecture** | Client (Flutter Provider) → API (Laravel REST/Sanctum, JSON `{data,message,errors}`) → Services (controllers→services→DTOs) → MySQL. `StatefulShellRoute.indexedStack` bottom nav, `Dio/ApiClient` Bearer injection, `FlutterSecureStorage` AES-GCM |
@@ -153,7 +153,8 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 | Commit | Description | Files | Verification |
 |--------|-------------|-------|-------------|
-| `32d3421` (HEAD) | `fix(mail): use failover mailer` — `config/mail.php` default→failover(smtp→log), `MAIL_LOG_CHANNEL single`, `MAIL_FROM_ADDRESS noreply@dys-fms.onrender.com` | 2 | analyze + 253 pass |
+| `36325d6` (HEAD) | `fix: sync financial screens after Business Owner sector switch (M-1)` — Sales/Expenses/Payroll screens seed `_syncedSectorId` + build-time sector-guard; 4 regression tests | 7 | analyze + 257 pass |
+| `3b49468` | `docs(security): mark H-1 as resolved in project memory and final audit` | 2 | docs only |
 | `29b2ab3` | `fix(seeder): replace hardcoded owner password with env var` — `UserSeeder` uses `env('OWNER_PASSWORD')` | 2 | idempotent |
 | `d21b12e` | `feat: point Flutter to production API + 401 token invalidation` — `ApiConfig` prod URL, `ApiClient` 401 clear | 2 | auth flow verified |
 | `04eead5`–`84d28bb` | Apache auth header fixes (5 commits) — `CGIPassAuth`, `Authorization` preservation | multiple | Sanctum 401 resolved |
@@ -220,7 +221,7 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 - **SMTP**: `MAIL_*` env not set on Render — failover to log works but real delivery requires SMTP credentials
 
 ### MEDIUM
-- **M-1**: Sector switch stale: only Dashboard reloads; Sales/Expenses/Reports keep indexedStack stale data
+- **M-1**~~: Sector switch stale: only Dashboard reloads; Sales/Expenses/Reports keep indexedStack stale data~~ **RESOLVED** (commit `36325d6`): Sales/Expenses/Payroll/Reports screens now seed `_syncedSectorId` synchronously in `initState` and trigger reload when sector changes; 4 regression tests pass
 - **M-2/M-3**: User Manual §5.2 Employee cards wrong; deployment guide idempotent claim was false (now fixed)
 - **M-6**: 422 envelope `Validation failed.` vs first-error message
 - **M-7**: Message wording `The email field is required.` vs `Email is required.`
@@ -259,8 +260,8 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 ## 12. GIT / RELEASE STATUS
 
 - **Branch**: `main` tracking `origin/main`
-- **Latest commit**: `32d3421 fix(mail): use failover mailer` (HEAD)
-- **Latest tag**: `v1.1.0` (HEAD is 6 commits ahead)
+- **Latest commit**: `36325d6 fix: sync financial screens after Business Owner sector switch (M-1)` (HEAD)
+- **Latest tag**: `v1.1.0` (HEAD is 8 commits ahead)
 - **Uncommitted changes**:
   ```
    M .obsidian/workspace.json                          (+4/-1)
@@ -292,7 +293,7 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 ## 14. GOOGLE ANTIGRAVITY PROJECT MEMORY
 
-**Project:** DYS FMS for Divine Samonte — mobile-first finance across 4 sectors. App `1.0.0+1`, Git `main` `32d3421`, tags `v1.0.0/1.0.1/1.1.0`.
+**Project:** DYS FMS for Divine Samonte — mobile-first finance across 4 sectors. App `1.0.0+1`, Git `main` `36325d6`, tags `v1.0.0/1.0.1/1.1.0`.
 
 **Stack:** Laravel 12 PHP ^8.2 Sanctum MySQL, Flutter 3.44 Dart ^3.12.2 provider/go_router/dio/flutter_secure_storage/google_fonts/fl_chart, Docker PHP 8.4 Apache Render.
 
@@ -353,4 +354,4 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 ---
 
-*Evidence: `backend/routes/api.php` 22 routes, `composer.json` Laravel 12, `pubspec.yaml` 1.0.0+1, `app_colors.dart` #D4AF37, `app_theme.dart` M3+tertiary/shadow, `git log` 32d3421/507ec84, `git status` 3M+3 untracked, `flutter analyze No issues`, `flutter test 253`, `phpunit 94/515`.*
+*Evidence: `backend/routes/api.php` 22 routes, `composer.json` Laravel 12, `pubspec.yaml` 1.0.0+1, `app_colors.dart` #D4AF37, `app_theme.dart` M3+tertiary/shadow, `git log` 36325d6/32d3421, `git status` 3M+3 untracked, `flutter analyze No issues`, `flutter test 257`, `phpunit 94/515`.*
