@@ -24,6 +24,9 @@ void main() {
     );
     expect(theme.colorScheme.surfaceContainer, AppColors.lightPalette.surface);
     expect(theme.colorScheme.surfaceTint, Colors.transparent);
+    expect(theme.colorScheme.tertiary, AppColors.lightPalette.primary);
+    expect(theme.colorScheme.tertiaryContainer, AppColors.lightPalette.primaryContainer);
+    expect(theme.colorScheme.shadow, AppColors.lightPalette.ink);
     expect(theme.colorScheme.inverseSurface, AppColors.lightPalette.ink);
     expect(theme.colorScheme.onInverseSurface, AppColors.lightPalette.surface);
 
@@ -61,6 +64,9 @@ void main() {
     );
     expect(theme.colorScheme.surfaceContainer, AppColors.darkPalette.surface);
     expect(theme.colorScheme.surfaceTint, Colors.transparent);
+    expect(theme.colorScheme.tertiary, AppColors.darkPalette.primary);
+    expect(theme.colorScheme.tertiaryContainer, AppColors.darkPalette.primaryContainer);
+    expect(theme.colorScheme.shadow, AppColors.darkPalette.ink);
     expect(theme.colorScheme.inverseSurface, AppColors.darkPalette.ink);
     expect(theme.colorScheme.onInverseSurface, AppColors.darkPalette.surface);
 
@@ -93,6 +99,9 @@ void main() {
       expect(theme.colorScheme.outline, palette.border);
       expect(theme.colorScheme.error, palette.danger);
       expect(theme.colorScheme.scrim, palette.ink);
+      expect(theme.colorScheme.tertiary, palette.primary);
+      expect(theme.colorScheme.tertiaryContainer, palette.primaryContainer);
+      expect(theme.colorScheme.shadow, palette.ink);
       expect(theme.scaffoldBackgroundColor, palette.surfaceAlt);
       expect(theme.textTheme.bodyLarge?.color, palette.ink);
       expect(theme.textTheme.bodySmall?.color, palette.inkSecondary);
