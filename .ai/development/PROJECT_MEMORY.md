@@ -224,7 +224,7 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 - **M-1**~~: Sector switch stale: only Dashboard reloads; Sales/Expenses/Reports keep indexedStack stale data~~ **RESOLVED** (commit `36325d6`): Sales/Expenses/Payroll/Reports screens now seed `_syncedSectorId` synchronously in `initState` and trigger reload when sector changes; 4 regression tests pass
 - **M-9 ~~(RESOLVED)~~**: ~~Dashboard Sales Overview chart visibility conflicted with the Style Guide~~ — **Documentation corrected**: FR-002 and UC4 require the chart for Business Owner only; current Flutter behavior and tests were already correct. Style Guide matrix and Dashboard inventory now mark the chart Business Owner only.
 - **M-2/M-3**: User Manual §5.2 Employee cards wrong; deployment guide idempotent claim was false (now fixed)
-- **M-6**: 422 envelope `Validation failed.` vs first-error message
+- **M-6 ~~(RESOLVED)~~**: ~~422 envelope `Validation failed.` vs first-error message~~ — API `ValidationException` responses now use the approved `{"message":"Validation failed.","errors":...}` envelope while preserving field errors and HTTP 422.
 - **M-7**: Message wording `The email field is required.` vs `Email is required.`
 - **M-8**: Employee nav 2 tabs vs docs 3
 - **M-14/15**: Wireframe form mismatch / temp-password immediate create

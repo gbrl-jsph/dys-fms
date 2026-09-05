@@ -210,7 +210,7 @@ class UserManagementTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'Email has already been taken.',
+                'message' => 'Validation failed.',
                 'errors' => [
                     'email' => ['Email has already been taken.'],
                 ],
@@ -231,7 +231,7 @@ class UserManagementTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'The selected role is invalid.',
+                'message' => 'Validation failed.',
                 'errors' => [
                     'role' => ['The selected role is invalid.'],
                 ],
@@ -662,7 +662,7 @@ class UserManagementTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJson([
-                'message' => 'The selected role is invalid.',
+                'message' => 'Validation failed.',
                 'errors' => [
                     'role' => ['The selected role is invalid.'],
                 ],

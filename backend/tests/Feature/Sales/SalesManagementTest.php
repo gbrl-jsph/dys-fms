@@ -236,7 +236,7 @@ class SalesManagementTest extends TestCase
                 'sector_id' => $this->eventsSector->id,
             ])->assertStatus(422)
             ->assertJson([
-                'message' => 'Amount must be a positive number.',
+                'message' => 'Validation failed.',
                 'errors' => [
                     'amount' => ['Amount must be a positive number.'],
                 ],

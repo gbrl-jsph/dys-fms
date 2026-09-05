@@ -137,7 +137,7 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'The email field is required.',
+                'message' => 'Validation failed.',
             ]);
     }
 
@@ -150,7 +150,7 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'The email must be a valid email address.',
+                'message' => 'Validation failed.',
             ]);
     }
 
@@ -162,7 +162,7 @@ class AuthenticationTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJson([
-                'message' => 'The password field is required.',
+                'message' => 'Validation failed.',
             ]);
     }
 
