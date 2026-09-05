@@ -57,6 +57,13 @@ class _SalesScreenState extends State<SalesScreen> {
   @override
   void initState() {
     super.initState();
+    // Seed _syncedSectorId synchronously so the build-time sector sync
+    // detection fires only when the sector actually changes, not on
+    // the initial build.
+    final AuthState auth = context.read<AuthProvider>().state;
+    final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
+    _syncedSectorId = isBusinessOwner ? sectorIdFor(auth) : null;
+
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadSales());
     _searchController.addListener(() {
       setState(() {

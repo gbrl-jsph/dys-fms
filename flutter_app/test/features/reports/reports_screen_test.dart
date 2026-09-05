@@ -388,4 +388,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(sentSectors, [1, 2, null]);
   });
+
+  testWidgets('M-1: a sector switch via AuthProvider clears the stale report '
+      'and syncs the sector selector (stale sector fix)', (
+    WidgetTester tester,
+  ) async {
+    fakeReportsRepository.onGetReport =
+        ({required type, dateFrom, dateTo, sectorId}) async =>
+            buildSummaryReport();
+
+    await pumpScreen(tester);
+
+    await tester.tap(find.text('Generate Report'));
+    await tester.pumpAndSettle();
+    expect(find.text('No report yet'), findsNothing);
+
+    authProvider.updateSector(const DefaultSector(id: 2, name: 'B&DYS'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No report yet'), findsOneWidget);
+    expect(find.text('B&DYS'), findsOneWidget);
+  });
 }

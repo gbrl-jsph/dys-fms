@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dys_fms/core/theme/app_theme.dart';
+import 'package:dys_fms/features/auth/data/models/login_response.dart';
 import 'package:dys_fms/features/auth/data/models/user_model.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dys_fms/features/payroll/data/models/payroll_record.dart';
@@ -304,6 +305,23 @@ void main() {
     await tester.tap(find.byType(DropdownButtonFormField<int>).at(0));
     await tester.pumpAndSettle();
     await tester.tap(find.text('B&DYS').last);
+    await tester.pumpAndSettle();
+
+    expect(requestedSectors, [1, 2]);
+  });
+
+  testWidgets('M-1: a sector switch via AuthProvider reloads the list and '
+      'syncs the selector (stale sector fix)', (WidgetTester tester) async {
+    final List<int?> requestedSectors = <int?>[];
+    fakePayrollRepository.onGetPayroll = (sectorId) async {
+      requestedSectors.add(sectorId);
+      return buildPayrollList();
+    };
+
+    await pumpScreen(tester);
+    expect(requestedSectors, [1]);
+
+    authProvider.updateSector(const DefaultSector(id: 2, name: 'B&DYS'));
     await tester.pumpAndSettle();
 
     expect(requestedSectors, [1, 2]);

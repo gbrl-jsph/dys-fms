@@ -52,6 +52,7 @@ class _PayrollScreenState extends State<PayrollScreen> {
   final TextEditingController _payPeriodController = TextEditingController();
 
   int? _selectedSectorId;
+  int? _syncedSectorId;
   int? _selectedEmployeeId;
   DateTime? _payPeriod;
   String? _employeeError;
@@ -79,7 +80,10 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
     final int? sectorId = isBusinessOwner ? sectorIdFor(auth) : null;
 
-    setState(() => _selectedSectorId = sectorId);
+    setState(() {
+      _selectedSectorId = sectorId;
+      _syncedSectorId = sectorId;
+    });
     provider.loadPayroll(sectorId: sectorId);
 
     if (isBusinessOwner) {
@@ -199,6 +203,24 @@ class _PayrollScreenState extends State<PayrollScreen> {
     final PayrollProvider payrollProvider = context.watch<PayrollProvider>();
     final PayrollState state = payrollProvider.state;
     final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
+
+    // Keep the sector selector in sync after the Business Owner switches
+    // the active sector (BR-38): the screen is kept alive in the shell,
+    // so it must follow the client-side sector context. Manual dropdown
+    // changes are tracked separately and are never overridden here.
+    if (isBusinessOwner &&
+        _syncedSectorId != null &&
+        _syncedSectorId != sectorIdFor(auth)) {
+      final int? currentSectorId = sectorIdFor(auth);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _selectedSectorId = currentSectorId;
+          _syncedSectorId = currentSectorId;
+        });
+        payrollProvider.loadPayroll(sectorId: currentSectorId);
+      });
+    }
 
     return Scaffold(
       body: SafeArea(

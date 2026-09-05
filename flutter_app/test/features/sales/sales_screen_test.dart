@@ -294,4 +294,22 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('M-1: a sector switch via AuthProvider syncs a screen that was '
+      'already initialized (stale sector fix)', (WidgetTester tester) async {
+    final List<int?> requestedSectors = <int?>[];
+    fakeSalesRepository.onGetSales = (sectorId) async {
+      requestedSectors.add(sectorId);
+      return buildSalesList();
+    };
+
+    await pumpScreen(tester);
+    expect(requestedSectors, [1]);
+
+    authProvider.updateSector(const DefaultSector(id: 2, name: 'B&DYS'));
+    await tester.pumpAndSettle();
+
+    expect(requestedSectors, [1, 2]);
+    expect(find.text('B&DYS'), findsNWidgets(2));
+  });
 }
