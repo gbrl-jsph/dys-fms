@@ -3,6 +3,7 @@
 /public/storage
 .env
 .env.*.local
+.env.backup.*
 /storage/framework/cache/data/
 /storage/framework/sessions/
 /storage/framework/views/

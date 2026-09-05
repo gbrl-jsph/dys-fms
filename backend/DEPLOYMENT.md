@@ -15,7 +15,8 @@ Preserves Laravel 12 + MySQL + Sanctum. Minimum changes: `Dockerfile`, `docker/a
 ## 2. Secrets — READ FIRST
 
 - `.env` is gitignored (`Vault/.gitignore:5`). Never commit `.env`, `*.backup*`, passwords, app keys.
-- Local `backend/.env:33` contained Gmail app password `cift eypp guiy xruu` — **rotate it** if it left your machine (was used in Cloudflare QA). Generate new app password at Google Account > Security > App passwords, set only in cloud env vars.
+- SMTP credentials must be configured only through environment variables. Never commit SMTP usernames, passwords, or app passwords. If any credential was committed, revoke or rotate it immediately with the provider, then configure the replacement through the hosting provider's secret or environment-variable system.
+
 - Use provider secrets: Render Dashboard > Environment, Koyeb > Service > Environment, `fly secrets set APP_KEY=...`, AlwaysData > Admin > Environment.
 
 ## 3. Prepare production env
@@ -25,7 +26,7 @@ In your cloud dashboard, set from `.env.production.example`:
 ```
 APP_ENV=production
 APP_DEBUG=false
-APP_KEY=base64:...  # generate: php artisan key:generate --show (local, then paste)
+APP_KEY=<generated Laravel application key>
 APP_URL=https://<your-domain>
 DB_CONNECTION=mysql
 DB_HOST=<managed-mysql-host>
