@@ -3,3 +3,6 @@ memory/extracted/
 memory/cache/
 memory/.extracted_hashes.json
 *.pyc
+
+# Editor metadata
+.obsidian/
