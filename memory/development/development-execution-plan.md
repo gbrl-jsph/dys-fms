@@ -309,7 +309,7 @@ Backend test types:
 | Element | Business Owner | Event Manager | Employee |
 |---------|:--------------:|:-------------:|:--------:|
 | Summary cards (Total Sales, Total Exp., Net Balance) | ✓ (sector-scoped) | ✓ (sector-scoped) | — |
-| Chart placeholder | ✓ | ✓ | — |
+| Chart placeholder | ✓ | — | — |
 | Record Sale quick action | ✓ | ✓ | — |
 | Record Expense quick action | ✓ | ✓ | — |
 | View Reports quick action | ✓ | ✓ | — |

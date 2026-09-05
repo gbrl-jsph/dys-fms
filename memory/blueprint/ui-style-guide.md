@@ -639,7 +639,7 @@ All icons use Feather icon set style (24×24 viewBox, 2px stroke width, round li
 | Login Screen | ✓ | ✓ | ✓ |
 | Dashboard — Summary cards (3 stat cards) | ✓ | ✓ | ✓ |
 | Dashboard — Sector chip (clickable) | ✓ | ✓ (read-only) | ✓ (read-only) |
-| Dashboard — Chart placeholder | ✓ | ✓ | ✓ |
+| Dashboard — Chart placeholder | ✓ | — | — |
 | Dashboard — Record Sale quick action | ✓ | ✓ | — |
 | Dashboard — Record Expense quick action | ✓ | ✓ | — |
 | Dashboard — View Reports quick action | ✓ | ✓ | — |
@@ -705,8 +705,8 @@ All icons use Feather icon set style (24×24 viewBox, 2px stroke width, round li
 | Sector chip | 1 | Clickable (Owner), read-only (EM, Employee) |
 | Section label "Financial Summary" | 1 | All |
 | Stat cards | 3 | Total Sales, Total Exp., Net Balance (all) |
-| Section label "Sales Overview" | 1 | All |
-| Chart placeholder | 1 | All |
+| Section label "Sales Overview" | 1 | Business Owner only |
+| Chart placeholder | 1 | Business Owner only |
 | Section label "Quick Actions" | 1 | All |
 | Record Sale button | 1 | Primary. Owner, EM only |
 | Record Expense button | 1 | Tonal. Owner, EM only |
