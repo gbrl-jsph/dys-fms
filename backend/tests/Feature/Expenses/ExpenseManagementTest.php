@@ -454,6 +454,19 @@ class ExpenseManagementTest extends TestCase
             ]);
     }
 
+    public function test_recording_expense_with_amount_at_database_limit_is_allowed(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/expenses', [
+                'amount' => 999999.99,
+                'description' => 'At the limit',
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(201);
+
+        $this->assertDatabaseCount('expenses', 1);
+    }
+
     public function test_recording_expense_with_amount_over_database_limit_returns_422(): void
     {
         $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())

@@ -449,6 +449,19 @@ class SalesManagementTest extends TestCase
             ]);
     }
 
+    public function test_recording_sale_with_amount_at_database_limit_is_allowed(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/sales', [
+                'amount' => 999999.99,
+                'description' => 'At the limit',
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(201);
+
+        $this->assertDatabaseCount('sales_transactions', 1);
+    }
+
     public function test_recording_sale_with_amount_over_database_limit_returns_422(): void
     {
         $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())

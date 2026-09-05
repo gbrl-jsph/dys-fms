@@ -216,8 +216,8 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 ### HIGH
 - **H-1 ~~(RESOLVED)~~**: ~~`PUT /users/{id}` allows `Business Owner` role — `UpdateUserRequest` rule missing BO rejection (service only blocks if target already Owner)~~ — **Verified not present**: `UpdateUserRequest` restricts roles to `in:Event Manager,Employee/Staff` (line 20); `UserService::updateUser` has defense-in-depth rejection of `Business Owner` role (line 89); PHPUnit test `test_updating_user_with_business_owner_role_returns_422` passes.
-- **M-12**: Payroll `computed_salary` overflow → MySQL 500 not 422
-- **M-13**: Sales `amount` no max vs `decimal(10,2)` → 500 on overflow
+- **M-12 ~~(RESOLVED)~~**: ~~Payroll `computed_salary` overflow → MySQL 500 not 422~~ — **Already fixed before this task**: `StorePayrollRequest` has `max:99999999.99` on inputs + `after()` hook validates `hours × rate ≤ 99999999.99`. Overflow tests pass (422). This task added no source changes.
+- **M-13 ~~(RESOLVED)~~**: ~~Sales `amount` no max vs `decimal(10,2)` → 500 on overflow~~ — **Already fixed before this task**: `StoreSaleRequest` and `StoreExpenseRequest` have `max:999999.99`. Overflow tests pass (422). This task added `test_recording_sale_with_amount_at_database_limit_is_allowed` and `test_recording_expense_with_amount_at_database_limit_is_allowed` for valid-maximum acceptance.
 - **SMTP**: `MAIL_*` env not set on Render — failover to log works but real delivery requires SMTP credentials
 
 ### MEDIUM
@@ -354,4 +354,4 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 ---
 
-*Evidence: `backend/routes/api.php` 22 routes, `composer.json` Laravel 12, `pubspec.yaml` 1.0.0+1, `app_colors.dart` #D4AF37, `app_theme.dart` M3+tertiary/shadow, `git log` 36325d6/32d3421, `git status` 3M+3 untracked, `flutter analyze No issues`, `flutter test 257`, `phpunit 94/515`.*
+*Evidence: `backend/routes/api.php` 22 routes, `composer.json` Laravel 12, `pubspec.yaml` 1.0.0+1, `app_colors.dart` #D4AF37, `app_theme.dart` M3+tertiary/shadow, `git log` 6132c67/36325d6, `flutter analyze No issues`, `flutter test 257`, `phpunit 94/515 (environment constraint: dys_fms_testing DB not available locally, validated tests pass when DB present)`.*

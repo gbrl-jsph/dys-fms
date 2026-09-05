@@ -348,7 +348,7 @@ This document is the single source of truth for every validation rule in the DYS
 | E46 | User updated | "User updated successfully." |
 | E47 | User status updated | "User status updated successfully." |
 | E48 | Sector switched | "Sector switched successfully." |
-| E49 | Amount exceeds maximum | Not defined in schema (DECIMAL without precision limit) |
+| E49 | Amount exceeds maximum | "Amount must not exceed 999999.99." (Sales/Expenses: DECIMAL(8,2) max 999,999.99; Expenses also DECIMAL(10,2) but validation capped at 999,999.99 for manual entry) |
 | E50 | Hours/Rate exceeds maximum | "Value must not exceed 99999999.99." |
 
 ---
