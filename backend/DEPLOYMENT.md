@@ -12,6 +12,63 @@ Preserves Laravel 12 + MySQL + Sanctum. Minimum changes: `Dockerfile`, `docker/a
 
 **Why not other:** InfinityFree (no SSH/composer), Railway (requires card $5), Heroku (no free), Vercel (not PHP-native). Docker + external MySQL avoids vendor lock and preserves MySQL architecture.
 
+## Approved Production Deployment — v1
+
+The approved production stack is **Render Docker Web Service** for `backend/`,
+**Clever Cloud MySQL** for the database, and **Cloudflare Pages** for the
+prebuilt `flutter_app/build/web/` PWA. Use sibling HTTPS subdomains of one
+registrable parent domain: `https://app.<domain>` for the PWA and
+`https://api.<domain>` for the API. Do not create DNS records or enter a real
+domain until the owner approves it.
+
+### Render service
+
+1. Connect the approved Git repository in Render and create a Docker Web Service.
+2. Set the service root directory to `backend`; Render discovers `Dockerfile` there.
+3. Set health check path to `/up`. The entrypoint changes Apache from port 80 to Render's injected `PORT`.
+4. Add the production variables in the next section. `RUN_MIGRATIONS=true` applies forward migrations with `--force`; `RUN_SEEDERS=false` is the steady-state value.
+
+### Clever Cloud MySQL
+
+Create a MySQL add-on and copy its connection values into Render exactly:
+
+| Clever Cloud value | Render variable |
+|---|---|
+| host | `DB_HOST` |
+| port | `DB_PORT` |
+| database name | `DB_DATABASE` |
+| username | `DB_USERNAME` |
+| password | `DB_PASSWORD` |
+
+Always set `DB_CONNECTION=mysql`. If Clever Cloud's chosen connection mode requires a CA certificate, obtain its published CA material and configure it as a Render secret file, then set `MYSQL_ATTR_SSL_CA` to that file path. The Laravel connection already consumes this variable. Do not set `DB_URL` instead of the `DB_*` variables and do not invent a certificate path or certificate value.
+
+### Initial database and owner
+
+1. Take/confirm an empty database backup point and set `RUN_MIGRATIONS=true`.
+2. For the one deployment that creates initial reference data, set `RUN_SEEDERS=true` and set a newly generated, secret `OWNER_PASSWORD` in Render.
+3. Deploy once, verify migrations and `owner@dys.com`, then immediately set `RUN_SEEDERS=false` and remove `OWNER_PASSWORD` from Render.
+
+The seeders are safe to re-run: sectors are updated by their fixed IDs without truncation, and the Business Owner is inserted only when absent. They never overwrite an existing owner password. Never use `migrate:fresh` in production.
+
+### Cloudflare Pages
+
+Build the Web/PWA artifact outside Cloudflare Pages and upload `flutter_app/build/web/` directly. This avoids adding Flutter SDK setup or CI/CD to Cloudflare's build environment. Hash routing requires no SPA rewrite rule. The release build contains only the public API URL supplied through `API_BASE_URL`; it contains no backend or SMTP secret.
+
+### Exact sibling-domain configuration
+
+After both custom domains verify and HTTPS certificates are active, set:
+
+```
+APP_URL=https://api.<domain>
+CORS_ALLOWED_ORIGINS=https://app.<domain>
+SANCTUM_STATEFUL_DOMAINS=app.<domain>
+SESSION_DOMAIN=.<domain>
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+```
+
+`CORS_ALLOWED_ORIGINS` is parsed as exact comma-separated origins and does not permit wildcard CORS. `SESSION_DOMAIN` is read directly as the shared cookie domain, and Sanctum reads the comma-separated stateful host list. DNS records are created in Cloudflare: attach `app.<domain>` to the Pages project and create the Render-required custom-domain verification/target record for `api.<domain>`. Render issues HTTPS after DNS verification; Cloudflare issues HTTPS for the Pages custom domain after it is active.
+
 ## 2. Secrets — READ FIRST
 
 - `.env` is gitignored (`Vault/.gitignore:5`). Never commit `.env`, `*.backup*`, passwords, app keys.
@@ -41,7 +98,7 @@ SESSION_DOMAIN=<shared-cookie-domain>
 SESSION_SECURE_COOKIE=true
 SESSION_SAME_SITE=lax
 RUN_MIGRATIONS=true
-RUN_SEEDERS=false # set true only on first deploy to get owner@dys.com / SecurePass123 + 4 sectors
+RUN_SEEDERS=false
 ```
 
 ## 4. Deploy
@@ -52,7 +109,7 @@ RUN_SEEDERS=false # set true only on first deploy to get owner@dys.com / SecureP
 2. Render > New Web Service > Connect repo > Runtime Docker > Root `backend/` > Dockerfile `backend/Dockerfile` > Plan Free > Add env vars > Create.
 3. Render auto builds: `composer install`, `php artisan migrate --force` (via entrypoint), health `/up`.
 4. Add Clever Cloud MySQL: Clever Cloud > Create MySQL > 256MB free > copy host/user/pass/db > paste into Render env > Redeploy.
-5. First deploy: set `RUN_SEEDERS=true`, deploy, then set back to `false` (avoids fake prod financial data; seed only creates `owner@dys.com` + 4 sectors via `DatabaseSeeder`).
+5. For a fresh database only, set a newly generated `OWNER_PASSWORD` and `RUN_SEEDERS=true` for one deployment. Verify the owner account, then set `RUN_SEEDERS=false` and remove `OWNER_PASSWORD`. The seeder never replaces an existing owner password or truncates sectors.
 
 ### Koyeb / Fly.io (same Dockerfile)
 
