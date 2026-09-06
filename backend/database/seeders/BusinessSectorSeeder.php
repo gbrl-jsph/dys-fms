@@ -9,15 +9,8 @@ class BusinessSectorSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ensure deterministic IDs 1-4 for the four approved sectors.
-        // Truncate first so repeated seeds (e.g., phone QA) do not create
-        // stale IDs like 51-54 that would break Flutter's BusinessSectorsConfig
-        // and any persisted sector_id (see: Selector ID is invalid).
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        DB::table('business_sectors')->truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
-
-        DB::table('business_sectors')->insert([
+        // Preserve referenced sectors and financial records on every deploy.
+        foreach ([
             [
                 'id' => 1,
                 'name' => 'DYS Events',
@@ -38,6 +31,11 @@ class BusinessSectorSeeder extends Seeder
                 'name' => 'SnapDYS Memories',
                 'description' => 'Video guestbook',
             ],
-        ]);
+        ] as $sector) {
+            DB::table('business_sectors')->updateOrInsert(
+                ['id' => $sector['id']],
+                $sector,
+            );
+        }
     }
 }

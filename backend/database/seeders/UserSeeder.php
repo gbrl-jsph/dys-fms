@@ -10,16 +10,22 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Idempotent: use updateOrInsert so repeated RUN_SEEDERS=true (e.g., container restarts)
-        // does not fail with duplicate email 1062 when owner already exists in production.
-        DB::table('users')->updateOrInsert(
-            ['email' => 'owner@dys.com'],
+        $password = env('OWNER_PASSWORD');
+
+        if (empty($password)) {
+            throw new \RuntimeException('OWNER_PASSWORD must be set before seeding the initial Business Owner.');
+        }
+
+        // Create once only: production seeding must never replace an owner's password.
+        DB::table('users')->insertOrIgnore(
             [
+                'email' => 'owner@dys.com',
                 'name' => 'Juan Dela Cruz',
-                'password' => Hash::make(env('OWNER_PASSWORD', 'SecurePass123')),
+                'password' => Hash::make($password),
                 'role' => 'Business Owner',
                 'sector_id' => null,
                 'account_status' => 'Active',
+                'created_at' => now(),
                 'updated_at' => now(),
             ]
         );
