@@ -4,7 +4,7 @@ Preserves Laravel 12 + MySQL + Sanctum. Minimum changes: `Dockerfile`, `docker/a
 
 ## 1. Recommended hosting (free/low-cost for QA)
 
-**Primary: Docker host (Render Free / Koyeb Free / Fly.io) + managed MySQL (Clever Cloud Free 256MB / Aiven Free 1GB / FreeSQLDatabase.com 5MB)**
+**Primary: Render Docker Web Service + Aiven MySQL + Cloudflare Pages.** Alternative providers below are historical QA options only.
 
 - Supports PHP 8.2, HTTPS (auto Let's Encrypt), env vars, `php artisan migrate --force`, Sanctum, persistent DB not public.
 - Alternative no-Docker: **AlwaysData Free** (100MB, PHP 8.3, MySQL 10MB, SSH, HTTPS) — tight for vendor but OK for QA.
@@ -14,12 +14,10 @@ Preserves Laravel 12 + MySQL + Sanctum. Minimum changes: `Dockerfile`, `docker/a
 
 ## Approved Production Deployment — v1
 
-The approved production stack is **Render Docker Web Service** for `backend/`,
-**Clever Cloud MySQL** for the database, and **Cloudflare Pages** for the
-prebuilt `flutter_app/build/web/` PWA. Use sibling HTTPS subdomains of one
-registrable parent domain: `https://app.<domain>` for the PWA and
-`https://api.<domain>` for the API. Do not create DNS records or enter a real
-domain until the owner approves it.
+The approved initial stack is **Render Docker Web Service** for `backend/`,
+**Aiven MySQL** for the database, and **Cloudflare Pages** for the prebuilt
+`flutter_app/build/web/` PWA. Provider-issued URLs support initial API,
+database, Android, and static-Web verification only.
 
 ### Render service
 
@@ -28,11 +26,11 @@ domain until the owner approves it.
 3. Set health check path to `/up`. The entrypoint changes Apache from port 80 to Render's injected `PORT`.
 4. Add the production variables in the next section. `RUN_MIGRATIONS=true` applies forward migrations with `--force`; `RUN_SEEDERS=false` is the steady-state value.
 
-### Clever Cloud MySQL
+### Aiven MySQL
 
-Create a MySQL add-on and copy its connection values into Render exactly:
+Create an Aiven MySQL service and copy its Overview-page connection values into Render exactly:
 
-| Clever Cloud value | Render variable |
+| Aiven value | Render variable |
 |---|---|
 | host | `DB_HOST` |
 | port | `DB_PORT` |
@@ -40,7 +38,7 @@ Create a MySQL add-on and copy its connection values into Render exactly:
 | username | `DB_USERNAME` |
 | password | `DB_PASSWORD` |
 
-Always set `DB_CONNECTION=mysql`. The approved mapping uses the `DB_*` variables; `DB_URL` is supported by the current Laravel configuration but is unnecessary when those values are supplied. If Clever Cloud's chosen connection mode requires a CA certificate, obtain its published CA material and configure it as a Render secret file, then set `MYSQL_ATTR_SSL_CA` to that file path. The Laravel connection already consumes this variable. Do not invent a certificate path or certificate value.
+Always set `DB_CONNECTION=mysql`. Download Aiven's CA certificate, upload it as a Render secret file, and set `MYSQL_ATTR_SSL_CA` to its absolute runtime path. Laravel configures both `PDO::MYSQL_ATTR_SSL_CA` and `PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT=true` when this variable is set. Never disable certificate verification. The approved mapping uses the `DB_*` variables; `DB_URL` is supported but unnecessary.
 
 ### Initial database and owner
 
@@ -54,8 +52,21 @@ The seeders are safe to re-run: sectors are updated by their fixed IDs without t
 
 Build the Web/PWA artifact outside Cloudflare Pages and upload `flutter_app/build/web/` directly. This avoids adding Flutter SDK setup or CI/CD to Cloudflare's build environment. Hash routing requires no SPA rewrite rule. The release build contains only the public API URL supplied through `API_BASE_URL`; it contains no backend or SMTP secret.
 
-### Exact sibling-domain configuration
+### Initial provider URLs are not Web-auth acceptance
 
+The Cloudflare `*.pages.dev` and Render `*.onrender.com` URLs are different
+registrable sites. They may be used for Render `/up`, Aiven connectivity,
+Android API testing, and Flutter Web static boot/loading verification. They
+must not be accepted for Web login, session restore, logout, Safari PWA
+authentication, or Add-to-Home-Screen authentication acceptance. The current
+Web client uses credentialed Sanctum session cookies plus an XSRF cookie read
+from `document.cookie`; cross-site provider URLs cannot provide that flow
+reliably and Safari blocks third-party cookies. Do not weaken cookie security
+or replace Web authentication with persisted bearer tokens.
+
+### Custom sibling domain is required for Web/PWA authentication acceptance
+
+**CUSTOM SIBLING DOMAIN: REQUIRED FOR WEB/PWA AUTHENTICATION ACCEPTANCE.**
 After both custom domains verify and HTTPS certificates are active, set:
 
 ```
@@ -68,6 +79,15 @@ SESSION_SAME_SITE=lax
 ```
 
 `CORS_ALLOWED_ORIGINS` is parsed as exact comma-separated origins and does not permit wildcard CORS. `SESSION_DOMAIN` is read directly as the shared cookie domain, and Sanctum reads the comma-separated stateful host list. DNS records are created in Cloudflare: attach `app.<domain>` to the Pages project and create the Render-required custom-domain verification/target record for `api.<domain>`. Render issues HTTPS after DNS verification; Cloudflare issues HTTPS for the Pages custom domain after it is active.
+
+### Render Free SMTP limitation
+
+Render Free blocks outbound SMTP ports commonly used by the existing SMTP
+implementation. **TEMPORARY-PASSWORD EMAIL / REAL SMTP ACCEPTANCE: BLOCKED ON
+CURRENT RENDER FREE DEPLOYMENT MODEL.** Do not remove the feature, fake
+delivery, or add a mail API. A future resolution requires separate approval to
+upgrade backend hosting, move the backend to another approved host, or add an
+HTTP mail-provider integration.
 
 ## 2. Secrets — READ FIRST
 
@@ -108,7 +128,7 @@ RUN_SEEDERS=false
 1. Push repo to GitHub.
 2. Render > New Web Service > Connect repo > Runtime Docker > Root `backend/` > Dockerfile `backend/Dockerfile` > Plan Free > Add env vars > Create.
 3. Render auto builds: `composer install`, `php artisan migrate --force` (via entrypoint), health `/up`.
-4. Add Clever Cloud MySQL: Clever Cloud > Create MySQL > 256MB free > copy host/user/pass/db > paste into Render env > Redeploy.
+4. Add Aiven MySQL: create the service, download its CA certificate, upload the CA as a Render secret file, then copy the Aiven host/port/database/user/password into the `DB_*` variables and set `MYSQL_ATTR_SSL_CA` to the secret-file path.
 5. For a fresh database only, set a newly generated `OWNER_PASSWORD` and `RUN_SEEDERS=true` for one deployment. Verify the owner account, then set `RUN_SEEDERS=false` and remove `OWNER_PASSWORD`. The seeder never replaces an existing owner password or truncates sectors.
 
 ### Koyeb / Fly.io (same Dockerfile)
@@ -172,7 +192,7 @@ Deploy `flutter_app/build/web/` to the HTTPS PWA origin. In Safari on iPhone/iPa
 - [ ] APP_DEBUG=false
 - [ ] .env not committed (`git ls-files | grep -E "^\.env|backend/\.env"`)
 - [ ] secrets in provider env only
-- [ ] DB not publicly exposed (Clever Cloud restricts to app IP, firewalled)
+- [ ] Aiven CA is stored only as a Render secret file and MySQL TLS verification is enabled
 - [ ] Laravel debug pages don't leak (APP_DEBUG false)
 - [ ] Sanctum bearer auth enforced, unauth 401, RBAC via Ensure* middleware
 - [ ] Android native app uses Bearer tokens over HTTPS

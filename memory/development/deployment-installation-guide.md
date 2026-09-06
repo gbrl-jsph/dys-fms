@@ -322,6 +322,7 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 | `DB_DATABASE` | `dys_fms` | Database name |
 | `DB_USERNAME` | `root` | Database user |
 | `DB_PASSWORD` | *(empty in template)* | Database password |
+| `MYSQL_ATTR_SSL_CA` | *(Render secret-file path)* | Required for Aiven MySQL: path to the downloaded Aiven CA certificate. Laravel enables CA-backed server-certificate verification when this is set. |
 | `BROADCAST_DRIVER` | `log` | Broadcasting (not used by the app) |
 | `CACHE_DRIVER` | `file` | Cache driver (no external cache required) |
 | `FILESYSTEM_DISK` | `local` | Storage disk |
@@ -332,7 +333,7 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 | `SANCTUM_STATEFUL_DOMAINS` | `<pwa-host>` | Comma-separated PWA hosts (and development ports where applicable) treated as Sanctum stateful clients. |
 | `SESSION_DOMAIN` | `<shared-cookie-domain>` | Cookie domain shared by the HTTPS PWA and API when they use subdomains; leave unset when host-only cookies are intended. |
 | `SESSION_SECURE_COOKIE` | `true` | Requires HTTPS for the PWA session cookie in production. |
-| `SESSION_SAME_SITE` | `lax` | Same-site cookie policy for the PWA/API deployment; use `none` only when a deliberately cross-site architecture requires it, with `SESSION_SECURE_COOKIE=true`. |
+| `SESSION_SAME_SITE` | `lax` | Same-site cookie policy for the PWA/API sibling-domain deployment. Do not use `none` to attempt provider-domain cross-site authentication. |
 | `MAIL_MAILER` | `smtp` | Mail transport (Laravel SMTP driver) |
 | `MAIL_HOST` | *(provider host)* | SMTP server host |
 | `MAIL_PORT` | `1025` local / `587` TLS / `465` SSL | SMTP server port |
@@ -344,7 +345,40 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 | `MAIL_FROM_ADDRESS` | `noreply@dys.test` local | Global "From" address (must be provider-verified in production) |
 | `MAIL_FROM_NAME` | `"DYS Financial Management System"` | Global "From" display name |
 
-### 7.2 Frontend — configuration used (from `flutter_app/lib/data/api/api_config.dart`)
+### 7.2 Approved Initial Deployment and Web Authentication Boundary
+
+The approved initial deployment stack is Cloudflare Pages for the prebuilt PWA,
+Render Docker Web Service for Laravel, and Aiven MySQL. Map Aiven Overview
+values to `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and
+`DB_PASSWORD`; set `DB_CONNECTION=mysql`. Download the Aiven CA certificate,
+mount it as a Render secret file, set `MYSQL_ATTR_SSL_CA` to that path, and
+never disable TLS certificate verification.
+
+The provider-issued `*.pages.dev` and `*.onrender.com` hosts are cross-site.
+They are suitable only for API health, database connectivity, Android API, and
+static-Web boot verification. They are not valid for Web login, session restore,
+logout, Safari PWA authentication, or Add-to-Home-Screen authentication. The
+current secure Sanctum cookie/XSRF design requires final sibling hosts under
+one registrable domain:
+
+```
+APP_URL=https://api.<domain>
+CORS_ALLOWED_ORIGINS=https://app.<domain>
+SANCTUM_STATEFUL_DOMAINS=app.<domain>
+SESSION_DOMAIN=.<domain>
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+```
+
+**CUSTOM SIBLING DOMAIN: REQUIRED FOR WEB/PWA AUTHENTICATION ACCEPTANCE.**
+
+Render Free blocks the standard outbound SMTP ports. Therefore real
+temporary-password email acceptance is blocked on the Render Free model until
+the owner separately approves a hosting upgrade, an approved different backend
+host, or an HTTP mail-provider integration. No mail architecture change is
+included here.
+
+### 7.3 Frontend — configuration used (from `flutter_app/lib/data/api/api_config.dart`)
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
@@ -354,7 +388,7 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 
 No other environment variables are used by the application.
 
-### 7.3 Email (SMTP) Configuration
+### 7.4 Email (SMTP) Configuration
 
 The backend emails temporary passwords (user creation and password reset) through the Laravel 12 mail system (`config/mail.php`, `MAIL_MAILER=smtp`, Symfony Mailer transport). Transport security is selected with these variables:
 
@@ -521,7 +555,7 @@ Run this checklist before considering a deployment complete:
 | 1 | Backend starts | `php artisan serve --port=8000` | Server responds on port 8000 |
 | 2 | Database connected | `php artisan migrate:status` | 8 migrations listed as run (no connection errors) |
 | 3 | Migrations complete | `php artisan migrate` | "Nothing to migrate" or all 8 applied |
-| 4 | Seeders complete | `php artisan db:seed` | 4 sectors + Business Owner created. **Not idempotent:** seeders use plain `insert()`, so a re-run fails on the unique `name`/`email` constraints — to re-seed, truncate the affected tables first (`TRUNCATE business_sectors; TRUNCATE users;`) or use `migrate:fresh --seed` |
+| 4 | Initial seed only | Fresh database only: set a secret `OWNER_PASSWORD` and `RUN_SEEDERS=true` for one deploy, then remove `OWNER_PASSWORD` and set `RUN_SEEDERS=false` | 4 sectors + Business Owner created without truncation or owner overwrite; never use `migrate:fresh` in production |
 | 5 | API connectivity | `curl -X POST http://localhost:8000/api/login …` | HTTP 200 with `user`, `token`, `default_sector` |
 | 6 | Flutter launches | `flutter run` | App boots to the Login screen without crashes |
 | 7 | Login works | Log in as owner | Navigates to Dashboard (Business Owner variant, 6 tabs) |
@@ -552,5 +586,5 @@ Run this checklist before considering a deployment complete:
 1. **PHP runtime:** the current development environment (Linux/SteamOS) does not have PHP installed; all `php`/`composer`/`php artisan` commands must be executed in an environment with PHP 8.2+ and Composer 2.x. The guide reflects this by describing the commands without executing them here.
 2. **Database engine:** **MySQL** per the implementation (`DB_CONNECTION=mysql`, `config/database.php`) and approved docs — no PostgreSQL-specific steps are included.
 3. **No invented infrastructure:** no Docker, Nginx, CI/CD, or cloud hosting steps are included because the implementation does not use them. Production hosting specifics are out of scope; §9 covers only what the project itself supports.
-4. **Credentials:** the seeded Business Owner account is `owner@dys.com` / `SecurePass123` (defined in `backend/database/seeders/UserSeeder.php`). Change the password of production accounts after first login via the Users screen (PATCH `account_status` flow) — the seeder value is a development default, not a production secret.
+4. **Credentials:** production owner creation requires an externally supplied, one-time `OWNER_PASSWORD`; it has no hardcoded production fallback. Set it only for the controlled fresh-database seed, then remove it from Render.
 5. **Release signing:** `flutter build apk --release` produces the standard Flutter debug-signed release artifact; production signing configuration is Android-platform setup outside the scope of this project's codebase.

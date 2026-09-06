@@ -108,7 +108,7 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 - **Middleware**: `EnsureBusinessOwner` (owner), `EnsureSalesAccess` (BO+EM), `EnsureExpenseAccess` (BO+EM), `EnsurePayrollAccess` (GET all, POST owner), `EnsureReportsAccess` (BO all, EM sector, EE 403), `EnsureSectorAccess` (GET all, POST owner)
 - **Policies**: none — role gating via middleware + service-layer `authorizeAccess()` + guard clauses
 - **Mail**: `failover` mailer (smtp→log), `TemporaryPasswordMail` with role/sector context, `password_sent` flag, fail-soft
-- **Deployment**: Render Docker, Apache, Clever Cloud MySQL, `/up` JSON health, `UserSeeder` idempotent with `env('OWNER_PASSWORD')`
+- **Deployment**: Render Docker, Apache, Aiven MySQL with verified CA TLS, Cloudflare Pages; `/up` JSON health; `UserSeeder` creates the owner only with an explicit `OWNER_PASSWORD`. Provider URLs support API/Android/static-Web verification only; sibling custom domains are required for Web/PWA session authentication acceptance.
 
 ---
 
