@@ -90,6 +90,57 @@ class AuthenticationTest extends TestCase
         $this->assertStringContainsString('|', $response->json('data.token'));
     }
 
+    public function test_stateful_web_login_establishes_a_session_without_returning_a_bearer_token(): void
+    {
+        $response = $this->withHeader('Origin', 'http://localhost:3000')
+            ->postJson('/api/login', $this->validCredentials);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Login successful.')
+            ->assertJsonMissingPath('data.token');
+
+        $this->assertNotNull($response->getCookie(config('session.cookie')));
+    }
+
+    public function test_session_authenticated_user_can_retrieve_their_profile(): void
+    {
+        $loginResponse = $this->withHeader('Origin', 'http://localhost:3000')
+            ->postJson('/api/login', $this->validCredentials);
+        $sessionCookie = $loginResponse->getCookie(config('session.cookie'));
+
+        $response = $this->withCookie(config('session.cookie'), $sessionCookie->getValue())
+            ->withHeader('Origin', 'http://localhost:3000')
+            ->getJson('/api/profile');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.id', 1)
+            ->assertJsonPath('data.email', 'owner@dys.com')
+            ->assertJsonPath('message', 'Profile retrieved successfully.');
+    }
+
+    public function test_session_logout_invalidates_session_authentication(): void
+    {
+        $loginResponse = $this->withHeader('Origin', 'http://localhost:3000')
+            ->postJson('/api/login', $this->validCredentials);
+        $sessionCookie = $loginResponse->getCookie(config('session.cookie'));
+
+        $this->withCookie(config('session.cookie'), $sessionCookie->getValue())
+            ->withHeader('Origin', 'http://localhost:3000')
+            ->postJson('/api/logout')
+            ->assertStatus(200)
+            ->assertJson([
+                'message' => 'Logged out successfully.',
+            ]);
+
+        $this->withCookie(config('session.cookie'), $sessionCookie->getValue())
+            ->withHeader('Origin', 'http://localhost:3000')
+            ->getJson('/api/profile')
+            ->assertStatus(401)
+            ->assertJson([
+                'message' => 'Unauthenticated.',
+            ]);
+    }
+
     public function test_login_fails_with_incorrect_password(): void
     {
         $response = $this->postJson('/api/login', [
