@@ -40,7 +40,7 @@ Create a MySQL add-on and copy its connection values into Render exactly:
 | username | `DB_USERNAME` |
 | password | `DB_PASSWORD` |
 
-Always set `DB_CONNECTION=mysql`. If Clever Cloud's chosen connection mode requires a CA certificate, obtain its published CA material and configure it as a Render secret file, then set `MYSQL_ATTR_SSL_CA` to that file path. The Laravel connection already consumes this variable. Do not set `DB_URL` instead of the `DB_*` variables and do not invent a certificate path or certificate value.
+Always set `DB_CONNECTION=mysql`. The approved mapping uses the `DB_*` variables; `DB_URL` is supported by the current Laravel configuration but is unnecessary when those values are supplied. If Clever Cloud's chosen connection mode requires a CA certificate, obtain its published CA material and configure it as a Render secret file, then set `MYSQL_ATTR_SSL_CA` to that file path. The Laravel connection already consumes this variable. Do not invent a certificate path or certificate value.
 
 ### Initial database and owner
 
