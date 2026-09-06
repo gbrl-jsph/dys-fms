@@ -13,5 +13,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
+        'stderr' => [
+            'driver' => 'monolog',
+            'handler' => Monolog\Handler\StreamHandler::class,
+            'with' => [
+                'stream' => 'php://stderr',
+            ],
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
     ],
 ];
