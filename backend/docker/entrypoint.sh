@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+APP_ROOT=/var/www/html
+mkdir -p "$APP_ROOT/storage/app/public" "$APP_ROOT/storage/framework/cache/data" \
+  "$APP_ROOT/storage/framework/sessions" "$APP_ROOT/storage/framework/views" \
+  "$APP_ROOT/storage/logs" "$APP_ROOT/bootstrap/cache"
+chown -R www-data:www-data "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
+find "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache" -type d -exec chmod 775 {} +
+
 # Render/Koyeb/Fly set PORT (e.g. 10000). Apache listens 80, so rewrite if needed.
 if [ -n "$PORT" ] && [ "$PORT" != "80" ]; then
   echo "Listening on PORT=$PORT (mapping Apache 80 -> $PORT)"
@@ -43,8 +50,8 @@ php artisan route:cache || true
 # view:cache removed — API-only backend has no Blade views (causes "View path not found" 500 on /up)
 
 # Permissions again (volume mounts may reset)
-chown -R www-data:www-data storage bootstrap/cache || true
-chmod -R 775 storage bootstrap/cache || true
+chown -R www-data:www-data "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache"
+find "$APP_ROOT/storage" "$APP_ROOT/bootstrap/cache" -type d -exec chmod 775 {} +
 
 echo "Starting Apache..."
 exec apache2-foreground

@@ -28,12 +28,12 @@ COPY . .
 # Apache vhost: serve public/ + allow HTAccess
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
-# Permissions (Laravel requires storage + bootstrap/cache writable)
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache \
-    && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs \
-    && chown -R www-data:www-data storage \
-    # Optimize for production (config/route/view cache runs at boot via env)
+# Laravel requires writable runtime directories even from a clean Git checkout.
+# Package discovery optimizes production dependencies during the image build.
+RUN mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions \
+    storage/framework/views storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && find storage bootstrap/cache -type d -exec chmod 775 {} + \
     && php artisan package:discover --ansi || true
 
 # Apache port; Render/Koyeb inject PORT env (default 80 -> 10000). We listen 80.
