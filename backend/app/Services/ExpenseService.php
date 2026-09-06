@@ -67,18 +67,21 @@ class ExpenseService
     }
 
     /**
-     * Records an expense. user_id, sector_id and recorded_at are set
-     * server-side (never client-supplied); payroll_record_id stays null for manual
-     * entries (set only by the payroll system, TC-FR005-01).
+     * Records an expense. A manual entry may optionally supply a validated
+     * recording timestamp; payroll_record_id stays null and server-controlled.
      */
     public function recordExpense(User $user, int $sectorId, array $data): array
     {
-        $expense = Expense::create([
+        $attributes = [
             'user_id' => $user->id,
             'sector_id' => $sectorId,
             'amount' => $data['amount'],
             'description' => $data['description'] ?? null,
-        ]);
+        ];
+        if (isset($data['recorded_at'])) {
+            $attributes['recorded_at'] = Carbon::parse($data['recorded_at'])->utc();
+        }
+        $expense = Expense::create($attributes);
 
         $expense->refresh()->load(['user', 'sector']);
 

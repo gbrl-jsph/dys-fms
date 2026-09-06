@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/events/financial_events.dart';
 import '../../../../data/api/api_error_mapper.dart';
 import '../../data/models/financial_summary.dart';
+import '../../data/models/recent_transaction.dart';
 import '../../data/repositories/dashboard_repository.dart';
 import '../../domain/dashboard_state.dart';
 
@@ -42,10 +43,15 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final FinancialSummary summary = await _dashboardRepository.getSummary(
-        sectorId: sectorId,
+      final List<dynamic> loaded = await Future.wait<dynamic>([
+        _dashboardRepository.getSummary(sectorId: sectorId),
+        _dashboardRepository.getRecentTransactions(sectorId: sectorId),
+      ]);
+      _state = _state.copyWith(
+        isLoading: false,
+        summary: loaded[0] as FinancialSummary,
+        recentTransactions: List<RecentTransaction>.from(loaded[1] as List),
       );
-      _state = _state.copyWith(isLoading: false, summary: summary);
     } catch (error) {
       _state = _state.copyWith(isLoading: false, error: apiErrorMessage(error));
     }

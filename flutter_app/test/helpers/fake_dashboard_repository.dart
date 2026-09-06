@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import 'package:dys_fms/features/dashboard/data/models/financial_summary.dart';
+import 'package:dys_fms/features/dashboard/data/models/recent_transaction.dart';
 import 'package:dys_fms/features/dashboard/data/repositories/dashboard_repository.dart';
 
 /// Sample `GET /api/reports?type=summary` single-sector payloads matching
@@ -48,6 +49,7 @@ const Map<String, dynamic> crossSectorResponseBody = {
 /// In-memory [DashboardRepository] fake with overridable callbacks.
 class FakeDashboardRepository implements DashboardRepository {
   Future<FinancialSummary> Function(int? sectorId)? onGetSummary;
+  Future<List<RecentTransaction>> Function(int? sectorId)? onGetRecentTransactions;
 
   @override
   late final Dio dio = Dio();
@@ -55,4 +57,8 @@ class FakeDashboardRepository implements DashboardRepository {
   @override
   Future<FinancialSummary> getSummary({int? sectorId}) =>
       onGetSummary!(sectorId);
+
+  @override
+  Future<List<RecentTransaction>> getRecentTransactions({int? sectorId}) =>
+      onGetRecentTransactions?.call(sectorId) ?? Future.value(const []);
 }

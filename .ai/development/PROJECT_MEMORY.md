@@ -13,7 +13,7 @@
 | **Client** | Mrs. Divine Samonte, DYS Event Management |
 | **Purpose** | Centralized mobile-first financial transaction monitoring across 4 business sectors |
 | **Current version** | App `1.0.0+1` (`pubspec.yaml`); Git tags `v1.0.0`, `v1.0.1`, `v1.1.0`; HEAD `36325d6` on `origin/main` |
-| **Development status** | All 8 FRs implemented; all 10 roadmap phases complete; 253 Flutter + 94 backend tests green |
+| **Development status** | All 8 FRs implemented; all 10 roadmap phases complete; 268 Flutter tests green; backend PHPUnit requires external test database credentials. |
 | **Tech stack** | Backend: `Laravel 12`, `PHP ^8.2`, `Sanctum ^4.0`, `MySQL`, `PHPUnit ^11`; Frontend: `Flutter 3.44.x / Dart ^3.12.2`, `provider 6.1.2`, `go_router 14.6.2`, `dio 5.7.0`, `flutter_secure_storage 9.2.2`, `google_fonts 6.2.1`, `fl_chart 1.2.0`; Infra: Docker PHP 8.4, Apache, Render |
 | **Architecture** | Client (Flutter Provider) → API (Laravel REST/Sanctum, JSON `{data,message,errors}`) → Services (controllers→services→DTOs) → MySQL. `StatefulShellRoute.indexedStack` bottom nav, `Dio/ApiClient` Bearer injection, `FlutterSecureStorage` AES-GCM |
 | **Repository structure** | `backend/` (Laravel), `flutter_app/` (Flutter), `memory/` (docs), `.ai/development/` (this file) |
@@ -109,6 +109,7 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 - **Policies**: none — role gating via middleware + service-layer `authorizeAccess()` + guard clauses
 - **Mail**: `failover` mailer (smtp→log), `TemporaryPasswordMail` with role/sector context, `password_sent` flag, fail-soft
 - **Deployment**: Render Docker, Apache, Aiven MySQL with verified CA TLS, Cloudflare Pages; `/up` JSON health; `UserSeeder` creates the owner only with an explicit `OWNER_PASSWORD`. Provider URLs support API/Android/static-Web verification only; sibling custom domains are required for Web/PWA session authentication acceptance.
+- **Financial UI**: Dashboard shows sector-scoped recent sales/expense activity with a local display filter and a single transaction-choice action. Reports load their default context automatically and use existing report type, sector, and date-range controls as display options. Manual Sale/Expense create and update flows accept an optional validated `recorded_at`, send/store it in UTC, and display dashboard activity in local time; omission keeps the database current timestamp default.
 
 ---
 
@@ -141,11 +142,11 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 ### Flutter
 - `flutter analyze` — **No issues found**
-- `flutter test` — **253 passed, 0 failed**
+- `flutter test` — **268 passed, 0 failed**
 - Suites: `core/theme` (app_theme 3, theme_controller), `core/utils/formatters`, `core/widgets` (loading_button, chart_placeholder), `routing/app_router` (28), `integration/app_integration` (owner journey, session survive, theme survive), `features/auth` (login_screen, auth_provider, auth_repository), `features/dashboard` (screen, provider, repository), `features/sales` (screen, provider, repository), `features/expenses` (screen, provider, repository), `features/payroll` (screen, provider, repository), `features/reports` (screen, provider, repository), `features/sectors` (switcher_screen, provider, repository), `features/users` (screen, provider, repository), `features/settings` (screen), `widget_test` (app boot)
 
 ### Backend
-- `phpunit` — **94 tests, 515 assertions OK**
+- `phpunit` — blocked by external `dys_fms_testing` database credentials in the current environment
 - Suites: `AuthenticationTest` 10, `BusinessSectorManagementTest` 11, `SalesManagementTest` 11, `ExpenseManagementTest` 15, `PayrollManagementTest` 17, `ReportsManagementTest` 11, `UserManagementTest` 20
 
 ### Environment Limitations
@@ -312,15 +313,15 @@ DYS Events (id=1, Owner default), B&DYS (id=2, Souvenirs), Flavors by DYS (id=3,
 
 **DB:** BusinessSector(4 seeded), User(role ENUM,sector_id,account_status), SalesTransaction(softDeletes), Expense(10,2,softDeletes,payroll_record_id), PayrollRecord, AuditLog, PasswordResetToken, PersonalAccessToken.
 
-**API:** JSON `{data,message,errors}`, `403 Forbidden`/`401 Unauthenticated`, `sector_id` required BO/overridden EM, server `user_id/recorded_at`, `payroll_record_id` null manual.
+**API:** JSON `{data,message,errors}`, `403 Forbidden`/`401 Unauthenticated`, `sector_id` required BO/overridden EM, server `user_id`, optional validated UTC `recorded_at` for manual Sales/Expenses, `payroll_record_id` null manual.
 
 **Flutter:** Provider auth/users/dashboard/sales/expenses/payroll/reports/sectors, Repository→Dio→ApiClient, DTOs per feature, `AppColors.paletteFor(brightness)` + `AppTheme.build(brightness)` full M3 overrides.
 
 **Theme:** Black/near-black `#1A1A1A/#121212` + Gold primary `#D4AF37`, light `#FFF/#F7F7F4`, `inkOnPrimary #1C1B16`, M3 full surface overrides including `tertiary/shadow`, `surfaceTint transparent`, `AppShadows` dark+gold, status bar `AnnotatedRegion`, `ThemeController` persists `theme_mode` across logout.
 
-**Tests:** `flutter analyze No issues`, `flutter test 253 pass`, `phpunit 94 tests 515 assertions OK`.
+**Tests:** `flutter analyze No issues`, `flutter test 268 pass`, PHPUnit blocked by external `dys_fms_testing` credentials.
 
-**Business rules:** Only BO creates/activates users, no public reg, BO calculates all payroll, Hours×Rate→Expense atomic, server user_id/recorded_at, BO default DYS Events, EM/EE assigned no switch, sector switch refreshes Dashboard only (M-1 stale other screens).
+**Business rules:** Only BO creates/activates users, no public reg, BO calculates all payroll, Hours×Rate→Expense atomic, server user_id, optional validated UTC manual `recorded_at`, BO default DYS Events, EM/EE assigned no switch, sector switch refreshes Dashboard only (M-1 stale other screens).
 
 **Locked rules:** Never invent, no scope creep, exact role names, preserve architecture, no breaking API, don't rename endpoints, don't silently resolve conflicts, exact validation messages, docs internally consistent, every feature needs analyze+tests+phpunit+regression, don't weaken tests, follow wireframes, no new roles/tables/workflows without approval, stop & report after each major task.
 

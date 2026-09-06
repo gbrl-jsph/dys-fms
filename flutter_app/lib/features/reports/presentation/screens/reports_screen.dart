@@ -38,7 +38,9 @@ import '../providers/reports_provider.dart';
 /// (sales_trend / expense_breakdown / sector_comparison) maps to the
 /// three analytics placeholders.
 class ReportsScreen extends StatefulWidget {
-  const ReportsScreen({super.key});
+  const ReportsScreen({super.key, this.autoLoad = true});
+
+  final bool autoLoad;
 
   @override
   State<ReportsScreen> createState() => _ReportsScreenState();
@@ -75,6 +77,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           _syncedSectorId = sectorId;
         });
       }
+      if (widget.autoLoad) _generate(context.read<ReportsProvider>());
     });
   }
 
@@ -96,10 +99,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
       lastDate: DateTime(2100),
     );
     if (picked == null) return;
+    if (!mounted) return;
     setState(() {
       onPicked(picked);
       controller.text = Formatters.formatDate(picked);
     });
+    _generate(context.read<ReportsProvider>());
   }
 
   bool _validate() {
@@ -150,7 +155,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           _selectedSectorId = currentSectorId;
           _syncedSectorId = currentSectorId;
         });
-        reportsProvider.clearReport();
+        _generate(reportsProvider);
       });
     }
 
@@ -183,9 +188,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   _reportType = type ?? 'summary';
                   _typeError = null;
                 });
+                _generate(reportsProvider);
               },
               onSectorChanged: (sectorId) {
                 setState(() => _selectedSectorId = sectorId);
+                _generate(reportsProvider);
               },
               onPickDateFrom: () => _pickDate(
                 _dateFromController,
@@ -210,9 +217,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 }
 
-/// Report generation form (wireframe `.card-flat`): Report Type selector,
-/// sector selector (Owner only, with a cross-sector "All Sectors" option),
-/// From/To date pickers, and the Generate Report action.
+/// Compact display options backed by the existing report type, sector, and
+/// date-range query parameters. Reports load automatically on entry.
 class _ReportForm extends StatelessWidget {
   const _ReportForm({
     required this.isBusinessOwner,
@@ -267,6 +273,8 @@ class _ReportForm extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const AppFieldLabel('Display Options'),
+          const SizedBox(height: AppSpacing.sp2),
           const AppFieldLabel('Report Type'),
           DropdownButtonFormField<String>(
             initialValue: reportType,
@@ -433,7 +441,7 @@ class _ReportContent extends StatelessWidget {
             barColor: AppColors.primary,
           ),
           const SizedBox(height: AppSpacing.sp4),
-          const SectionLabel('Expense Breakdown'),
+          const SectionLabel('Expense Trend'),
           const SizedBox(height: AppSpacing.sp2),
           ReportPieChart(points: report.expenseBreakdown),
           const SizedBox(height: AppSpacing.sp4),
@@ -441,15 +449,15 @@ class _ReportContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.sp2),
           ReportSectorChart(sectors: report.sectorComparison),
         ] else ...[
-          const SectionLabel('Sales Graph'),
+          const SectionLabel('Sales Trend'),
           const SizedBox(height: AppSpacing.sp2),
           ReportBarChart(
             points: report.salesTrend,
-            title: 'Sales Graph',
+            title: 'Sales Trend',
             barColor: AppColors.primary,
           ),
           const SizedBox(height: AppSpacing.sp4),
-          const SectionLabel('Expense Chart'),
+          const SectionLabel('Expense Trend'),
           const SizedBox(height: AppSpacing.sp2),
           ReportPieChart(points: report.expenseBreakdown),
         ],

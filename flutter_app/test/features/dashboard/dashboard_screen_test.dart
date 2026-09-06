@@ -9,10 +9,12 @@ import 'package:provider/provider.dart';
 import 'package:dys_fms/core/theme/app_theme.dart';
 import 'package:dys_fms/core/theme/theme_controller.dart';
 import 'package:dys_fms/core/theme/theme_mode_store.dart';
+import 'package:dys_fms/core/utils/formatters.dart';
 import 'package:dys_fms/core/widgets/app_avatar.dart';
 import 'package:dys_fms/features/auth/data/models/user_model.dart';
 import 'package:dys_fms/features/auth/presentation/providers/auth_provider.dart';
 import 'package:dys_fms/features/dashboard/data/models/financial_summary.dart';
+import 'package:dys_fms/features/dashboard/data/models/recent_transaction.dart';
 import 'package:dys_fms/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:dys_fms/features/dashboard/presentation/screens/dashboard_screen.dart';
 
@@ -74,29 +76,27 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('owner dashboard renders summary cards and quick actions', (
-    WidgetTester tester,
-  ) async {
-    await pumpDashboard(tester);
+  testWidgets(
+    'owner dashboard renders summary cards, recent activity, and add action',
+    (WidgetTester tester) async {
+      await pumpDashboard(tester);
 
-    expect(find.text('Dashboard'), findsOneWidget);
-    expect(find.text('DYS Events'), findsOneWidget);
-    expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
-    expect(find.text('Total Sales'), findsOneWidget);
-    expect(find.text('Total Exp.'), findsOneWidget);
-    expect(find.text('Net Balance'), findsOneWidget);
-    expect(find.text('₱150,000.00'), findsOneWidget);
-    expect(find.text('₱85,000.00'), findsOneWidget);
-    expect(find.text('₱65,000.00'), findsOneWidget);
-    expect(find.text('SALES OVERVIEW'), findsOneWidget);
-    expect(find.text('Graph placeholder'), findsOneWidget);
-    expect(find.text('QUICK ACTIONS'), findsOneWidget);
-    expect(find.text('Record Sale'), findsOneWidget);
-    expect(find.text('Record Expense'), findsOneWidget);
-    expect(find.text('View Reports'), findsOneWidget);
-    expect(find.text('View Payroll'), findsOneWidget);
-    expect(find.text('Manage Users'), findsOneWidget);
-  });
+      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('DYS Events'), findsOneWidget);
+      expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
+      expect(find.text('Total Sales'), findsOneWidget);
+      expect(find.text('Total Exp.'), findsOneWidget);
+      expect(find.text('Net Balance'), findsOneWidget);
+      expect(find.text('₱150,000.00'), findsOneWidget);
+      expect(find.text('₱85,000.00'), findsOneWidget);
+      expect(find.text('₱65,000.00'), findsOneWidget);
+      expect(find.text('SALES OVERVIEW'), findsNothing);
+      expect(find.text('RECENT ACTIVITY'), findsOneWidget);
+      expect(find.text('No recent transactions'), findsOneWidget);
+      expect(find.text('QUICK ACTIONS'), findsOneWidget);
+      expect(find.text('Add Transaction'), findsOneWidget);
+    },
+  );
 
   testWidgets('owner sector chip navigates to the sector switcher', (
     WidgetTester tester,
@@ -143,30 +143,91 @@ void main() {
     expect(find.text('Switch Business Sector'), findsOneWidget);
   });
 
-  testWidgets('event manager dashboard hides Manage Users and the chart', (
+  testWidgets('dashboard display options filter compact recent activity', (
     WidgetTester tester,
   ) async {
-    await pumpDashboard(
-      tester,
-      userJson: {
-        'id': 2,
-        'name': 'Maria Santos',
-        'email': 'maria@dys.com',
-        'role': 'Event Manager',
-        'sector_id': 2,
-        'account_status': 'Active',
-      },
-    );
+    fakeDashboardRepository.onGetRecentTransactions = (_) async => [
+      RecentTransaction(
+        id: 1,
+        isSale: true,
+        amount: 500,
+        description: 'Event deposit',
+        recordedAt: DateTime(2026, 9, 6, 10),
+      ),
+      RecentTransaction(
+        id: 2,
+        isSale: false,
+        amount: 120,
+        description: 'Supplies',
+        recordedAt: DateTime(2026, 9, 6, 9),
+      ),
+    ];
+    await pumpDashboard(tester);
 
-    expect(find.text('B&DYS'), findsOneWidget);
-    expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
+    expect(find.text('Event deposit'), findsOneWidget);
+    expect(find.text('Supplies'), findsOneWidget);
+    await tester.tap(find.text('Display'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sales only'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Event deposit'), findsOneWidget);
+    expect(find.text('Supplies'), findsNothing);
+  });
+
+  testWidgets('recent activity localizes UTC timestamps before display', (
+    WidgetTester tester,
+  ) async {
+    final DateTime utcTimestamp = DateTime.utc(2026, 9, 6, 23, 30);
+    fakeDashboardRepository.onGetRecentTransactions = (_) async => [
+      RecentTransaction(
+        id: 1,
+        isSale: true,
+        amount: 500,
+        description: 'Late event deposit',
+        recordedAt: utcTimestamp,
+      ),
+    ];
+    await pumpDashboard(tester);
+
+    expect(
+      find.text(Formatters.formatDate(utcTimestamp.toLocal())),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('add transaction presents the existing sale and expense routes', (
+    WidgetTester tester,
+  ) async {
+    await pumpDashboard(tester);
+    await tester.tap(find.text('Add Transaction'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Record Sale'), findsOneWidget);
     expect(find.text('Record Expense'), findsOneWidget);
-    expect(find.text('View Reports'), findsOneWidget);
-    expect(find.text('View Payroll'), findsOneWidget);
-    expect(find.text('Manage Users'), findsNothing);
-    expect(find.text('SALES OVERVIEW'), findsNothing);
   });
+
+  testWidgets(
+    'event manager dashboard keeps recent activity and the add action',
+    (WidgetTester tester) async {
+      await pumpDashboard(
+        tester,
+        userJson: {
+          'id': 2,
+          'name': 'Maria Santos',
+          'email': 'maria@dys.com',
+          'role': 'Event Manager',
+          'sector_id': 2,
+          'account_status': 'Active',
+        },
+      );
+
+      expect(find.text('B&DYS'), findsOneWidget);
+      expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
+      expect(find.text('Add Transaction'), findsOneWidget);
+      expect(find.text('SALES OVERVIEW'), findsNothing);
+    },
+  );
 
   testWidgets('employee dashboard shows only the View Payroll quick action', (
     WidgetTester tester,
@@ -187,10 +248,7 @@ void main() {
     expect(find.text('FINANCIAL SUMMARY'), findsNothing);
     expect(find.text('SALES OVERVIEW'), findsNothing);
     expect(find.text('View Payroll'), findsOneWidget);
-    expect(find.text('Record Sale'), findsNothing);
-    expect(find.text('Record Expense'), findsNothing);
-    expect(find.text('View Reports'), findsNothing);
-    expect(find.text('Manage Users'), findsNothing);
+    expect(find.text('Add Transaction'), findsNothing);
   });
 
   testWidgets('shows the loading indicator while the summary loads', (

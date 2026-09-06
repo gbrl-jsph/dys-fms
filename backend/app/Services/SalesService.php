@@ -67,17 +67,21 @@ class SalesService
     }
 
     /**
-     * Records a sale. user_id and recorded_at are set server-side (never
-     * client-supplied).
+     * Records a sale. The client may optionally supply a validated recording
+     * timestamp; otherwise the database default preserves current behavior.
      */
     public function recordSale(User $user, int $sectorId, array $data): array
     {
-        $transaction = SalesTransaction::create([
+        $attributes = [
             'user_id' => $user->id,
             'sector_id' => $sectorId,
             'amount' => $data['amount'],
             'description' => $data['description'] ?? null,
-        ]);
+        ];
+        if (isset($data['recorded_at'])) {
+            $attributes['recorded_at'] = Carbon::parse($data['recorded_at'])->utc();
+        }
+        $transaction = SalesTransaction::create($attributes);
 
         $transaction->refresh()->load(['user', 'sector']);
 

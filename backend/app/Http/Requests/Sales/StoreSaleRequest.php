@@ -21,6 +21,7 @@ class StoreSaleRequest extends FormRequest
         $rules = [
             'amount' => ['required', 'numeric', 'gt:0', 'max:999999.99'],
             'description' => ['nullable', 'string'],
+            'recorded_at' => ['nullable', 'date'],
         ];
 
         if ($this->user()?->role === 'Business Owner') {
@@ -38,6 +39,7 @@ class StoreSaleRequest extends FormRequest
             'amount.gt' => 'Amount must be a positive number.',
             'amount.max' => 'Amount must not exceed 999999.99.',
             'description.string' => 'Description must be a string.',
+            'recorded_at.date' => 'Invalid date.',
             'sector_id.required' => 'Sector is required.',
             'sector_id.integer' => 'The selected sector_id is invalid.',
             'sector_id.exists' => 'The selected sector_id is invalid.',

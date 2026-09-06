@@ -33,8 +33,10 @@ void main() {
   );
 
   test('loadSummary() publishes loading then the loaded summary', () async {
-    adapter.onRequest = (options) async =>
-        jsonResponse(200, summaryResponseBody);
+    adapter.onRequest = (options) async => jsonResponse(
+          200,
+          options.path == '/reports' ? summaryResponseBody : {'data': []},
+        );
 
     expect(provider.state.isLoading, isFalse);
     expect(provider.state.summary, isNull);
@@ -102,16 +104,19 @@ void main() {
     int requestCount = 0;
     adapter.onRequest = (options) async {
       requestCount++;
-      return jsonResponse(200, summaryResponseBody);
+      return jsonResponse(
+        200,
+        options.path == '/reports' ? summaryResponseBody : {'data': []},
+      );
     };
 
     await provider.loadSummary(sectorId: 1);
-    expect(requestCount, 1);
+    expect(requestCount, 3);
 
     events.notifyDataChanged();
     await pumpEventQueue();
 
-    expect(requestCount, 2);
+    expect(requestCount, 6);
     expect(provider.state.summary?.sectorId, 1);
     expect(provider.state.summary?.sectorName, 'DYS Events');
   });

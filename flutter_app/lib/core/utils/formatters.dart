@@ -44,6 +44,11 @@ class Formatters {
   static String formatDate(DateTime date) =>
       '${_months[date.month - 1]} ${date.day}, ${date.year}';
 
+  static String formatTime(DateTime date) {
+    final int hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
+    return '$hour:${date.minute.toString().padLeft(2, '0')} ${date.hour >= 12 ? 'PM' : 'AM'}';
+  }
+
   /// Formats [date] as an API date value (`YYYY-MM-DD`), used for the
   /// payroll `pay_period` payload field.
   static String formatApiDate(DateTime date) =>

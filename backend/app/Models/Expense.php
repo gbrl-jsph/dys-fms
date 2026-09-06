@@ -17,6 +17,7 @@ class Expense extends Model
         'sector_id',
         'amount',
         'description',
+        'recorded_at',
         'payroll_record_id',
     ];
 

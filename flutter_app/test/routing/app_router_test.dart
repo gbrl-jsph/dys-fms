@@ -425,17 +425,17 @@ void main() {
     expect(find.text('QUICK ACTIONS'), findsOneWidget);
   });
 
-  testWidgets('owner dashboard Manage Users quick action navigates to /users', (
+  testWidgets('owner dashboard uses the compact transaction action', (
     WidgetTester tester,
   ) async {
     await pumpApp(tester, authenticated: true);
 
-    expect(find.text('Manage Users'), findsOneWidget);
-
-    await tester.tap(find.text('Manage Users'));
+    expect(find.text('Manage Users'), findsNothing);
+    await tester.tap(find.text('Add Transaction'));
     await tester.pumpAndSettle();
 
-    expect(find.text('USER LIST'), findsOneWidget);
+    expect(find.text('Record Sale'), findsOneWidget);
+    expect(find.text('Record Expense'), findsOneWidget);
   });
 
   testWidgets('non-owner dashboard hides the Manage Users quick action', (

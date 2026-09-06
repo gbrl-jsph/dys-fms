@@ -17,6 +17,7 @@ class SalesTransaction extends Model
         'sector_id',
         'amount',
         'description',
+        'recorded_at',
     ];
 
     public function user(): BelongsTo

@@ -225,6 +225,38 @@ class SalesManagementTest extends TestCase
             ]);
     }
 
+    public function test_owner_can_record_sale_at_a_supplied_timestamp(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/sales', [
+                'amount' => 1250.00,
+                'sector_id' => $this->eventsSector->id,
+                'recorded_at' => '2026-08-15T09:30:00Z',
+            ])
+            ->assertStatus(201);
+
+        $this->assertDatabaseHas('sales_transactions', [
+            'id' => $response->json('data.id'),
+            'recorded_at' => '2026-08-15 09:30:00',
+        ]);
+    }
+
+    public function test_owner_sale_without_a_timestamp_uses_the_database_default(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/sales', [
+                'amount' => 1250.00,
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(201);
+
+        $isRecent = $this->app['db']->selectOne(
+            'SELECT ABS(TIMESTAMPDIFF(SECOND, recorded_at, NOW())) < 120 AS recent FROM sales_transactions WHERE id = ?',
+            [$response->json('data.id')]
+        );
+        $this->assertSame(1, (int) $isRecent->recent);
+    }
+
     public function test_invalid_amounts_return_422_without_persisting(): void
     {
         $token = $this->ownerToken();

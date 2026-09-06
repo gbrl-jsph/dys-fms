@@ -52,7 +52,7 @@ class _SalesScreenState extends State<SalesScreen> {
   String? _sectorError;
   String _searchQuery = '';
   SalesTransaction? _editingTransaction;
-  DateTime? _editingRecordedAt;
+  DateTime _recordedAt = DateTime.now();
 
   @override
   void initState() {
@@ -139,7 +139,7 @@ class _SalesScreenState extends State<SalesScreen> {
       amount: double.parse(_amountController.text.trim()),
       description: _descriptionController.text.trim(),
       sectorId: isBusinessOwner ? _selectedSectorId : null,
-      recordedAt: _editingTransaction != null ? _editingRecordedAt : null,
+      recordedAt: _recordedAt,
     );
 
     final int? editingId = _editingTransaction?.id;
@@ -152,7 +152,7 @@ class _SalesScreenState extends State<SalesScreen> {
         if (provider.state.error == null) {
           setState(() {
             _editingTransaction = null;
-            _editingRecordedAt = null;
+            _recordedAt = DateTime.now();
             _amountController.clear();
             _descriptionController.clear();
           });
@@ -164,10 +164,10 @@ class _SalesScreenState extends State<SalesScreen> {
         _descriptionController.clear();
       });
 
-      provider.recordSale(
-        request,
-        sectorId: sectorId,
-      );
+      provider.recordSale(request, sectorId: sectorId).then((_) {
+        if (!mounted || provider.state.error != null) return;
+        setState(() => _recordedAt = DateTime.now());
+      });
     }
   }
 
@@ -182,7 +182,7 @@ class _SalesScreenState extends State<SalesScreen> {
       if (isBusinessOwner) {
         _selectedSectorId = transaction.sectorId;
       }
-      _editingRecordedAt = transaction.recordedAt;
+      _recordedAt = transaction.recordedAt.toLocal();
       _amountError = null;
       _sectorError = null;
     });
@@ -194,7 +194,7 @@ class _SalesScreenState extends State<SalesScreen> {
     final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
     setState(() {
       _editingTransaction = null;
-      _editingRecordedAt = null;
+      _recordedAt = DateTime.now();
       _amountController.clear();
       _descriptionController.clear();
       if (isBusinessOwner) {
@@ -207,18 +207,17 @@ class _SalesScreenState extends State<SalesScreen> {
   }
 
   Future<void> _pickDate() async {
-    final DateTime initial = _editingRecordedAt ?? DateTime.now();
+    final DateTime initial = _recordedAt;
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
+      final DateTime current = _recordedAt;
       setState(() {
-        // Preserve time component if exists, otherwise use now time
-        final DateTime current = _editingRecordedAt ?? DateTime.now();
-        _editingRecordedAt = DateTime(
+        _recordedAt = DateTime(
           picked.year,
           picked.month,
           picked.day,
@@ -228,6 +227,23 @@ class _SalesScreenState extends State<SalesScreen> {
         );
       });
     }
+  }
+
+  Future<void> _pickTime() async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_recordedAt),
+    );
+    if (picked == null || !mounted) return;
+    setState(
+      () => _recordedAt = DateTime(
+        _recordedAt.year,
+        _recordedAt.month,
+        _recordedAt.day,
+        picked.hour,
+        picked.minute,
+      ),
+    );
   }
 
   void _showSaleDetails(SalesTransaction transaction, bool isBusinessOwner) {
@@ -246,7 +262,9 @@ class _SalesScreenState extends State<SalesScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Amount: ${Formatters.formatCurrency(transaction.amount)}',
-                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -336,7 +354,10 @@ class _SalesScreenState extends State<SalesScreen> {
                 if (_editingTransaction?.id == transaction.id) {
                   _cancelEdit();
                 }
-                context.read<SalesProvider>().deleteSale(transaction.id, sectorId: sectorId);
+                context.read<SalesProvider>().deleteSale(
+                  transaction.id,
+                  sectorId: sectorId,
+                );
               },
               child: const Text('Delete'),
             ),
@@ -349,7 +370,9 @@ class _SalesScreenState extends State<SalesScreen> {
   List<SalesTransaction> _filteredSales(List<SalesTransaction> sales) {
     if (_searchQuery.isEmpty) return sales;
     final String query = _searchQuery.toLowerCase();
-    return sales.where((s) => s.description?.toLowerCase().contains(query) ?? false).toList();
+    return sales
+        .where((s) => s.description?.toLowerCase().contains(query) ?? false)
+        .toList();
   }
 
   @override
@@ -404,7 +427,7 @@ class _SalesScreenState extends State<SalesScreen> {
               selectedSectorId: _selectedSectorId,
               isSubmitting: state.isSubmitting,
               isEditing: isEditing,
-              editingRecordedAt: _editingRecordedAt,
+              recordedAt: _recordedAt,
               amountController: _amountController,
               descriptionController: _descriptionController,
               amountError: _amountError,
@@ -416,6 +439,7 @@ class _SalesScreenState extends State<SalesScreen> {
               },
               onSectorChanged: _onSectorChanged,
               onPickDate: _pickDate,
+              onPickTime: _pickTime,
               onSave: () =>
                   _submitSave(salesProvider, isBusinessOwner: isBusinessOwner),
               onCancelEdit: _cancelEdit,
@@ -467,7 +491,7 @@ class _RecordSaleForm extends StatelessWidget {
     required this.selectedSectorId,
     required this.isSubmitting,
     required this.isEditing,
-    required this.editingRecordedAt,
+    required this.recordedAt,
     required this.amountController,
     required this.descriptionController,
     required this.amountError,
@@ -475,6 +499,7 @@ class _RecordSaleForm extends StatelessWidget {
     required this.onAmountChanged,
     required this.onSectorChanged,
     required this.onPickDate,
+    required this.onPickTime,
     required this.onSave,
     required this.onCancelEdit,
   });
@@ -485,7 +510,7 @@ class _RecordSaleForm extends StatelessWidget {
   final int? selectedSectorId;
   final bool isSubmitting;
   final bool isEditing;
-  final DateTime? editingRecordedAt;
+  final DateTime recordedAt;
   final TextEditingController amountController;
   final TextEditingController descriptionController;
   final String? amountError;
@@ -493,6 +518,7 @@ class _RecordSaleForm extends StatelessWidget {
   final ValueChanged<String> onAmountChanged;
   final ValueChanged<int?> onSectorChanged;
   final VoidCallback onPickDate;
+  final VoidCallback onPickTime;
   final VoidCallback onSave;
   final VoidCallback onCancelEdit;
 
@@ -543,7 +569,10 @@ class _RecordSaleForm extends StatelessWidget {
             hintText: '0.00',
             prefixIcon: const Padding(
               padding: EdgeInsetsDirectional.only(start: 12, end: 8),
-              child: Text('₱', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(
+                '₱',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
             errorText: amountError,
             onChanged: onAmountChanged,
@@ -556,32 +585,28 @@ class _RecordSaleForm extends StatelessWidget {
             hintText: 'Optional',
             onChanged: (_) {},
           ),
-          if (isEditing) ...[
-            const SizedBox(height: AppSpacing.sp4),
-            const AppFieldLabel('Date'),
-            InkWell(
-              onTap: isSubmitting ? null : onPickDate,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      editingRecordedAt != null
-                          ? Formatters.formatDate(editingRecordedAt!)
-                          : 'Select date',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const Icon(Icons.calendar_today_outlined, size: 18),
-                  ],
+          const SizedBox(height: AppSpacing.sp4),
+          Row(
+            children: [
+              Expanded(
+                child: _DateTimeSelector(
+                  label: 'Recorded Date',
+                  value: Formatters.formatDate(recordedAt),
+                  icon: Icons.calendar_today_outlined,
+                  onTap: isSubmitting ? null : onPickDate,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: AppSpacing.sp3),
+              Expanded(
+                child: _DateTimeSelector(
+                  label: 'Recorded Time',
+                  value: Formatters.formatTime(recordedAt),
+                  icon: Icons.schedule_outlined,
+                  onTap: isSubmitting ? null : onPickTime,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.sp3),
           LoadingButton(
             label: isEditing ? 'Update Sale' : 'Save Sale',
@@ -599,6 +624,31 @@ class _RecordSaleForm extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DateTimeSelector extends StatelessWidget {
+  const _DateTimeSelector({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.onTap,
+  });
+  final String label;
+  final String value;
+  final IconData icon;
+  final VoidCallback? onTap;
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    child: InputDecorator(
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: Icon(icon, size: 18),
+      ),
+      child: Text(value, overflow: TextOverflow.ellipsis),
+    ),
+  );
 }
 
 /// Sales transaction list with loading / error / empty / data states.
@@ -662,10 +712,7 @@ class _SalesList extends StatelessWidget {
           for (int i = 0; i < state.sales.length; i++) ...[
             if (i > 0)
               Divider(height: 1, thickness: 1, color: AppColors.border),
-            _SalesRow(
-              transaction: state.sales[i],
-              onTap: onTap,
-            ),
+            _SalesRow(transaction: state.sales[i], onTap: onTap),
           ],
         ],
       ),
@@ -737,10 +784,7 @@ class _SalesRow extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: () => onTap!(transaction),
-        child: rowContent,
-      );
+      return InkWell(onTap: () => onTap!(transaction), child: rowContent);
     }
     return rowContent;
   }

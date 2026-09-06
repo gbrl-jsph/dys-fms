@@ -59,7 +59,7 @@ This document is the single source of truth for every validation rule in the DYS
 | Record Sale | description | No | string (TEXT) | Nullable; free text. | — | UI, Backend, Database |
 | Record Sale | sector_id | Conditional | integer (FK) | Required for Business Owner (must exist in Business Sectors). Ignored/overridden for Event Manager. | "Sector is required." / "Selected sector is invalid." | UI, Backend, Database |
 | Record Sale | user_id | Yes (auto) | integer (FK) | Set server-side to authenticated user's ID. Not client-supplied. | — | Backend, Database |
-| Record Sale | recorded_at | Yes (auto) | TIMESTAMP | Set server-side to current timestamp. Not client-supplied. | — | Backend, Database |
+| Record Sale | recorded_at | No | ISO 8601 datetime | Optional valid recording date/time, stored in UTC. When omitted, the database current timestamp is used. | "Invalid date." | UI, Backend, Database |
 | Record Sale | role | — | ENUM | Only Business Owner and Event Manager can record sales | "Forbidden." | Backend |
 | Record Sale | sector scope | — | — | Event Manager cannot record sales outside their assigned sector | "Forbidden. You can only record sales for your assigned sector." | Backend |
 | View Sales | sector_id | Conditional | integer (FK) | Required for Owner (must exist). Ignored/overridden for Event Manager (uses assigned sector). | — | Backend |
@@ -73,7 +73,7 @@ This document is the single source of truth for every validation rule in the DYS
 | Record Expense | description | No | string (TEXT) | Nullable; free text. System-generated expenses use template: "Payroll — {name} — {pay_period}" | — | UI, Backend, Database |
 | Record Expense | sector_id | Conditional | integer (FK) | Required for Business Owner (must exist in Business Sectors). Ignored/overridden for Event Manager. | "Sector is required." / "Selected sector is invalid." | UI, Backend, Database |
 | Record Expense | user_id | Yes (auto) | integer (FK) | Set server-side to authenticated user's ID | — | Backend, Database |
-| Record Expense | recorded_at | Yes (auto) | TIMESTAMP | Set server-side to current timestamp | — | Backend, Database |
+| Record Expense | recorded_at | No | ISO 8601 datetime | Optional valid recording date/time, stored in UTC. When omitted, the database current timestamp is used. | "Invalid date." | UI, Backend, Database |
 | Record Expense | payroll_record_id | — | integer (FK) | NULL for manual entries. Set server-side for system-generated entries only. | — | Backend, Database |
 | Record Expense | role | — | ENUM | Only Business Owner and Event Manager can record expenses manually | "Forbidden." | Backend |
 | Record Expense | sector scope | — | — | Event Manager cannot record expenses outside their assigned sector | "Forbidden. You can only record expenses for your assigned sector." | Backend |
@@ -179,7 +179,7 @@ This document is the single source of truth for every validation rule in the DYS
 | SV-06 | SQL injection prevention via parameterized queries | Backend (ORM / Data Access Layer) |
 | SV-07 | Validation occurs before any database write operation | Backend (Request Validation Layer) |
 | SV-08 | Foreign key constraints enforce referential integrity at database level | Database (FK constraints) |
-| SV-09 | No client-supplied values for server-set fields (user_id, recorded_at, computed_salary, sector_id for EM) | Backend (server-forced fields) |
+| SV-09 | No client-supplied values for server-set fields (user_id, computed_salary, sector_id for EM). `recorded_at` is accepted only for validated manual Sales and Expense create/update flows. | Backend (server-forced fields) |
 | SV-10 | Inactive account status not disclosed in login error responses | Backend |
 | SV-11 | Token-based authentication: tokens can be revoked individually via logout | Backend (Authentication Layer) |
 | SV-12 | No MFA, OTP, CAPTCHA, or email verification implemented | — (not in approved scope) |

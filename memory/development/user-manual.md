@@ -130,7 +130,8 @@ The Business Owner can use every part of the system. All steps below apply to th
 2. Enter the **Amount** of the sale.
 3. Enter a **Description** (what was sold).
 4. Choose the **Sector** the sale belongs to.
-5. Press **Record Sale**. A message confirms the sale was recorded, and the Dashboard totals update to include it.
+5. Check or change the **Recorded Date** and **Recorded Time**. They default to your local current time.
+6. Press **Record Sale**. A message confirms the sale was recorded, and the Dashboard totals update to include it.
 
 ### 3.4 Expense Recording
 
@@ -138,7 +139,8 @@ The Business Owner can use every part of the system. All steps below apply to th
 2. Enter the **Amount** of the expense.
 3. Enter a **Description** (what the money was spent on).
 4. Choose the **Sector** the expense belongs to.
-5. Press **Record Expense**. A message confirms the expense was recorded.
+5. Check or change the **Recorded Date** and **Recorded Time**. They default to your local current time.
+6. Press **Record Expense**. A message confirms the expense was recorded.
 
 ### 3.5 Payroll Calculation
 

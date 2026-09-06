@@ -66,7 +66,7 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.build(Brightness.light),
-          home: const ReportsScreen(),
+          home: const ReportsScreen(autoLoad: false),
         ),
       ),
     );
@@ -86,6 +86,27 @@ void main() {
     expect(find.text('Generate Report'), findsOneWidget);
     expect(find.text('No report yet'), findsOneWidget);
     expect(find.text('Sales graph placeholder'), findsNothing);
+  });
+
+  testWidgets('automatically loads the default report context', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+          ChangeNotifierProvider<ReportsProvider>.value(value: reportsProvider),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.build(Brightness.light),
+          home: const ReportsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('₱150,000.00'), findsWidgets);
+    expect(find.text('Display Options'), findsOneWidget);
   });
 
   testWidgets('generating a summary report shows the charts and the '
@@ -135,7 +156,7 @@ void main() {
     authProvider.updateSector(const DefaultSector(id: 2, name: 'B&DYS'));
     await tester.pumpAndSettle();
 
-    expect(find.text('No report yet'), findsOneWidget);
+    expect(find.text('₱150,000.00'), findsWidgets);
     expect(find.text('B&DYS'), findsOneWidget);
 
     await tester.tap(find.text('Generate Report'));
@@ -308,7 +329,7 @@ void main() {
         ],
         child: MaterialApp(
           theme: AppTheme.build(Brightness.light),
-          home: const ReportsScreen(),
+          home: const ReportsScreen(autoLoad: false),
         ),
       ),
     );
@@ -378,7 +399,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Generate Report'));
     await tester.pumpAndSettle();
-    expect(sentSectors, [1, 2]);
+    expect(sentSectors, [1, 2, 2]);
 
     await tester.tap(find.byType(DropdownButtonFormField<int?>));
     await tester.pumpAndSettle();
@@ -386,7 +407,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Generate Report'));
     await tester.pumpAndSettle();
-    expect(sentSectors, [1, 2, null]);
+    expect(sentSectors, [1, 2, 2, null, null]);
   });
 
   testWidgets('M-1: a sector switch via AuthProvider clears the stale report '
@@ -406,7 +427,7 @@ void main() {
     authProvider.updateSector(const DefaultSector(id: 2, name: 'B&DYS'));
     await tester.pumpAndSettle();
 
-    expect(find.text('No report yet'), findsOneWidget);
+    expect(find.text('₱150,000.00'), findsWidgets);
     expect(find.text('B&DYS'), findsOneWidget);
   });
 }

@@ -370,12 +370,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Maria Santos'), findsOneWidget);
 
-      // Reports tab (default summary type; generated on demand).
+      // Reports tab loads the default summary context automatically.
       await tester.tap(find.text('Reports'));
-      await tester.pumpAndSettle();
-      expect(find.text('No report yet'), findsOneWidget);
-
-      await tester.tap(find.text('Generate Report'));
       await tester.pumpAndSettle();
       expect(find.text('FINANCIAL SUMMARY'), findsOneWidget);
       expect(find.text('₱150,000.00'), findsOneWidget);

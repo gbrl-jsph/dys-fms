@@ -15,7 +15,11 @@ void main() {
 
   setUp(() {
     adapter = FakeHttpClientAdapter();
-    ApiClient.init(tokenProvider: () async => null, tokenClearer: () async {}, httpClientAdapter: adapter);
+    ApiClient.init(
+      tokenProvider: () async => null,
+      tokenClearer: () async {},
+      httpClientAdapter: adapter,
+    );
     repository = SalesRepository(ApiClient.instance);
   });
 
@@ -115,6 +119,29 @@ void main() {
       expect(captured?.data, {'amount': 5000});
     },
   );
+
+  test('recordSale() serializes a supplied timestamp in UTC', () async {
+    RequestOptions? captured;
+    adapter.onRequest = (options) async {
+      captured = options;
+      return jsonResponse(201, {
+        'data': saleJson,
+        'message': 'Sale recorded successfully.',
+      });
+    };
+
+    await repository.recordSale(
+      SaveSaleRequest(
+        amount: 5000,
+        recordedAt: DateTime.parse('2026-08-15T17:30:00+08:00'),
+      ),
+    );
+
+    expect(captured?.data, {
+      'amount': 5000,
+      'recorded_at': '2026-08-15T09:30:00.000Z',
+    });
+  });
 
   test('propagates the DioException on failure (403)', () async {
     adapter.onRequest = (options) async =>

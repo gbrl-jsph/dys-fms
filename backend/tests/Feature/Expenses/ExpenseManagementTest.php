@@ -230,6 +230,22 @@ class ExpenseManagementTest extends TestCase
             ]);
     }
 
+    public function test_owner_expense_without_a_timestamp_uses_the_database_default(): void
+    {
+        $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/expenses', [
+                'amount' => 750.00,
+                'sector_id' => $this->bandysSector->id,
+            ])
+            ->assertStatus(201);
+
+        $isRecent = $this->app['db']->selectOne(
+            'SELECT ABS(TIMESTAMPDIFF(SECOND, recorded_at, NOW())) < 120 AS recent FROM expenses WHERE id = ?',
+            [$response->json('data.id')]
+        );
+        $this->assertSame(1, (int) $isRecent->recent);
+    }
+
     public function test_invalid_amounts_return_422_without_persisting(): void
     {
         $token = $this->ownerToken();
@@ -485,7 +501,7 @@ class ExpenseManagementTest extends TestCase
         $this->assertDatabaseCount('expenses', 0);
     }
 
-    public function test_client_supplied_user_id_and_recorded_at_are_ignored(): void
+    public function test_client_supplied_user_id_is_ignored_but_recorded_at_is_preserved(): void
     {
         $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
             ->postJson('/api/expenses', [
@@ -511,14 +527,10 @@ class ExpenseManagementTest extends TestCase
             'user_id' => $this->owner->id,
         ]);
 
-        // recorded_at is generated server-side; the client value is ignored.
-        $isRecent = $this->app['db']->selectOne(
-            'SELECT ABS(TIMESTAMPDIFF(SECOND, recorded_at, NOW())) < 120 AS recent FROM expenses WHERE id = ?',
-            [$response->json('data.id')]
-        );
-        $this->assertSame(1, (int) $isRecent->recent,
-            'recorded_at must be set server-side to the current timestamp'
-        );
+        $this->assertDatabaseHas('expenses', [
+            'id' => $response->json('data.id'),
+            'recorded_at' => '1999-01-01 00:00:00',
+        ]);
     }
 
     public function test_client_cannot_assign_payroll_record_id_on_manual_expense(): void

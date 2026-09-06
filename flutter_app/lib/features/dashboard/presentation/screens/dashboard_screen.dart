@@ -11,7 +11,6 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/initials.dart';
 import '../../../../core/utils/sector_context.dart';
 import '../../../../core/widgets/app_avatar.dart';
-import '../../../../core/widgets/app_chart_placeholder.dart';
 import '../../../../core/widgets/app_error_container.dart';
 import '../../../../core/widgets/app_loading_indicator.dart';
 import '../../../../core/widgets/section_label.dart';
@@ -19,6 +18,7 @@ import '../../../../core/widgets/sector_logo.dart';
 import '../../../auth/domain/auth_state.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/financial_summary.dart';
+import '../../data/models/recent_transaction.dart';
 import '../../domain/dashboard_state.dart';
 import '../providers/dashboard_provider.dart';
 
@@ -42,6 +42,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  _TransactionVisibility _visibility = _TransactionVisibility.both;
   @override
   void initState() {
     super.initState();
@@ -120,12 +121,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(height: AppSpacing.sp2),
               _SummaryCards(state: dashboard, onRetry: _loadSummary),
               const SizedBox(height: AppSpacing.sp4),
-              if (isBusinessOwner) ...[
-                const SectionLabel('Sales Overview'),
-                const SizedBox(height: AppSpacing.sp2),
-                const AppChartPlaceholder(),
-                const SizedBox(height: AppSpacing.sp4),
-              ],
+              const SizedBox(height: AppSpacing.sp4),
+              _RecentActivity(
+                transactions: dashboard.recentTransactions,
+                visibility: _visibility,
+                onDisplayOptions: _showDisplayOptions,
+              ),
+              const SizedBox(height: AppSpacing.sp4),
             ],
             const SectionLabel('Quick Actions'),
             const SizedBox(height: AppSpacing.sp2),
@@ -142,6 +144,187 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _sectorName(AuthState auth) {
     if (auth.defaultSector?.name != null) return auth.defaultSector!.name;
     return BusinessSectorsConfig.nameFor(sectorIdFor(auth), fallback: '—');
+  }
+
+  Future<void> _showDisplayOptions() async {
+    final _TransactionVisibility? selection =
+        await showModalBottomSheet<_TransactionVisibility>(
+          context: context,
+          showDragHandle: true,
+          builder: (BuildContext context) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.sp4,
+                AppSpacing.sp2,
+                AppSpacing.sp4,
+                AppSpacing.sp4,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Display Options',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: AppSpacing.sp2),
+                  for (final _TransactionVisibility option
+                      in _TransactionVisibility.values)
+                    ListTile(
+                      leading: Icon(
+                        option == _visibility
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_off,
+                      ),
+                      title: Text(option.label),
+                      onTap: () => Navigator.pop(context, option),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+    if (selection != null && mounted) setState(() => _visibility = selection);
+  }
+}
+
+enum _TransactionVisibility {
+  both('Sales and expenses'),
+  sales('Sales only'),
+  expenses('Expenses only');
+
+  const _TransactionVisibility(this.label);
+  final String label;
+}
+
+class _RecentActivity extends StatelessWidget {
+  const _RecentActivity({
+    required this.transactions,
+    required this.visibility,
+    required this.onDisplayOptions,
+  });
+
+  final List<RecentTransaction> transactions;
+  final _TransactionVisibility visibility;
+  final VoidCallback onDisplayOptions;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<RecentTransaction> visible = transactions.where((transaction) {
+      return visibility == _TransactionVisibility.both ||
+          transaction.isSale == (visibility == _TransactionVisibility.sales);
+    }).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Expanded(child: SectionLabel('Recent Activity')),
+            TextButton.icon(
+              onPressed: onDisplayOptions,
+              icon: const Icon(Icons.tune, size: 18),
+              label: const Text('Display'),
+            ),
+          ],
+        ),
+        if (visible.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sp4),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: const Center(child: Text('No recent transactions')),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border.all(color: AppColors.border),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (int index = 0; index < visible.length; index++) ...[
+                  if (index > 0) Divider(height: 1, color: AppColors.border),
+                  _RecentTransactionRow(transaction: visible[index]),
+                ],
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _RecentTransactionRow extends StatelessWidget {
+  const _RecentTransactionRow({required this.transaction});
+  final RecentTransaction transaction;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = transaction.isSale
+        ? AppColors.totalSales
+        : AppColors.totalExpenses;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sp3,
+        vertical: AppSpacing.sp2,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            transaction.isSale ? Icons.trending_up : Icons.trending_down,
+            color: color,
+            size: 20,
+          ),
+          const SizedBox(width: AppSpacing.sp2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.isSale ? 'Sale' : 'Expense',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  transaction.description?.trim().isNotEmpty == true
+                      ? transaction.description!
+                      : 'No description',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sp2),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                Formatters.formatCurrency(transaction.amount),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w800,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+              Text(
+                Formatters.formatDate(transaction.localRecordedAt),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.inkMuted),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -447,42 +630,11 @@ class _QuickActions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (showOperational) ...[
-          _QuickActionsRow(
-            children: [
-              ElevatedButton.icon(
-                onPressed: () => context.go('/sales'),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Record Sale'),
-              ),
-              const SizedBox(width: AppSpacing.sp3),
-              FilledButton.icon(
-                onPressed: () => context.go('/expenses'),
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Record Expense'),
-              ),
-            ],
+          FilledButton.icon(
+            onPressed: () => _showTransactionChoice(context),
+            icon: const Icon(Icons.add, size: 20),
+            label: const Text('Add Transaction'),
           ),
-          const SizedBox(height: AppSpacing.sp3),
-          _QuickActionsRow(
-            children: [
-              OutlinedButton(
-                onPressed: () => context.go('/reports'),
-                child: const Text('View Reports'),
-              ),
-              const SizedBox(width: AppSpacing.sp3),
-              OutlinedButton(
-                onPressed: () => context.go('/payroll'),
-                child: const Text('View Payroll'),
-              ),
-            ],
-          ),
-          if (isBusinessOwner) ...[
-            const SizedBox(height: AppSpacing.sp3),
-            OutlinedButton(
-              onPressed: () => context.go('/users'),
-              child: const Text('Manage Users'),
-            ),
-          ],
         ] else ...[
           OutlinedButton(
             onPressed: () => context.go('/payroll'),
@@ -492,22 +644,43 @@ class _QuickActions extends StatelessWidget {
       ],
     );
   }
-}
 
-class _QuickActionsRow extends StatelessWidget {
-  const _QuickActionsRow({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        for (int i = 0; i < children.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.sp3),
-          Expanded(child: children[i]),
-        ],
-      ],
+  void _showTransactionChoice(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sp4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Add Transaction',
+                style: Theme.of(sheetContext).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.sp2),
+              ListTile(
+                leading: const Icon(Icons.trending_up),
+                title: const Text('Record Sale'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.go('/sales');
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.trending_down),
+                title: const Text('Record Expense'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  context.go('/expenses');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

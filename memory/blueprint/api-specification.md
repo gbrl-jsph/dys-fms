@@ -728,6 +728,7 @@ Record a new sales transaction.
 | amount | decimal | Yes | Transaction amount (positive decimal) |
 | description | string | No | Transaction description (free text) |
 | sector_id | integer | No | Sector ID. Required for Owner; EM uses assigned sector |
+| recorded_at | ISO 8601 datetime | No | Recording date and time. Stored in UTC; omitted values use the current timestamp |
 
 **Example Request:**
 ```json
@@ -745,6 +746,7 @@ Record a new sales transaction.
 | amount | Required; numeric; must be positive (> 0) |
 | description | Optional; string; nullable |
 | sector_id | Required for Business Owner (must reference existing Business Sector). Ignored/overridden for Event Manager |
+| recorded_at | Optional; valid date/time; invalid values return `Invalid date.` |
 
 #### Success Response
 
@@ -785,7 +787,7 @@ Record a new sales transaction.
 - Employees cannot record sales
 - Sales records are immutable after creation (no PUT/PATCH/DELETE endpoints — corrections require a new entry)
 - `user_id` is set to the authenticated user automatically (not client-supplied)
-- `recorded_at` is set by the server (not client-supplied)
+- `recorded_at` uses the client-supplied valid date/time when present (stored in UTC); otherwise the server timestamp is used
 - Description is optional (nullable)
 
 #### Related Tables
@@ -928,6 +930,7 @@ Record a new expense manually.
 | amount | decimal | Yes | Expense amount (positive decimal) |
 | description | string | No | Expense description (free text) |
 | sector_id | integer | No | Sector ID. Required for Owner; EM uses assigned sector |
+| recorded_at | ISO 8601 datetime | No | Recording date and time. Stored in UTC; omitted values use the current timestamp |
 
 **Example Request:**
 ```json
@@ -945,6 +948,7 @@ Record a new expense manually.
 | amount | Required; numeric; must be positive (> 0) |
 | description | Optional; string; nullable |
 | sector_id | Required for Business Owner (must reference existing Business Sector). Ignored/overridden for Event Manager |
+| recorded_at | Optional; valid date/time; invalid values return `Invalid date.` |
 
 #### Success Response
 
@@ -987,7 +991,7 @@ Record a new expense manually.
 - `payroll_record_id` is always null for manually recorded expenses (set only by system)
 - Expense records are immutable after creation (no PUT/PATCH/DELETE endpoints)
 - `user_id` is set to the authenticated user automatically
-- `recorded_at` is set by the server
+- `recorded_at` uses the client-supplied valid date/time when present (stored in UTC); otherwise the server timestamp is used
 
 #### Related Tables
 
