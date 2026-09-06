@@ -241,6 +241,34 @@ class AuthenticationTest extends TestCase
             ]);
     }
 
+    public function test_profile_without_authentication_returns_json_401_without_an_accept_header(): void
+    {
+        $this->get('/api/profile')
+            ->assertStatus(401)
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
+
+    public function test_sales_without_authentication_returns_json_401_without_an_accept_header(): void
+    {
+        $this->get('/api/sales')
+            ->assertStatus(401)
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
+
+    public function test_expenses_without_authentication_returns_json_401_without_an_accept_header(): void
+    {
+        $this->get('/api/expenses')
+            ->assertStatus(401)
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
+
+    public function test_reports_without_authentication_returns_json_401_without_an_accept_header(): void
+    {
+        $this->get('/api/reports')
+            ->assertStatus(401)
+            ->assertJson(['message' => 'Unauthenticated.']);
+    }
+
     public function test_token_is_revoked_after_logout(): void
     {
         $loginResponse = $this->postJson('/api/login', $this->validCredentials);

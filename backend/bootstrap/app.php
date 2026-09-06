@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsurePayrollAccess;
 use App\Http\Middleware\EnsureReportsAccess;
 use App\Http\Middleware\EnsureSalesAccess;
 use App\Http\Middleware\EnsureSectorAccess;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,6 +23,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->redirectGuestsTo(function (Request $request) {
+            return $request->is('api/*') ? null : route('login');
+        });
         $middleware->statefulApi();
         $middleware->alias([
             'owner' => EnsureBusinessOwner::class,
@@ -33,6 +37,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (AuthenticationException $exception, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 401);
+        });
+
         $exceptions->render(function (ValidationException $exception, Request $request) {
             if (! $request->is('api/*')) {
                 return null;
