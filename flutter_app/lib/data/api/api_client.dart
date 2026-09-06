@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import 'api_config.dart';
 import 'auth_interceptor.dart';
+import 'http_adapter_config.dart';
+import 'xsrf_token_reader.dart';
 
 /// Global Dio HTTP client singleton.
 ///
@@ -24,10 +27,23 @@ class ApiClient {
           'Accept': 'application/json',
         },
       ),
-    )..interceptors.add(AuthInterceptor(
+    );
+
+    if (kIsWeb) {
+      configureBrowserCredentials(_dio);
+      _dio.interceptors.add(InterceptorsWrapper(onRequest: (options, handler) {
+        if (const {'POST', 'PUT', 'PATCH', 'DELETE'}.contains(options.method)) {
+          final String? token = readXsrfToken();
+          if (token != null) options.headers['X-XSRF-TOKEN'] = token;
+        }
+        handler.next(options);
+      }));
+    } else {
+      _dio.interceptors.add(AuthInterceptor(
         tokenProvider: tokenProvider,
         tokenClearer: tokenClearer,
       ));
+    }
 
     if (httpClientAdapter != null) {
       _dio.httpClientAdapter = httpClientAdapter;

@@ -5,10 +5,13 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\BusinessSector;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthService
 {
-    public function login(array $credentials): array
+    public function login(array $credentials, Request $request): array
     {
         $user = User::where('email', $credentials['email'])->first();
 
@@ -20,7 +23,11 @@ class AuthService
             abort(401, 'Invalid username or password.');
         }
 
-        $token = $user->createToken('auth-token')->plainTextToken;
+        $isStateful = $request->attributes->get('sanctum') === true;
+        if ($isStateful) {
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+        }
 
         $defaultSector = $user->role === 'Business Owner'
             ? BusinessSector::find(1)
@@ -35,16 +42,23 @@ class AuthService
                 'sector_id' => $user->sector_id,
                 'account_status' => $user->account_status,
             ],
-            'token' => $token,
             'default_sector' => $defaultSector ? [
                 'id' => $defaultSector->id,
                 'name' => $defaultSector->name,
             ] : null,
-        ];
+        ] + ($isStateful ? [] : ['token' => $user->createToken('auth-token')->plainTextToken]);
     }
 
-    public function logout(User $user): void
+    public function logout(Request $request): void
     {
-        $user->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+            return;
+        }
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
 }

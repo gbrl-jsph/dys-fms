@@ -22,7 +22,7 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $result = $this->authService->login($request->validated());
+        $result = $this->authService->login($request->validated(), $request);
 
         return response()->json([
             'data' => $result,
@@ -32,7 +32,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $this->authService->logout($request->user());
+        $this->authService->logout($request);
 
         return response()->json([
             'message' => 'Logged out successfully.',

@@ -9,7 +9,15 @@ class ApiConfig {
   ApiConfig._();
 
   /// Base URL for all API requests (production).
-  static const String baseUrl = 'https://dys-fms.onrender.com/api';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://dys-fms.onrender.com/api',
+  );
+
+  static String get csrfCookieUrl {
+    final Uri apiUri = Uri.parse(baseUrl);
+    return apiUri.replace(path: '/sanctum/csrf-cookie', query: null).toString();
+  }
 
   /// Connection and receive timeout for all HTTP requests (30 seconds).
   static const Duration timeout = Duration(seconds: 30);

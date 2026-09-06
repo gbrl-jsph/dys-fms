@@ -1,3 +1,6 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
 import '../../../../data/api/api_config.dart';
 import '../../../../data/repositories/repository_base.dart';
 import '../models/login_request.dart';
@@ -18,6 +21,9 @@ class AuthRepository extends Repository {
 
   /// POST /api/login — authenticate and persist the session.
   Future<LoginResponse> login(String email, String password) async {
+    if (kIsWeb) {
+      await dio.get<void>(ApiConfig.csrfCookieUrl);
+    }
     final response = await dio.post<dynamic>(
       ApiConfig.loginEndpoint,
       data: LoginRequest(email: email, password: password).toJson(),
@@ -27,15 +33,17 @@ class AuthRepository extends Repository {
       response.data as Map<String, dynamic>,
     );
 
-    await _secureStorage.saveToken(loginResponse.token);
-    await _secureStorage.saveUserData({
-      'id': loginResponse.user.id,
-      'name': loginResponse.user.name,
-      'email': loginResponse.user.email,
-      'role': loginResponse.user.role,
-      'sector_id': loginResponse.user.sectorId,
-      'account_status': loginResponse.user.accountStatus,
-    });
+    if (!kIsWeb) {
+      await _secureStorage.saveToken(loginResponse.token!);
+      await _secureStorage.saveUserData({
+        'id': loginResponse.user.id,
+        'name': loginResponse.user.name,
+        'email': loginResponse.user.email,
+        'role': loginResponse.user.role,
+        'sector_id': loginResponse.user.sectorId,
+        'account_status': loginResponse.user.accountStatus,
+      });
+    }
 
     return loginResponse;
   }
@@ -45,14 +53,33 @@ class AuthRepository extends Repository {
   /// preferences (e.g. theme mode) are intentionally kept.
   Future<void> logout() async {
     await dio.post<void>(ApiConfig.logoutEndpoint);
-    await _secureStorage.clearAuth();
+    if (!kIsWeb) {
+      await _secureStorage.clearAuth();
+    }
   }
 
   /// Returns whether a non-empty token is stored locally.
-  Future<bool> isAuthenticated() => _secureStorage.isLoggedIn();
+  Future<bool> isAuthenticated() async {
+    if (!kIsWeb) {
+      return _secureStorage.isLoggedIn();
+    }
+    return (await getStoredUser()) != null;
+  }
 
   /// Returns the locally stored user, or `null` when absent.
   Future<UserModel?> getStoredUser() async {
+    if (kIsWeb) {
+      try {
+        final Response<dynamic> response = await dio.get<dynamic>(
+          ApiConfig.profileEndpoint,
+        );
+        return UserModel.fromJson(
+          (response.data as Map<String, dynamic>)['data'] as Map<String, dynamic>,
+        );
+      } on DioException {
+        return null;
+      }
+    }
     final Map<String, dynamic>? userData = await _secureStorage.getUserData();
     if (userData == null) return null;
     return UserModel.fromJson(userData);
@@ -65,14 +92,16 @@ class AuthRepository extends Repository {
     );
     final Map<String, dynamic> body = response.data as Map<String, dynamic>;
     final UserModel updated = UserModel.fromJson(body['data'] as Map<String, dynamic>);
-    await _secureStorage.saveUserData({
-      'id': updated.id,
-      'name': updated.name,
-      'email': updated.email,
-      'role': updated.role,
-      'sector_id': updated.sectorId,
-      'account_status': updated.accountStatus,
-    });
+    if (!kIsWeb) {
+      await _secureStorage.saveUserData({
+        'id': updated.id,
+        'name': updated.name,
+        'email': updated.email,
+        'role': updated.role,
+        'sector_id': updated.sectorId,
+        'account_status': updated.accountStatus,
+      });
+    }
     return updated;
   }
 
@@ -89,7 +118,9 @@ class AuthRepository extends Repository {
         'new_password_confirmation': newPasswordConfirmation,
       },
     );
-    await _secureStorage.clearAuth();
+    if (!kIsWeb) {
+      await _secureStorage.clearAuth();
+    }
   }
 
   Future<void> forgotPassword(String email) async {

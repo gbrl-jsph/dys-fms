@@ -4,7 +4,7 @@ import 'user_model.dart';
 class LoginResponse {
   const LoginResponse({
     required this.user,
-    required this.token,
+    this.token,
     this.defaultSector,
   });
 
@@ -15,7 +15,7 @@ class LoginResponse {
 
     return LoginResponse(
       user: UserModel.fromJson(data['user'] as Map<String, dynamic>),
-      token: data['token'] as String,
+      token: data['token'] as String?,
       defaultSector: defaultSector == null
           ? null
           : DefaultSector.fromJson(defaultSector),
@@ -23,7 +23,7 @@ class LoginResponse {
   }
 
   final UserModel user;
-  final String token;
+  final String? token;
   final DefaultSector? defaultSector;
 }
 
