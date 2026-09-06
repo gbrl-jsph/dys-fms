@@ -23,9 +23,10 @@ This guide documents how to install, configure, run, and deploy the implemented 
 
 | Component | Technology | Location |
 |-----------|------------|----------|
-| Mobile application | Flutter app (`dys_fms`), provider + go_router + dio + flutter_secure_storage + google_fonts | `flutter_app/` |
+| Android application | Native Flutter app (`dys_fms`), provider + go_router + dio + flutter_secure_storage + google_fonts | `flutter_app/` |
+| iPhone/iPad application | Flutter Web/PWA opened in Safari and installed through Safari **Add to Home Screen**; this is not a native iOS application | `flutter_app/web/` |
 | REST API | Laravel 12 framework (`laravel/framework ^12.0`), PHP `^8.2` | `backend/` |
-| Authentication | Laravel Sanctum (`laravel/sanctum ^4.0`), bearer tokens stored in Flutter SecureStorage | `backend/`, `flutter_app/` |
+| Authentication | Android: Sanctum personal-access Bearer token in Flutter Secure Storage. iPhone/iPad PWA: Sanctum session cookie with CSRF protection. | `backend/`, `flutter_app/` |
 | Database | MySQL (single database `dys_fms`, 5 domain tables + `personal_access_tokens`) | managed by `backend/database/migrations/` |
 
 ---
@@ -52,6 +53,7 @@ This guide documents how to install, configure, run, and deploy the implemented 
 | Android Studio | Latest stable (for Android tooling and emulators) |
 | Android SDK | Required for emulator runs and APK builds; the app uses Flutter's default SDK levels (`compileSdk = flutter.compileSdkVersion`, `minSdk = flutter.minSdkVersion`, `targetSdk = flutter.targetSdkVersion`) |
 | Android application ID | `com.dys.fms.dys_fms` (declared in `flutter_app/android/app/build.gradle.kts`) |
+| iPhone/iPad access | Current Safari on iPhone or iPad. Install the served Flutter Web/PWA from Safari using **Share → Add to Home Screen**. Native iOS/Xcode builds are not part of this delivery strategy. |
 
 ### 2.3 General
 
@@ -203,15 +205,18 @@ Installs the declared dependencies from `pubspec.yaml`: `dio`, `flutter_secure_s
 
 ### 5.2 Configure the API base URL
 
-The API base URL is a **compile-time constant** in `flutter_app/lib/data/api/api_config.dart`:
+The API base URL is a **compile-time value** in `flutter_app/lib/data/api/api_config.dart`. Its production default is configured in code, but every release build should explicitly provide the deployed API URL:
 
 ```dart
-static const String baseUrl = 'http://localhost:8000/api';
+static const String baseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'https://dys-fms.onrender.com/api',
+);
 ```
 
-- For local development against a locally running backend, keep the default.
-- For a device/emulator connecting to a backend on another machine, change this constant to that machine's reachable address (e.g., `http://192.168.x.x:8000/api`), then re-run/build the app.
-- For production, set it to the production API URL before building the release artifact (see §9 — this addresses Risk DR-01 in the Risk Assessment).
+- For local development, supply the local API URL with `--dart-define=API_BASE_URL=http://localhost:8000/api` as appropriate for the target device/browser.
+- For every production artifact, provide `--dart-define=API_BASE_URL=https://<api-host>/api`; do not rely on the code default for a release.
+- The API URL must use HTTPS for production Android and PWA deployments.
 
 The HTTP timeout is also defined here (30 seconds) and requires no change.
 
@@ -225,10 +230,10 @@ flutter run
 
 Run on a connected device/emulator (`flutter devices` to list). The app boots to the Login screen; log in with the seeded Business Owner credentials.
 
-### 5.4 Build the APK
+### 5.4 Build the Android APK
 
 ```sh
-flutter build apk --release
+flutter build apk --release --dart-define=API_BASE_URL=https://<api-host>/api
 ```
 
 Produces a signed release APK (debug-signed by default in Flutter) at:
@@ -238,6 +243,20 @@ flutter_app/build/app/outputs/flutter-apk/app-release.apk
 ```
 
 The application ID is `com.dys.fms.dys_fms`.
+
+Android uses the native Flutter application and Sanctum Bearer tokens. It is not subject to browser CORS or cookie rules.
+
+### 5.5 Build and install the iPhone/iPad PWA
+
+Build the Flutter Web artifact with the production API URL:
+
+```sh
+flutter build web --release --dart-define=API_BASE_URL=https://<api-host>/api
+```
+
+Deploy `build/web/` to the approved HTTPS PWA origin. On an iPhone or iPad, open that origin in Safari, select **Share**, then select **Add to Home Screen**. This produces a Safari-installed PWA, not a native iOS application.
+
+The PWA authenticates through Sanctum session cookies and performs the CSRF-cookie request before login. It must remain online: financial reads and writes are sent to the API immediately, with no offline transaction entry, queueing, or reconciliation.
 
 ---
 
@@ -307,10 +326,13 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 | `CACHE_DRIVER` | `file` | Cache driver (no external cache required) |
 | `FILESYSTEM_DISK` | `local` | Storage disk |
 | `QUEUE_CONNECTION` | `sync` | Queue driver (synchronous — no queue worker needed) |
-| `SESSION_DRIVER` | `file` | Session driver (token API, so sessions are minimal) |
+| `SESSION_DRIVER` | `file` locally / `cookie` for the production PWA | Laravel session driver. The iPhone/iPad PWA requires the cookie-session path. |
 | `SESSION_LIFETIME` | `120` | Session lifetime in minutes |
-| `SANCTUM_STATEFUL_DOMAINS` | `localhost,localhost:8000` | Sanctum stateful domains |
-| `CORS_ALLOWED_ORIGINS` | `*` | CORS origins (Flutter mobile app is not browser-bound) |
+| `CORS_ALLOWED_ORIGINS` | `https://<pwa-origin>` | Comma-separated exact browser origins permitted to send credentialed PWA requests; do not use `*` with cookies. |
+| `SANCTUM_STATEFUL_DOMAINS` | `<pwa-host>` | Comma-separated PWA hosts (and development ports where applicable) treated as Sanctum stateful clients. |
+| `SESSION_DOMAIN` | `<shared-cookie-domain>` | Cookie domain shared by the HTTPS PWA and API when they use subdomains; leave unset when host-only cookies are intended. |
+| `SESSION_SECURE_COOKIE` | `true` | Requires HTTPS for the PWA session cookie in production. |
+| `SESSION_SAME_SITE` | `lax` | Same-site cookie policy for the PWA/API deployment; use `none` only when a deliberately cross-site architecture requires it, with `SESSION_SECURE_COOKIE=true`. |
 | `MAIL_MAILER` | `smtp` | Mail transport (Laravel SMTP driver) |
 | `MAIL_HOST` | *(provider host)* | SMTP server host |
 | `MAIL_PORT` | `1025` local / `587` TLS / `465` SSL | SMTP server port |
@@ -326,7 +348,7 @@ php artisan db:seed --class=UserSeeder             # seed the Business Owner onl
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
-| `ApiConfig.baseUrl` | `http://localhost:8000/api` | Base URL for all API requests (edit for non-local/production endpoints) |
+| `API_BASE_URL` | `https://<api-host>/api` | Compile-time API URL supplied with `--dart-define` for Android and Web/PWA release builds. |
 | `ApiConfig.timeout` | `Duration(seconds: 30)` | HTTP connect/receive timeout |
 | Endpoint constants | `/login`, `/logout`, `/users`, `/users/{id}`, `/users/{id}/status`, `/sales`, `/expenses`, `/payroll`, `/reports`, `/business-sectors`, `/business-sectors/switch` | The 16 approved endpoints (matching `backend/routes/api.php`) |
 
@@ -450,7 +472,10 @@ Recommendations below are limited to what the implemented project supports and w
 
 | Topic | Recommendation | Grounding |
 |-------|----------------|-----------|
-| API base URL | Set `ApiConfig.baseUrl` in `flutter_app/lib/data/api/api_config.dart` to the production API URL **before** building the release APK. The default `http://localhost:8000/api` only works locally. | Risk DR-01 |
+| API base URL | Build each release with `--dart-define=API_BASE_URL=https://<api-host>/api`; do not edit source solely to select a deployment endpoint. | Risk DR-01 |
+| Android authentication | Native Android uses Sanctum Bearer tokens stored in Flutter Secure Storage. Ensure the API is HTTPS before distributing an APK. | Sanctum mobile client |
+| iPhone/iPad PWA authentication | Safari Add to Home Screen uses credentialed Sanctum session cookies plus CSRF. Set all five browser-session variables listed in §7.1 to the exact production PWA/API domain arrangement. | Sanctum SPA/PWA client |
+| Offline behavior | Do not advertise offline mode. The system has no offline financial transaction storage, queue, synchronization, or reconciliation; all financial operations require API connectivity. | Approved delivery strategy |
 | Debug mode | Set `APP_DEBUG=false` and `APP_ENV=production` in `backend/.env` — the template ships with `APP_DEBUG=true` for development only. | `.env.example` |
 | Application key | Ensure `APP_KEY` is generated and unique to the production environment (`php artisan key:generate`). | §4.4 |
 | HTTPS | Serve the API over HTTPS in production; bearer tokens (Sanctum) travel in the Authorization header and must not traverse plain HTTP. | Sanctum auth (SV-01/SV-11), Risk SR-02 |
@@ -483,6 +508,7 @@ Recommendations below are limited to what the implemented project supports and w
 | 14 | `flutter build apk` fails | Android SDK/Java toolchain mismatch | Install/update Android Studio SDK components and JDK; run `flutter doctor` and fix flagged items |
 | 15 | Backend tests fail on a fresh clone | Test database not set up, or PHP runtime missing | Configure the test database per the PHPUnit suite; run `php artisan test` from `backend/` on a PHP 8.2+ environment |
 | 16 | Temporary-password emails are not delivered | Wrong SMTP host/port/credentials, STARTTLS not offered (with `MAIL_REQUIRE_TLS=true`), or sender not verified by the provider | Check `backend/.env` MAIL_* values against §7.3; confirm the provider allows the `MAIL_FROM_ADDRESS`; inspect `storage/logs/laravel.log` for `Temporary password email could not be sent.` (includes user id, recipient email, exception message, and stack trace) |
+| 17 | iPhone/iPad PWA login fails or returns CSRF/CORS errors | PWA/API origins or cookie settings do not match | Confirm HTTPS, then set exact `CORS_ALLOWED_ORIGINS`, `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE=true`, and `SESSION_SAME_SITE` values for the deployed domains; rebuild using the correct `API_BASE_URL` |
 
 ---
 
@@ -506,6 +532,8 @@ Run this checklist before considering a deployment complete:
 | 12 | Regression gate | `cd flutter_app && flutter analyze && flutter test` | No issues; 216/216 tests pass (TCS §10 regression suite) |
 | 13 | Backend regression gate | `cd backend && php artisan test` | All PHPUnit tests pass (on a PHP 8.2+ environment) |
 | 14 | Email delivery (real SMTP) | Create a user (or reset a password) with the production SMTP configured in `backend/.env` | The recipient receives the temporary-password email with subject "Your DYS Financial Management System Account"; if not, fix per §7.3 and troubleshooting #16 |
+| 15 | Android release configuration | `flutter build apk --release --dart-define=API_BASE_URL=https://<api-host>/api` | APK is built for the intended HTTPS API and authenticates with a Bearer token |
+| 16 | iPhone/iPad PWA configuration | `flutter build web --release --dart-define=API_BASE_URL=https://<api-host>/api`, deploy `build/web/`, then Safari → Share → Add to Home Screen | PWA loads over HTTPS, logs in with session cookie + CSRF, and performs online API operations |
 
 ---
 

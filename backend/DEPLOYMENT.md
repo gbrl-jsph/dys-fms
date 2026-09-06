@@ -34,8 +34,12 @@ DB_PORT=3306
 DB_DATABASE=<name>
 DB_USERNAME=<user>
 DB_PASSWORD=<pass>
-SANCTUM_STATEFUL_DOMAINS=<your-domain>
-CORS_ALLOWED_ORIGINS=https://<your-domain>  # or * for mobile QA (Flutter has no Origin), tighten later
+# Browser/PWA session configuration. Use the exact deployed PWA/API domains.
+CORS_ALLOWED_ORIGINS=https://<pwa-origin>
+SANCTUM_STATEFUL_DOMAINS=<pwa-host>
+SESSION_DOMAIN=<shared-cookie-domain>
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
 RUN_MIGRATIONS=true
 RUN_SEEDERS=false # set true only on first deploy to get owner@dys.com / SecurePass123 + 4 sectors
 ```
@@ -75,19 +79,29 @@ curl -X POST -H "Authorization: Bearer <token>" https://<your-domain>/api/logout
 curl https://<your-domain>/api/users # expect 401 without token
 ```
 
-## 6. Flutter
+## 6. Client Builds
 
-Update `flutter_app/lib/data/api/api_config.dart:12` baseUrl to `https://<your-domain>/api` (done for prod build), then:
+### Android native application
+
+Android uses Sanctum personal-access Bearer tokens stored in Flutter Secure Storage. Build it against the HTTPS API:
 
 ```bash
 export PATH="/home/deck/flutter/bin:$PATH"
 flutter analyze # expect No issues found!
 flutter test    # existing tests must pass
-flutter build apk --release
+flutter build apk --release --dart-define=API_BASE_URL=https://<api-host>/api
 strings build/app/outputs/flutter-apk/app-release.apk | grep -E "192\.168\.1\.34|localhost|127\.0\.0\.1|trycloudflare" # must be empty
 ```
 
-APK already built with placeholder `https://dys-fms-production.onrender.com/api` — replace with your real domain and rebuild before QA.
+### iPhone/iPad Flutter Web/PWA
+
+iPhone and iPad are supported through the Flutter Web/PWA build installed in Safari with **Add to Home Screen**. This is not a native iOS application. It uses Sanctum session cookies and CSRF protection, so the five browser-session variables in §3 must match the deployed HTTPS PWA/API domain arrangement exactly.
+
+```bash
+flutter build web --release --dart-define=API_BASE_URL=https://<api-host>/api
+```
+
+Deploy `flutter_app/build/web/` to the HTTPS PWA origin. In Safari on iPhone/iPad, open the origin, choose **Share**, then **Add to Home Screen**. The application is online-only: it does not support offline financial transactions, local write queues, synchronization, or reconciliation.
 
 ## 7. Mobile-data QA (phone not on laptop Wi-Fi)
 
@@ -104,6 +118,11 @@ APK already built with placeholder `https://dys-fms-production.onrender.com/api`
 - [ ] DB not publicly exposed (Clever Cloud restricts to app IP, firewalled)
 - [ ] Laravel debug pages don't leak (APP_DEBUG false)
 - [ ] Sanctum bearer auth enforced, unauth 401, RBAC via Ensure* middleware
+- [ ] Android native app uses Bearer tokens over HTTPS
+- [ ] PWA CORS allows only the exact HTTPS PWA origin, never `*` with credentialed cookies
+- [ ] `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE=true`, and `SESSION_SAME_SITE` match the PWA/API deployment
+- [ ] iPhone/iPad PWA has been tested from Safari after Add to Home Screen
+- [ ] No offline financial transactions are advertised or accepted
 
 ## 9. Git
 

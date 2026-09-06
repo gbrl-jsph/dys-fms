@@ -90,6 +90,12 @@ The menu always shows Dashboard first. Tap an item to open that section.
 2. Choose **Logout** from the menu.
 3. You are returned to the Login screen. Your session is closed, and you can close the app or hand the device to the next user.
 
+### 2.5 Supported devices and internet connection
+
+- **Android:** use the native DYS FMS application. Your sign-in uses a secure Sanctum Bearer token for the app.
+- **iPhone/iPad:** use DYS FMS in Safari. To keep it on your device, open the approved web address in Safari, choose **Share**, then choose **Add to Home Screen**. This is a web app (PWA), not a native iOS app from the App Store.
+- **Internet is required:** DYS FMS is online-only. Do not record sales, expenses, payroll, or other financial transactions while offline; the system does not save or synchronize offline financial entries.
+
 ---
 
 ## 3. Business Owner Guide
@@ -399,6 +405,9 @@ No. When the Business Owner deactivates an account, that person can no longer lo
 
 **11. What is the temporary password for?**
 When the Business Owner creates a new account and presses **Generate Temporary Password**, the app creates a temporary password shown in a message. The new user logs in with it the first time.
+
+**12. Can I use DYS FMS on an iPhone or iPad?**
+Yes. Open the approved DYS FMS web address in Safari and choose **Share → Add to Home Screen**. It is a Safari-installed web app, not a native iOS application. Keep an internet connection while using it.
 
 ---
 

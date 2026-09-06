@@ -20,6 +20,12 @@
 
 Official roles (exact): **Business Owner**, **Event Manager**, **Employee/Staff** — never Admin/Manager/Staff.
 
+### Approved Android + Apple Device Delivery
+- **Android:** supported as the native Flutter application. It authenticates with Sanctum personal-access **Bearer tokens**, persisted in Flutter Secure Storage.
+- **iPhone/iPad:** supported through the Flutter Web/PWA build in Safari, installed using Safari **Add to Home Screen**. It uses a Sanctum session cookie with CSRF protection, not a native iOS application and not token storage in the browser.
+- **Connectivity:** every login, read, and financial write requires a live HTTPS connection to the API. The PWA does not support offline financial transactions, queued writes, or local transaction reconciliation.
+- **Build configuration:** pass the API endpoint at build time, for example `flutter build web --release --dart-define=API_BASE_URL=https://<api-host>/api`. Browser deployments require `CORS_ALLOWED_ORIGINS`, `SANCTUM_STATEFUL_DOMAINS`, `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE`, and `SESSION_SAME_SITE` to match the HTTPS PWA/API domains.
+
 ---
 
 ## 2. APPROVED SCOPE
