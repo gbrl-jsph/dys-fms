@@ -16,6 +16,10 @@ class ApiConfig {
 
   static String get csrfCookieUrl {
     final Uri apiUri = Uri.parse(baseUrl);
+    if (!apiUri.hasScheme) {
+      // A same-origin Web API base such as /api must not prefix Sanctum.
+      return Uri.base.resolve('/sanctum/csrf-cookie').toString();
+    }
     return apiUri.replace(path: '/sanctum/csrf-cookie', query: null).toString();
   }
 

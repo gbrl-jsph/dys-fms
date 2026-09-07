@@ -15,13 +15,18 @@ void main() {
     );
   });
 
-  test('derives the CSRF cookie URL from the API origin', () {
+  test('uses the origin root for the CSRF cookie URL', () {
     final Uri apiUri = Uri.parse(ApiConfig.baseUrl);
     final Uri csrfUri = Uri.parse(ApiConfig.csrfCookieUrl);
 
-    expect(csrfUri.scheme, apiUri.scheme);
-    expect(csrfUri.authority, apiUri.authority);
+    if (apiUri.hasScheme) {
+      expect(csrfUri.scheme, apiUri.scheme);
+      expect(csrfUri.authority, apiUri.authority);
+    } else {
+      expect(csrfUri.isAbsolute, isTrue);
+    }
     expect(csrfUri.path, '/sanctum/csrf-cookie');
+    expect(csrfUri.path, isNot('/api/sanctum/csrf-cookie'));
     expect(csrfUri.hasQuery, isFalse);
   });
 }
