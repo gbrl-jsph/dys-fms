@@ -1,0 +1,61 @@
+name: Deploy Flutter Web to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.8
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        working-directory: flutter_app
+        run: flutter pub get
+
+      - name: Analyze Flutter app
+        working-directory: flutter_app
+        run: flutter analyze
+
+      - name: Test Flutter app
+        working-directory: flutter_app
+        run: flutter test
+
+      - name: Build Flutter web app
+        working-directory: flutter_app
+        run: flutter build web --release --dart-define=API_BASE_URL=/api
+
+      - name: Stage Vercel deployment
+        run: |
+          mkdir -p .vercel-deploy
+          cp -R flutter_app/build/web/. .vercel-deploy/
+          cp flutter_app/vercel.json .vercel-deploy/vercel.json
+
+      - name: Deploy to Vercel production
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+        run: npx --yes vercel@latest deploy .vercel-deploy --prod --yes
+
+      - name: Report skipped deployment
+        if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
+        run: |
+          echo "Vercel deployment skipped: configure VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID repository secrets."
