@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && a2enmod rewrite headers \
     && rm -rf /var/lib/apt/lists/*
 
+# Render secret files are group-readable by GID 1000 at runtime.
+RUN usermod -a -G 1000 www-data
+
 # Composer
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
 
