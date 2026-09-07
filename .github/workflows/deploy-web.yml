@@ -47,9 +47,9 @@ jobs:
 
       - name: Stage Vercel deployment
         run: |
-          mkdir -p .vercel-deploy
-          cp -R flutter_app/build/web/. .vercel-deploy/
-          cp flutter_app/vercel.json .vercel-deploy/vercel.json
+          mkdir -p .vercel-deploy/flutter_app
+          cp -R flutter_app/build/web/. .vercel-deploy/flutter_app/
+          cp flutter_app/vercel.json .vercel-deploy/flutter_app/vercel.json
 
       - name: Deploy to Vercel production
         if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
