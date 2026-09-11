@@ -1,0 +1,112 @@
+@startuml
+' =========================================================
+' DYS Financial Management System
+' Deliverable 2: Proposed System Use Case Diagram
+' Source of Truth Alignment
+' =========================================================
+
+title DYS Financial Management System (DYS FMS)\nUse Case Diagram (Proposed System)
+
+left to right direction
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam defaultTextAlignment center
+
+skinparam actor {
+    BorderColor black
+    BackgroundColor white
+    FontColor black
+    FontStyle bold
+}
+
+skinparam usecase {
+    BackgroundColor #FFE58A
+    BorderColor black
+    FontColor black
+    FontStyle bold
+}
+
+skinparam rectangle {
+    BorderColor black
+    BackgroundColor white
+    FontColor black
+    FontStyle bold
+}
+
+skinparam ArrowColor black
+skinparam ArrowThickness 1.2
+
+actor "Business Owner" as BO
+actor "Event Manager" as EM
+actor "Bookkeeper" as BK
+actor "Employee/Event Staff" as ES
+
+rectangle "DYS Financial Management System" {
+    usecase "Login" as UC_Login
+    usecase "Logout" as UC_Logout
+    usecase "Manage User Accounts\n(Create, Update, Activate/Deactivate,\nGenerate Temporary Password)\n(Business Owner only)" as UC_ManageUsers
+    usecase "Switch Business Sector\n(Business Owner only)" as UC_SwitchSector
+    usecase "View Dashboard" as UC_Dashboard
+    usecase "Record Sales\n(Business Owner & Event Manager)" as UC_RecordSales
+    usecase "Record Expenses\n(Business Owner & Event Manager)" as UC_RecordExpenses
+    usecase "Calculate Payroll\n(Business Owner only)" as UC_CalcPayroll
+    usecase "View Reports" as UC_Reports
+    usecase "View Financial Summary" as UC_FinSummary
+    usecase "View Sales Reports" as UC_SalesReports
+    usecase "View Expense Reports" as UC_ExpReports
+    usecase "View Payroll Reports" as UC_PayrollReports
+    usecase "View Analytics\n(Business Owner & Bookkeeper)" as UC_Analytics
+    usecase "View Own Payroll\n(Event Manager & Employee/Event Staff)" as UC_OwnPayroll
+
+    UC_Login ..> UC_Logout : <<include>>
+    UC_Login ..> UC_Dashboard : <<include>>
+    UC_RecordSales ..> UC_Reports : <<include>>
+    UC_RecordExpenses ..> UC_Reports : <<include>>
+    UC_CalcPayroll ..> UC_Reports : <<include>>
+
+    UC_Reports <.. UC_FinSummary : <<extend>>
+    UC_Reports <.. UC_SalesReports : <<extend>>
+    UC_Reports <.. UC_ExpReports : <<extend>>
+    UC_Reports <.. UC_PayrollReports : <<extend>>
+    UC_Reports <.. UC_Analytics : <<extend>>
+}
+
+BO -- UC_Login
+BO -- UC_Logout
+BO -- UC_ManageUsers
+BO -- UC_SwitchSector
+BO -- UC_Dashboard
+BO -- UC_RecordSales
+BO -- UC_RecordExpenses
+BO -- UC_CalcPayroll
+BO -- UC_Reports
+BO -- UC_FinSummary
+BO -- UC_SalesReports
+BO -- UC_ExpReports
+BO -- UC_PayrollReports
+BO -- UC_Analytics
+
+EM -- UC_Login
+EM -- UC_Logout
+EM -- UC_Dashboard
+EM -- UC_RecordSales
+EM -- UC_RecordExpenses
+EM -- UC_Reports
+EM -- UC_OwnPayroll
+
+BK -- UC_Login
+BK -- UC_Logout
+BK -- UC_Dashboard
+BK -- UC_Reports
+BK -- UC_Analytics
+BK -- UC_PayrollReports
+
+ES -- UC_Login
+ES -- UC_Logout
+ES -- UC_Dashboard
+ES -- UC_OwnPayroll
+
+@enduml

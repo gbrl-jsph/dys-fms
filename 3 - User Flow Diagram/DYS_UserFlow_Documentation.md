@@ -1,166 +1,85 @@
-# DYS Event Management System – User Flow Documentation
+# DYS Financial Management System – User Flow Documentation
 
-This document describes each User Flow shown in the approved User Flow Diagram. It is consistent with the approved Concept Paper, System Architecture, and Flowcharts. No features, roles, or steps beyond what is depicted in the approved diagram are introduced.
+This document describes each User Flow shown in the approved User Flow Diagram. It is consistent with the approved Concept Paper, System Architecture, and Use Case model. It covers the four authorized system roles: Business Owner, Event Manager, Bookkeeper, and Employee/Event Staff.
 
 ---
 
-## 1. Login
+## 1. Authentication & Role Routing Flow
 
 ### 1. Purpose
-To authenticate a user and grant access to the system based on their assigned role.
+To authenticate users upon opening the application and direct them to their authorized role-based dashboard.
 
 ### 2. Actor(s)
 - Business Owner
 - Event Manager
-- Employees/Event Staff
+- Bookkeeper
+- Employee/Event Staff
 
-### 3. Preconditions
-- The user has a registered account with an assigned role.
-- The mobile application is installed and accessible.
-
-### 4. Main Flow
-1. User opens the application and reaches the Login screen.
-2. User enters login credentials.
-3. System performs authentication.
-4. System identifies the user's role.
-5. System directs the user to the corresponding role-based dashboard (Business Owner, Event Manager, or Employee/Staff).
-
-### 5. Alternative Flows
-- None depicted in the approved User Flow diagram.
-
-### 6. Postconditions
-- The user is authenticated and viewing their role-specific dashboard.
-
-### 7. Notes
-- The diagram does not define behavior for failed authentication attempts; only the successful authentication path is represented.
+### 3. Main Flow
+1. User opens the application.
+2. User enters login credentials (email and password).
+3. System validates credentials.
+4. If authentication fails, an error message is displayed, allowing retry.
+5. If authentication succeeds, the system identifies the user's role and redirects them to the corresponding role-based dashboard.
 
 ---
 
-## 2. Record Sales
+## 2. Business Owner Flow
 
 ### 1. Purpose
-To allow authorized users to record a sales transaction within their assigned business sector.
+Provides the highest level of system privilege, featuring financial summary overview, active sector context, and full administrative and operational control.
 
-### 2. Actor(s)
-- Business Owner
-- Event Manager
-
-### 3. Preconditions
-- The user has successfully logged in.
-- The user is on their role-specific dashboard.
-
-### 4. Main Flow
-1. User selects the feature to record a sales/expense entry from the dashboard.
-2. User performs the action to record the sales transaction.
-3. System processes the entry.
-4. System displays the result to the user.
-
-### 5. Alternative Flows
-- None depicted in the approved User Flow diagram.
-
-### 6. Postconditions
-- The sales transaction result is displayed to the user.
-
-### 7. Notes
-- Employees/Event Staff do not have this action available, per the approved User Flow diagram.
-- The diagram groups "Record Sales" and "Record Expense" under a single combined action for the Business Owner ("Record Sales/Expense Entry").
+### 2. Available Actions
+- **Manage User Accounts:** Create User, Update User, Activate/Deactivate, Generate Temporary Password.
+- **Switch Business Sector:** Switch active business sector context.
+- **Record Sales:** Record sales transactions.
+- **Record Expenses:** Record business expenses.
+- **Calculate Payroll:** Calculate employee payroll and generate associated expenses.
+- **View Reports:** Access comprehensive financial reports.
+- **View Analytics Dashboard:** Access interactive visual analytics.
+- **Logout:** Terminate session and return to start.
 
 ---
 
-## 3. Record Expenses
+## 3. Event Manager Flow
 
 ### 1. Purpose
-To allow authorized users to record a business expense within their assigned business sector.
+Provides sector-restricted operational and reporting access for event operations.
 
-### 2. Actor(s)
-- Business Owner
-- Event Manager
-
-### 3. Preconditions
-- The user has successfully logged in.
-- The user is on their role-specific dashboard.
-
-### 4. Main Flow
-1. User selects the feature to record an expense from the dashboard.
-2. User performs the action to record the expense.
-3. System processes the entry.
-4. System displays the result to the user.
-
-### 5. Alternative Flows
-- None depicted in the approved User Flow diagram.
-
-### 6. Postconditions
-- The expense entry result is displayed to the user.
-
-### 7. Notes
-- Employees/Event Staff do not have this action available, per the approved User Flow diagram.
+### 2. Available Actions
+- **Record Sales:** Record sales within the assigned business sector.
+- **Record Expenses:** Record expenses within the assigned business sector.
+- **View Reports:** Access assigned-sector reports.
+- **View Own Payroll:** View personal payroll calculations.
+- **Logout:** Terminate session and return to start.
 
 ---
 
-## 4. Generate Reports
+## 4. Bookkeeper Flow
 
 ### 1. Purpose
-To allow authorized users to view financial reports, analytics, or payroll calculations relevant to their role.
+Provides viewing-only financial and analytics oversight for auditing and bookkeeping.
 
-### 2. Actor(s)
-- Business Owner (View Analytics Dashboard, View Payroll Calculations)
-- Event Manager (View Reports)
-- Employees/Event Staff (View Own Payroll Calculation)
+### 2. Available Actions
+- **View Analytics Dashboard:** Access financial analytics views.
+- **View Records:** Access sales, expenses, and other approved financial records (viewing-only).
+- **View Payroll Calculation:** Access payroll calculations (viewing-only).
+- **Logout:** Terminate session and return to start.
 
-### 3. Preconditions
-- The user has successfully logged in.
-- The user is on their role-specific dashboard.
-
-### 4. Main Flow
-1. User selects the reporting/analytics/payroll feature available to their role.
-2. User performs the action to view the report.
-3. System processes the request.
-4. System displays the result to the user.
-
-### 5. Alternative Flows
-- Business Owner may choose between viewing the Analytics Dashboard or Payroll Calculations.
-- Event Manager views role-restricted Reports.
-- Employees/Event Staff view only their own Payroll Calculation.
-
-### 6. Postconditions
-- The requested report or calculation result is displayed to the user.
-
-### 7. Notes
-- Access to specific report types is limited by role, consistent with Role-Based Access Control.
-- Employees/Event Staff have access only to their own payroll data, with no access to sales, expense, or analytics reports.
+*Note: Bookkeeper cannot record sales or expenses, calculate payroll, switch business sectors, or manage user accounts.*
 
 ---
 
-## 5. Switch Business Sector
+## 5. Employee / Event Staff Flow
 
 ### 1. Purpose
-To allow authorized users to change the active business sector, so that displayed data corresponds to the selected sector.
+Provides limited access for staff members to view their own payroll details.
 
-### 2. Actor(s)
-- Business Owner
-- Event Manager
-
-### 3. Preconditions
-- The user has successfully logged in.
-- The user is on their role-specific dashboard.
-
-### 4. Main Flow
-1. User selects the "Switch Business Sector" feature from the dashboard.
-2. User performs the action to switch the sector.
-3. System processes the request.
-4. System displays the result to the user.
-
-### 5. Alternative Flows
-- None depicted in the approved User Flow diagram.
-
-### 6. Postconditions
-- The user's active business sector context is updated, and the result is displayed.
-
-### 7. Notes
-- Employees/Event Staff do not have this action available, per the approved User Flow diagram.
+### 2. Available Actions
+- **View Own Payroll:** View personal payroll calculation records.
+- **Logout:** Terminate session and return to start.
 
 ---
 
 ## Document Consistency Statement
-
-This documentation reflects only the actors, features, and steps depicted in the approved User Flow Diagram. It aligns with the approved Concept Paper's stated features (Automated Financial Calculator, Automated Payroll Calculator, Role-Based Access Control, Business Sector Switcher, Interactive Visual Analytics Dashboard) and the three confirmed system actors (Business Owner, Event Manager, Employees/Event Staff). No additional workflows, roles, or system behaviors have been introduced.
+This documentation reflects the four authorized system roles and workflows depicted in the approved User Flow Diagram.

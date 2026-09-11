@@ -1,0 +1,152 @@
+@startuml
+' DYS Financial Management System (DYS FMS)
+' Case Study #4 — Class Diagram: Proposed System
+' Version 1.0 — Proposed System Domain Model
+' Notation: UML 2.x Class Diagram
+' Conforms to: Concept Paper, FRS (FR-001–FR-008), Use Case Diagram, Database Schema
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName sans-serif
+skinparam roundCorner 4
+skinparam TitleFontSize 14
+skinparam TitleFontStyle bold
+
+skinparam class {
+    BackgroundColor #FEFEFE
+    BorderColor #2B2B2B
+    ArrowColor #2B2B2B
+    HeaderBackgroundColor #F4F4F4
+}
+
+skinparam enum {
+    BackgroundColor #FEFEFE
+    BorderColor #2B2B2B
+    HeaderBackgroundColor #F4F4F4
+}
+
+title DYS Financial Management System — Class Diagram (Proposed System)
+
+' --- Enumerations ---
+enum UserRole <<enumeration>> {
+    BUSINESS_OWNER
+    EVENT_MANAGER
+    BOOKKEEPER
+    EMPLOYEE_EVENT_STAFF
+}
+
+enum AccountStatus <<enumeration>> {
+    ACTIVE
+    INACTIVE
+}
+
+enum ReportType <<enumeration>> {
+    SUMMARY
+    SALES
+    EXPENSES
+    PAYROLL
+    ANALYTICS
+}
+
+' --- Core Domain Classes ---
+class User {
+    - id: Integer
+    - name: String
+    - email: String
+    - passwordHash: String
+    - role: UserRole
+    - accountStatus: AccountStatus
+    + authenticate(password: String): Boolean
+    + activate(): void
+    + deactivate(): void
+    + updateProfile(name: String, email: String): void
+    + assignRole(newRole: UserRole): void
+    + assignSector(sector: BusinessSector): void
+    + isOwner(): Boolean
+}
+
+class BusinessSector {
+    - id: Integer
+    - name: String
+    - description: String
+    + calculateTotalSales(): Decimal
+    + calculateTotalExpenses(): Decimal
+    + calculateNetBalance(): Decimal
+    + getFinancialSummary(): FinancialSummary
+}
+
+class SalesTransaction {
+    - id: Integer
+    - amount: Decimal
+    - description: String
+    - recordedAt: DateTime
+    + validateAmount(): Boolean
+    + getSummary(): String
+}
+
+class Expense {
+    - id: Integer
+    - amount: Decimal
+    - description: String
+    - recordedAt: DateTime
+    + validateAmount(): Boolean
+    + isPayrollGenerated(): Boolean
+    + getSummary(): String
+}
+
+class PayrollRecord {
+    - id: Integer
+    - hoursWorked: Decimal
+    - hourlyRate: Decimal
+    - computedSalary: Decimal
+    - payPeriod: Date
+    - calculatedAt: DateTime
+    + computeSalary(): Decimal
+    + createExpenseRecord(): Expense
+    + getSummary(): String
+}
+
+class FinancialSummary <<value object>> {
+    - totalSales: Decimal
+    - totalExpenses: Decimal
+    - netBalance: Decimal
+    + calculateNet(): Decimal
+    + formatCurrency(amount: Decimal): String
+}
+
+class FinancialReport {
+    - reportType: ReportType
+    - dateFrom: Date
+    - dateTo: Date
+    - totalSales: Decimal
+    - totalExpenses: Decimal
+    - netBalance: Decimal
+    - isCrossSector: Boolean
+    + generateReport(): void
+    + filterByDateRange(from: Date, to: Date): void
+    + getSectorBreakdown(): Map<String, Decimal>
+}
+
+' --- Relationships & Multiplicities ---
+User "0..*" --> "0..1" BusinessSector : assigned to >
+User "1" --> "0..*" SalesTransaction : records >
+User "1" --> "0..*" Expense : records >
+User "1" --> "0..*" PayrollRecord : calculated for >
+
+BusinessSector "1" *-- "0..*" SalesTransaction : contains >
+BusinessSector "1" *-- "0..*" Expense : contains >
+BusinessSector "1" *-- "0..*" PayrollRecord : scopes >
+BusinessSector ..> FinancialSummary : produces >
+
+PayrollRecord "1" --> "1" Expense : auto-creates >
+
+FinancialReport ..> BusinessSector : analyzes >
+FinancialReport ..> SalesTransaction : aggregates >
+FinancialReport ..> Expense : aggregates >
+FinancialReport ..> PayrollRecord : aggregates >
+
+User ..> UserRole : typed by
+User ..> AccountStatus : typed by
+FinancialReport ..> ReportType : typed by
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+title DYS Financial Management System (DYS FMS) - User Flow Diagram
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam activity {
+  BackgroundColor #FCF3CF
+  BorderColor #7D6608
+  FontColor #17202A
+}
+skinparam arrowColor #2C3E50
+skinparam linetype ortho
+
+start
+:Open Application;
+:Login (Enter Email and Password);
+if (Authentication Successful?) then (No)
+  :Show error message and allow retry;
+  detach
+else (Yes)
+  :Identify User Role and Redirect to Dashboard;
+  if (User Role?) then (Business Owner)
+    :Owner Dashboard (Financial Summary + Active Sector);
+    :Manage User Accounts, Switch Business Sector,\nRecord Sales, Record Expenses,\nCalculate Payroll, View Reports, View Analytics;
+    :Logout;
+    stop
+  elseif (User Role?) then (Event Manager)
+    :Event Manager Dashboard (Assigned Sector);
+    :Record Sales, Record Expenses,\nView Reports, View Own Payroll;
+    :Logout;
+    stop
+  elseif (User Role?) then (Bookkeeper)
+    :Bookkeeper Dashboard (View-Only Access);
+    :View Analytics Dashboard, View Records,\nView Payroll Calculation;
+    :Logout;
+    stop
+  else (Employee / Event Staff)
+    :Employee/Staff Dashboard (Limited Access);
+    :View Own Payroll;
+    :Logout;
+    stop
+  endif
+endif
+@enduml

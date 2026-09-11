@@ -1,0 +1,54 @@
+@startuml
+title DYS Financial Management System (DYS FMS) - System Architecture
+top to bottom direction
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+
+' --- Color Palette ---
+skinparam rectangle {
+  BackgroundColor<<users>> #F2F4F4
+  BorderColor<<users>> #5D6D7E
+  BackgroundColor<<pres>> #EAF2F8
+  BorderColor<<pres>> #2980B9
+  BackgroundColor<<state>> #E8F8F5
+  BorderColor<<state>> #16A085
+  BackgroundColor<<repo>> #FEF9E7
+  BorderColor<<repo>> #F1C40F
+  BackgroundColor<<net>> #F4ECF7
+  BorderColor<<net>> #8E44AD
+  BackgroundColor<<backend>> #FCF3CF
+  BorderColor<<backend>> #D4AC0D
+  BackgroundColor<<data>> #E8F6F3
+  BorderColor<<data>> #1ABC9C
+}
+
+rectangle "USERS (Business Owner, Event Manager, Bookkeeper, Employee/Event Staff)" <<users>> as users
+
+rectangle "PRESENTATION LAYER\nFlutter & Dart\n(Login, Dashboard, Sales, Expenses, Payroll,\nReports, Business Sector Switcher, User Management)" <<pres>> as pres
+
+rectangle "STATE LAYER\nProvider & Flutter Secure Storage\n(Session, Role, Sector, Loading State, Tokens)" <<state>> as state
+
+rectangle "REPOSITORY LAYER\nFeature Repositories & DTO Mapping\n(API Abstraction)" <<repo>> as repo
+
+rectangle "NETWORK LAYER\nDio & REST API\n(HTTPS, Bearer Token, JSON)" <<net>> as net
+
+rectangle "BACKEND LAYER\nLaravel 12, PHP 8.2+, Sanctum, Eloquent ORM\n(Auth, RBAC, Validation, Business Logic)" <<backend>> as backend
+
+database "DATA LAYER\nMySQL\n(Users, Sectors, Sales, Expenses, Payroll Records)" <<data>> as data
+
+users --> pres : User Actions / UI State
+pres --> state : UI Interactions
+state --> repo : State Requests
+repo --> net : API Calls
+net --> backend : HTTPS / JSON (Bearer Token)
+backend --> data : Eloquent ORM / SQL
+data --> backend : Stored Records
+backend --> net : JSON Response
+net --> repo : API Result
+repo --> state : Data Update
+state --> pres : Render Interface
+
+@enduml

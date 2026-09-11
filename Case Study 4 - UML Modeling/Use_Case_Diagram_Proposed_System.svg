@@ -1,0 +1,222 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1450" height="980" viewBox="0 0 1450 980">
+  <style>
+    .title { font: bold 22px Arial, sans-serif; text-anchor: middle; fill: #111; }
+    .subtitle { font: 16px Arial, sans-serif; text-anchor: middle; fill: #333; }
+    .boundary-title { font: bold 18px Arial, sans-serif; text-anchor: middle; fill: #111; }
+    .label { font: 14px Arial, sans-serif; font-weight: bold; text-anchor: middle; dominant-baseline: middle; fill: #111; }
+    .sublabel { font: 11px Arial, sans-serif; text-anchor: middle; fill: #333; }
+    .actor-label { font: bold 16px Arial, sans-serif; text-anchor: middle; fill: #111; }
+    .boundary { fill: #ffffff; stroke: #111; stroke-width: 2.5; rx: 4; }
+    .uc { fill: #FFE58A; stroke: #111; stroke-width: 1.5; rx: 30; }
+    .line { fill: none; stroke: #111; stroke-width: 1.3; }
+    .dash-line { fill: none; stroke: #111; stroke-width: 1.3; stroke-dasharray: 5,5; }
+    .arrow { fill: #111; }
+    .stick { fill: none; stroke: #111; stroke-width: 2; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1450" height="980" fill="#ffffff"/>
+
+  <!-- Titles -->
+  <text x="725" y="35" class="title">DYS Financial Management System (DYS FMS)</text>
+  <text x="725" y="60" class="subtitle">Use Case Diagram (Proposed System)</text>
+
+  <!-- System Boundary -->
+  <rect x="220" y="85" width="1010" height="855" class="boundary"/>
+  <text x="725" y="115" class="boundary-title">DYS Financial Management System</text>
+
+  <!-- Relationships & Association Lines -->
+  <g>
+    <!-- Dashed include / extend arrows inside system -->
+    <!-- Login -> Logout -->
+    <path d="M760 150 L880 150" class="dash-line"/>
+    <polygon points="885,150 875,146 875,154" class="arrow"/>
+    <text x="820" y="142" class="sublabel">&lt;&lt;include&gt;&gt;</text>
+
+    <!-- Login -> View Dashboard -->
+    <path d="M725 182 L725 295" class="dash-line"/>
+    <polygon points="725,300 721,290 729,290" class="arrow"/>
+    <text x="745" y="245" class="sublabel">&lt;&lt;include&gt;&gt;</text>
+
+    <!-- Record Sales -> View Reports -->
+    <path d="M420 500 C 470 540, 580 570, 650 595" class="dash-line"/>
+    <polygon points="655,597 646,592 648,602" class="arrow"/>
+    <text x="500" y="555" class="sublabel">&lt;&lt;include&gt;&gt;</text>
+
+    <!-- Record Expenses -> View Reports -->
+    <path d="M575 500 C 600 540, 650 570, 680 595" class="dash-line"/>
+    <polygon points="683,598 674,595 678,604" class="arrow"/>
+    <text x="610" y="555" class="sublabel">&lt;&lt;include&gt;&gt;</text>
+
+    <!-- Calculate Payroll -> View Reports -->
+    <path d="M900 500 C 850 540, 770 570, 730 595" class="dash-line"/>
+    <polygon points="725,598 730,604 734,595" class="arrow"/>
+    <text x="810" y="555" class="sublabel">&lt;&lt;include&gt;&gt;</text>
+
+    <!-- View Reports -> View Financial Summary (extend) -->
+    <path d="M660 635 C 530 680, 360 700, 270 750" class="dash-line"/>
+    <polygon points="265,753 275,755 271,745" class="arrow"/>
+    <text x="440" y="690" class="sublabel">&lt;&lt;extend&gt;&gt;</text>
+
+    <!-- View Reports -> View Sales Reports (extend) -->
+    <path d="M685 635 C 600 680, 480 720, 410 750" class="dash-line"/>
+    <polygon points="405,752 414,755 410,745" class="arrow"/>
+    <text x="530" y="700" class="sublabel">&lt;&lt;extend&gt;&gt;</text>
+
+    <!-- View Reports -> View Expense Reports (extend) -->
+    <path d="M725 635 L725 750" class="dash-line"/>
+    <polygon points="725,755 721,745 729,745" class="arrow"/>
+    <text x="745" y="700" class="sublabel">&lt;&lt;extend&gt;&gt;</text>
+
+    <!-- View Reports -> View Payroll Reports (extend) -->
+    <path d="M765 635 C 840 680, 930 720, 980 750" class="dash-line"/>
+    <polygon points="984,752 979,745 975,755" class="arrow"/>
+    <text x="875" y="700" class="sublabel">&lt;&lt;extend&gt;&gt;</text>
+
+    <!-- View Reports -> View Analytics (extend) -->
+    <path d="M790 635 C 930 680, 1050 700, 1120 750" class="dash-line"/>
+    <polygon points="1125,753 1119,745 1121,755" class="arrow"/>
+    <text x="980" y="690" class="sublabel">&lt;&lt;extend&gt;&gt;</text>
+
+    <!-- Actor Associations -->
+    <!-- Business Owner (Left: x=130, y=500) -->
+    <path d="M200 450 L655 150" class="line"/>
+    <path d="M200 455 L345 190" class="line"/>
+    <path d="M200 460 L1015 190" class="line"/>
+    <path d="M200 470 L655 330" class="line"/>
+    <path d="M200 480 L345 470" class="line"/>
+    <path d="M200 490 L520 470" class="line"/>
+    <path d="M200 500 L950 470" class="line"/>
+    <path d="M200 510 L655 600" class="line"/>
+    <path d="M200 520 L270 750" class="line"/>
+    <path d="M200 530 L410 750" class="line"/>
+    <path d="M200 540 L725 750" class="line"/>
+    <path d="M200 550 L980 750" class="line"/>
+    <path d="M200 560 L1125 750" class="line"/>
+
+    <!-- Event Manager (Right Upper: x=1320, y=200) -->
+    <path d="M1250 180 L795 150" class="line"/>
+    <path d="M1250 190 L1015 210" class="line"/>
+    <path d="M1250 200 L795 315" class="line"/>
+    <path d="M1250 220 L370 470" class="line"/>
+    <path d="M1250 230 L550 470" class="line"/>
+    <path d="M1250 250 L655 595" class="line"/>
+
+    <!-- Bookkeeper (Right Middle: x=1320, y=500) -->
+    <path d="M1250 480 L795 160" class="line"/>
+    <path d="M1250 490 L1125 760" class="line"/>
+    <path d="M1250 500 L710 600" class="line"/>
+    <path d="M1250 510 L685 600" class="line"/>
+
+    <!-- Employees/Event Staff (Right Lower: x=1320, y=800) -->
+    <path d="M1250 770 L550 510" class="line"/>
+    <path d="M1250 780 L725 870" class="line"/>
+  </g>
+
+  <!-- Use Case Ovals -->
+  <g>
+    <!-- Top -->
+    <ellipse cx="725" cy="150" rx="70" ry="28" class="uc"/>
+    <text x="725" y="150" class="label">Login</text>
+
+    <!-- Logout -->
+    <ellipse cx="945" cy="150" rx="70" ry="28" class="uc"/>
+    <text x="945" y="150" class="label">Logout</text>
+
+    <!-- Upper Left: Manage User Accounts -->
+    <ellipse cx="345" cy="205" rx="100" ry="32" class="uc"/>
+    <text x="345" y="198" class="label">Manage User</text>
+    <text x="345" y="216" class="label">Accounts</text>
+    <text x="345" y="248" class="sublabel">(Create, Update, Activate/Deactivate,</text>
+    <text x="345" y="262" class="sublabel">Generate Temporary Password)</text>
+    <text x="345" y="276" class="sublabel">(Business Owner only)</text>
+
+    <!-- Upper Right: Switch Business Sector -->
+    <ellipse cx="1015" cy="205" rx="100" ry="32" class="uc"/>
+    <text x="1015" y="198" class="label">Switch Business</text>
+    <text x="1015" y="216" class="label">Sector</text>
+    <text x="1015" y="248" class="sublabel">(Business Owner only)</text>
+
+    <!-- Center: View Dashboard -->
+    <ellipse cx="725" cy="330" rx="100" ry="32" class="uc"/>
+    <text x="725" y="330" class="label">View Dashboard</text>
+
+    <!-- Record Sales -->
+    <ellipse cx="370" cy="485" rx="100" ry="32" class="uc"/>
+    <text x="370" y="485" class="label">Record Sales</text>
+    <text x="370" y="525" class="sublabel">(Business Owner &amp;</text>
+    <text x="370" y="539" class="sublabel">Event Manager)</text>
+
+    <!-- Record Expenses -->
+    <ellipse cx="550" cy="485" rx="100" ry="32" class="uc"/>
+    <text x="550" y="485" class="label">Record Expenses</text>
+    <text x="550" y="525" class="sublabel">(Business Owner,</text>
+    <text x="550" y="539" class="sublabel">Event Manager &amp; Employees/Staff)</text>
+
+    <!-- Calculate Payroll -->
+    <ellipse cx="950" cy="485" rx="100" ry="32" class="uc"/>
+    <text x="950" y="485" class="label">Calculate Payroll</text>
+    <text x="950" y="525" class="sublabel">(Business Owner only)</text>
+
+    <!-- View Reports -->
+    <ellipse cx="725" cy="615" rx="110" ry="32" class="uc"/>
+    <text x="725" y="615" class="label">View Reports</text>
+
+    <!-- Report Extensions -->
+    <ellipse cx="270" cy="765" rx="90" ry="28" class="uc"/>
+    <text x="270" y="765" class="label">View Financial</text>
+    <text x="270" y="781" class="label">Summary</text>
+
+    <ellipse cx="410" cy="765" rx="90" ry="28" class="uc"/>
+    <text x="410" y="765" class="label">View Sales</text>
+    <text x="410" y="781" class="label">Reports</text>
+
+    <ellipse cx="725" cy="765" rx="95" ry="28" class="uc"/>
+    <text x="725" y="765" class="label">View Expense</text>
+    <text x="725" y="781" class="label">Reports</text>
+
+    <ellipse cx="980" cy="765" rx="95" ry="28" class="uc"/>
+    <text x="980" y="765" class="label">View Payroll</text>
+    <text x="980" y="781" class="label">Reports</text>
+
+    <ellipse cx="1125" cy="765" rx="90" ry="28" class="uc"/>
+    <text x="1125" y="765" class="label">View Analytics</text>
+    <text x="1125" y="795" class="sublabel">(Business Owner &amp;</text>
+    <text x="1125" y="809" class="sublabel">Bookkeeper)</text>
+
+    <!-- Very Bottom: View Own Payroll -->
+    <ellipse cx="725" cy="885" rx="105" ry="32" class="uc"/>
+    <text x="725" y="885" class="label">View Own Payroll</text>
+    <text x="725" y="925" class="sublabel">(Employees/Event Staff)</text>
+  </g>
+
+  <!-- Actors -->
+  <!-- Business Owner (Left) -->
+  <g class="stick">
+    <circle cx="130" cy="410" r="15"/>
+    <path d="M130 425 L130 480 M100 445 L170 445 M130 480 L105 525 M130 480 L165 525"/>
+  </g>
+  <text x="130" y="555" class="actor-label">Business Owner</text>
+
+  <!-- Event Manager (Right Upper) -->
+  <g class="stick">
+    <circle cx="1320" cy="140" r="15"/>
+    <path d="M1320 155 L1320 210 M1290 175 L1350 175 M1320 210 L1295 255 M1320 210 L1345 255"/>
+  </g>
+  <text x="1320" y="285" class="actor-label">Event Manager</text>
+
+  <!-- Bookkeeper (Right Middle) -->
+  <g class="stick">
+    <circle cx="1320" cy="420" r="15"/>
+    <path d="M1320 435 L1320 490 M1290 455 L1350 455 M1320 490 L1295 535 M1320 490 L1345 535"/>
+  </g>
+  <text x="1320" y="565" class="actor-label">Bookkeeper</text>
+
+  <!-- Employees/Event Staff (Right Lower) -->
+  <g class="stick">
+    <circle cx="1320" cy="720" r="15"/>
+    <path d="M1320 735 L1320 790 M1290 755 L1350 755 M1320 790 L1295 835 M1320 790 L1345 835"/>
+  </g>
+  <text x="1320" y="865" class="actor-label">Employees/Event Staff</text>
+
+</svg>

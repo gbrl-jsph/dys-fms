@@ -1,0 +1,81 @@
+@startuml
+' DYS Financial Management System (DYS FMS)
+' Case Study #4 — Activity Diagram: Current Business Process (As-Is)
+' Version 11.0 — Single top-to-bottom flow, clean merges, shared operational note
+' Notation: UML 2.x Activity Diagram with Swimlanes
+
+skinparam Shadowing false
+skinparam DefaultTextAlignment center
+skinparam ActivityBackgroundColor #FEFEFE
+skinparam ActivityBorderColor #2B2B2B
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+skinparam ActivityDiamondBorderColor #2B2B2B
+skinparam PartitionBackgroundColor #FFFFFF
+skinparam PartitionBorderColor #555555
+skinparam ArrowColor #2B2B2B
+skinparam NoteBackgroundColor #FFFFE0
+skinparam NoteBorderColor #C2C27A
+skinparam TitleFontSize 14
+skinparam TitleFontStyle bold
+
+title DYS Event Management — Current Business Process (As-Is)
+
+|Employees / Event Staff|
+|Manager/Head|
+|Business Owner|
+|Bookkeeper|
+
+|Business Owner|
+start
+:Business transaction occurs\nacross business sector;
+note right
+  Sectors: DYS Events, B&DYS,
+  Flavors by DYS, SnapDYS Memories
+end note
+
+:Determine transaction type;
+
+if (Transaction type?) is (Sales) then
+  :Receive sales details\nor keep handwritten notes;
+  :Forward sales info\nto Bookkeeper;
+  |Bookkeeper|
+  :Record sales\nin ledger;
+  |Business Owner|
+else (Expense)
+  |Employees / Event Staff|
+  :Purchase supplies and\nrecord expense details;
+  note right
+    Performed by Employees/Event Staff
+    or Manager/Head when assigned
+  end note
+  :Send expense details and\nreceipt via Messenger;
+  |Business Owner|
+  :Receive expense info\nand receipt;
+  if (Forward to\nBookkeeper?) is (yes) then
+    :Forward expense\nto Bookkeeper;
+    |Bookkeeper|
+    :Record expense\nin ledger;
+    |Business Owner|
+  else (no)
+    :Keep in personal notes;
+    note right
+      Risk: forgotten expenses\nor lost receipts
+    end note
+  endif
+endif
+
+:Review manual records\nacross disparate sources;
+
+|Manager/Head|
+:Supervise employees/event staff;
+note right
+  Separate responsibility
+  (not per-transaction)
+end note
+:Review financial reports\nwithin assigned sector range;
+
+|Business Owner|
+:Manually calculate salary\n(Hours x Hourly Rate);
+:Financial information remains\nacross notes, receipts,\nMessenger, and ledger;
+stop
+@enduml
