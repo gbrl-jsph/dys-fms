@@ -20,8 +20,11 @@ Use this order when facts conflict:
 
 ## Reviewed Design Reference
 
-- `DYS_FMS_System_Design_Sections_II_III.pdf` in the repository root — System
-  Architecture & Environment and System Logic & Behavior.
+The submitted System Design Documentation was reviewed from the active
+workspace. Its local PDF copy is not tracked by this commit. This record
+preserves verified conclusions, not a replacement copy of the submitted design.
+Current source, tests, and deployment configuration remain reproducible
+evidence for every implementation claim below.
 
 ## Confirmed Alignment
 
