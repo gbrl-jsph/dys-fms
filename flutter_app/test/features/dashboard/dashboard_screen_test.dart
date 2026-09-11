@@ -229,7 +229,7 @@ void main() {
     },
   );
 
-  testWidgets('employee dashboard shows only the View Payroll quick action', (
+  testWidgets('employee dashboard offers expense entry', (
     WidgetTester tester,
   ) async {
     await pumpDashboard(
@@ -247,8 +247,7 @@ void main() {
     expect(find.text('DYS Events'), findsOneWidget);
     expect(find.text('FINANCIAL SUMMARY'), findsNothing);
     expect(find.text('SALES OVERVIEW'), findsNothing);
-    expect(find.text('View Payroll'), findsOneWidget);
-    expect(find.text('Add Transaction'), findsNothing);
+    expect(find.text('Add Transaction'), findsOneWidget);
   });
 
   testWidgets('shows the loading indicator while the summary loads', (
