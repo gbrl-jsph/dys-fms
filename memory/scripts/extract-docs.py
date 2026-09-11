@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Extract project documents to memory/extracted/ using Microsoft MarkItDown."""
 
+import argparse
 import hashlib
 import json
 import os
@@ -12,12 +13,13 @@ from markitdown import MarkItDown
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AI_DIR = REPO_ROOT / "memory"
-EXTRACTED_DIR = AI_DIR / "extracted"
+GENERATED_DIR = AI_DIR / "generated"
+EXTRACTED_DIR = GENERATED_DIR / "extracted"
 BLUEPRINT_DIR = AI_DIR / "blueprint"
-HASH_FILE = AI_DIR / ".extracted_hashes.json"
+HASH_FILE = GENERATED_DIR / ".extracted_hashes.json"
 
 IGNORE_DIRS = {
-    ".git", "node_modules", "memory", "dist", "build", "coverage",
+    ".git", "node_modules", "vendor", "memory", "graphify-out", "dist", "build", "coverage",
     ".obsidian", ".trash",
 }
 
@@ -778,14 +780,35 @@ All documents are aligned with the approved Concept Paper and latest client clar
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Extract source artifacts into a generated staging area."
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="write generated conversions under memory/generated/extracted/",
+    )
+    parser.add_argument(
+        "--replace-curated",
+        action="store_true",
+        help="reserved; curated documentation replacement is intentionally disabled",
+    )
+    args = parser.parse_args()
+
+    if args.replace_curated:
+        parser.error(
+            "curated replacement is disabled. Review generated output and update "
+            "canonical documentation manually from the final design PDF."
+        )
+
     md_converter = MarkItDown()
     
     print("=" * 60)
     print(" DYS Project — AI Document Extraction")
     print("=" * 60)
     
-    EXTRACTED_DIR.mkdir(parents=True, exist_ok=True)
-    BLUEPRINT_DIR.mkdir(parents=True, exist_ok=True)
+    if args.write:
+        EXTRACTED_DIR.mkdir(parents=True, exist_ok=True)
     
     old_hashes = load_hashes()
     new_hashes = {}
@@ -819,8 +842,11 @@ def main():
             continue
         
         if text:
-            out_path.write_text(text)
-            print(f"  ✅ Converted: {rel_path} → {out_name}")
+            if args.write:
+                out_path.write_text(text)
+                print(f"  ✅ Converted: {rel_path} → {out_name}")
+            else:
+                print(f"  DRY-RUN: {rel_path} → {out_name}")
             converted += 1
             converted_list.append((rel_path, out_name))
         else:
@@ -831,26 +857,8 @@ def main():
     print(f" Results: {converted} converted, {skipped} skipped, {len(errors)} errors")
     print(f"{'=' * 60}\n")
     
-    print("📝 Generating curated knowledge documents...")
-    generate_curated_from_extracted(EXTRACTED_DIR)
-    print("   ✅ concept-paper.md")
-    print("   ✅ client-interview.md")
-    print("   ✅ system-components.md")
-    
-    print("\n📝 Generating blueprint documents...")
-    generate_blueprint_docs(EXTRACTED_DIR)
-    for name in ["system-architecture", "system-flowchart", "user-flow", "use-case", "wireframes", "er-diagram", "database-schema", "consistency-review"]:
-        print(f"   ✅ blueprint/{name}.md")
-    
-    print("\n📝 Generating project index...")
-    generate_project_index(converted_list, errors)
-    print("   ✅ project-index.md")
-    
-    print("\n📝 Generating project memory...")
-    generate_project_memory(EXTRACTED_DIR)
-    print("   ✅ project-memory.md")
-    
-    save_hashes(new_hashes)
+    if args.write:
+        save_hashes(new_hashes)
     
     print(f"\n{'=' * 60}")
     print(f" Extraction Complete")
@@ -859,7 +867,10 @@ def main():
     print(f" Successfully converted:     {converted}")
     print(f" Skipped (unchanged/empty):  {skipped}")
     print(f" Extraction errors:          {len(errors)}")
-    print(f" AI documents generated:     9 curated + {converted} extracted")
+    print(f" Generated conversions:      {converted}")
+    print(" Curated documentation:      unchanged")
+    if not args.write:
+        print(" Dry run only. Re-run with --write to create generated conversions.")
     print(f"{'=' * 60}")
 
 

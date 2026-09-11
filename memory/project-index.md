@@ -1,155 +1,61 @@
-# Project Index — DYS Financial Management System (DYS FMS)
+# DYS FMS Documentation Index and Authority Map
 
-Related:
-- concept-paper.md
-- project-memory.md
-- client-interview.md
-- system-components.md
-- AI_INSTRUCTIONS.md
+Read [`../AI.md`](../AI.md) and [`../PROJECT.md`](../PROJECT.md) before using detailed documents. This index prevents historical project material from being mistaken for the current implementation baseline.
 
-Complete index of all project documents.
+## Authority Order
 
-## concept-paper.md (Curated)
+1. Final System Design Documentation PDF.
+2. Explicit user instructions after that PDF.
+3. Verified source, tests, and deployment configuration.
+4. Current maintained references listed below.
+5. Frozen/historical academic and design evidence.
 
-- **Source**: Revised Concept Paper + Latest Client Clarifications
-- **AI Copy**: `memory/concept-paper.md`
-- **Summary**: Project overview, problem statement, proposed solution, features, constraints, business rules, and software engineering challenges.
+## Active Current References
 
-## client-interview.md (Curated)
+| Document | Use |
+|----------|-----|
+| [`../AI.md`](../AI.md) | Coding-agent rules, architecture, RBAC, startup procedure |
+| [`FINAL_DESIGN_AUTHORITY.md`](FINAL_DESIGN_AUTHORITY.md) | Final design authority and implementation-alignment boundary |
+| [`../PROJECT.md`](../PROJECT.md) | Current product, implementation, platform, testing, and deployment baseline |
+| [`../backend/DEPLOYMENT.md`](../backend/DEPLOYMENT.md) | Render, Vercel, Aiven TLS, Android, and Web/PWA deployment instructions |
+| [`AI_INSTRUCTIONS.md`](AI_INSTRUCTIONS.md) | Supplementary documentation governance |
+| [`project-memory.md`](project-memory.md) | Curated requirements and business-rule detail; defer to root baseline for post-baseline decisions |
+| [`system-components.md`](system-components.md) | Detailed component architecture; verify against source before behavior changes |
+| [`development/user-manual.md`](development/user-manual.md) | User-facing draft; verify feature wording against current source |
 
-- **Source**: Client Interview (Mrs. Divine Samonte)
-- **AI Copy**: `memory/client-interview.md`
-- **Summary**: Original client requirements, pain points, requested features, and business processes.
+## Frozen or Historical Design References
 
-## project-memory.md (Curated)
+These documents preserve approved design history. They must not override current implementation or explicit approvals without reconciliation.
 
-- **Source**: All project documents
-- **AI Copy**: `memory/project-memory.md`
-- **Summary**: AI context-optimized memory document with approved features, roles, workflows, business rules, and source of truth hierarchy.
+| Group | Documents | Notes |
+|-------|-----------|-------|
+| Original requirements evidence | `concept-paper.md`, `client-interview.md` | Preserve source history; do not rewrite interview responses |
+| Blueprint design | `blueprint/functional-requirements-specification.md`, `validation-rules.md`, `use-case*.md`, `navigation-map.md`, `wireframes.md`, `ui-style-guide.md`, `system-architecture.md`, `system-flowchart.md`, `user-flow.md` | Several predate Web/PWA, session auth, settings, mutable transactions, and later UI changes |
+| Data design | `blueprint/er-diagram.md`, `database-schema.md`, `data-dictionary.md`, `database-relationship-diagram.md` | Conceptual model preserves persistent payroll; current physical source includes soft deletes, audit logs, password-reset tokens, and Sanctum tables |
+| Testing/traceability | `blueprint/requirements-traceability-matrix.md`, `blueprint/test-case-specification.md`, `blueprint/test-execution-report.md`, `development/requirements-traceability-matrix.md`, `development/test-case-specification.md` | Historical counts/endpoints may be stale; use actual test runs and routes |
+| Plans/audits | `development/development-roadmap.md`, `development/development-execution-plan.md`, `development/phase-1-implementation-plan.md`, `development/final-consistency-audit.md`, `development/risk-assessment.md` | Historical planning/audit evidence; implementation has progressed beyond them |
+| Older deployment/testing guides | `development/deployment-installation-guide.md`, `development/deployment-testing-guide.md` | Consult `../backend/DEPLOYMENT.md` first; reconcile provider-specific guidance before use |
 
-## system-components.md (Curated)
+## Academic UML and Case Study Material
 
-- **Source**: System Architecture, User Flow, ER Diagram
-- **AI Copy**: `memory/system-components.md`
-- **Summary**: System components, architecture overview, backend services, data entities, and user roles.
+| Location | Status |
+|----------|--------|
+| `../Case Study 4 - UML Modeling/` | Individually approved academic sources/artifacts. Do not edit without a dedicated UML reconciliation task. The As-Is Activity Diagram is manual-only and intentionally differs from proposed-system RBAC. |
+| `../1 - System Architecture/`, `../3 - User Flow Diagram/`, `../4 - Use Case Diagram/`, `../0 - Project Documentation/` | Academic/working artifacts. Some alternate variants conflict with current RBAC; preserve and classify until separately reconciled. |
+| `diagrams/` | Curated Mermaid/PlantUML descriptions. Verify against current source before treating as physical implementation documentation. |
 
-## AI_INSTRUCTIONS.md
+## Generated and Non-Authoritative Material
 
-- **Source**: Project-wide AI guidelines
-- **AI Copy**: `memory/AI_INSTRUCTIONS.md`
-- **Summary**: Rules, scope, approved features, and constraints for AI agents working on this project.
+- `extracted/`: raw MarkItDown conversions and hash state; regenerate, do not hand-edit.
+- `scripts/`: extraction/cross-link tooling.
+- `VERSION.md` and `CHANGELOG.md`: historical release records; check Git and app metadata for current version state.
 
-## blueprint/system-architecture.md
+## Current Implementation Deltas to Remember
 
-- **Source**: System Architecture Documentation
-- **AI Copy**: `memory/blueprint/system-architecture.md`
-- **Summary**: Four-layer architecture (Client, API, Backend, Data) with technology stack.
-
-## blueprint/system-flowchart.md
-
-- **Source**: System Flowchart Documentation
-- **AI Copy**: `memory/blueprint/system-flowchart.md`
-- **Summary**: Process flows for authentication, transactions, reporting, sector management, and user account management.
-
-## blueprint/user-flow.md
-
-- **Source**: User Flow Documentation + Latest Clarifications
-- **AI Copy**: `memory/blueprint/user-flow.md`
-- **Summary**: User flows for login, sales, expenses, reports, sector switching, and user account management with role permissions.
-
-## blueprint/use-case.md
-
-- **Source**: Use Case Diagram Documentation
-- **AI Copy**: `memory/blueprint/use-case.md`
-- **Summary**: Actor-system interactions for all approved use cases with role mappings.
-
-## blueprint/use-case-diagram.md
-
-- **Source**: Use Case Diagram Documentation
-- **AI Copy**: `memory/blueprint/use-case-diagram.md`
-- **Summary**: Visual Mermaid use case diagram with 3 actors, 10 use cases, and actor permissions mapping. v1.1 (amended for User Account Management).
-
-## blueprint/wireframes.md
-
-- **Source**: Wireframes (Hi-Fi HTML)
-- **AI Copy**: `memory/blueprint/wireframes.md`
-- **Summary**: Screen descriptions for login, dashboard, sales, expenses, payroll, reports, sector switcher, and manage users.
-
-## blueprint/er-diagram.md
-
-- **Source**: ER Diagram Documentation
-- **AI Copy**: `memory/blueprint/er-diagram.md`
-- **Summary**: Entity-Relationship diagram with entities (User, Business Sector, Sales Transaction, Expense, Payroll Record).
-
-## blueprint/database-schema.md
-
-- **Source**: Database Design Documentation
-- **AI Copy**: `memory/blueprint/database-schema.md`
-- **Summary**: Database schema with tables, columns, types, and foreign keys.
-
-## blueprint/consistency-review.md
-
-- **Source**: Cross-document analysis
-- **AI Copy**: `memory/blueprint/consistency-review.md`
-- **Summary**: Cross-reference verification of features, roles, architecture, and workflows across all documents.
-
-## 1-system-architecture-system_architecture_documentation.md
-
-- **Source**: `1 - System Architecture/System_Architecture_Documentation.docx`
-- **AI Copy**: `memory/extracted/1-system-architecture-system_architecture_documentation.md`
-- **Summary**: Raw extraction of the system architecture documentation.
-
-## 2-system-flowchart-dys_system_flowchart_documentation.md
-
-- **Source**: `2 - System Flowchart/DYS_System_Flowchart_Documentation.pdf`
-- **AI Copy**: `memory/extracted/2-system-flowchart-dys_system_flowchart_documentation.md`
-- **Summary**: Raw extraction of the system flowchart documentation.
-
-## 3-user-flow-diagram-dys_userflow_documentation.md
-
-- **Source**: `3 - User Flow Diagram/DYS_UserFlow_Documentation.md`
-- **AI Copy**: `memory/extracted/3-user-flow-diagram-dys_userflow_documentation.md`
-- **Summary**: Raw extraction of the user flow documentation.
-
-## 4-use-case-diagram-use-case-diagram-documentation.md
-
-- **Source**: `4 - Use Case Diagram/Use Case Diagram Documentation.docx`
-- **AI Copy**: `memory/extracted/4-use-case-diagram-use-case-diagram-documentation.md`
-- **Summary**: Raw extraction of the use case diagram documentation.
-
-## 6-database-design-er-diagram-documentation.md
-
-- **Source**: `6 - Database Design/(ER) Diagram Documentation.pdf`
-- **AI Copy**: `memory/extracted/6-database-design-er-diagram-documentation.md`
-- **Summary**: Raw extraction of the ER diagram documentation.
-
-## 8-research-concept-paper-revision.md
-
-- **Source**: `8 - Research/Concept Paper Revision.docx`
-- **AI Copy**: `memory/extracted/8-research-concept-paper-revision.md`
-- **Summary**: Raw extraction of the revised concept paper (official source of truth).
-
-## 8-research-concept-paper.md
-
-- **Source**: `8 - Research/Concept Paper.docx`
-- **AI Copy**: `memory/extracted/8-research-concept-paper.md`
-- **Summary**: Raw extraction of the original concept paper draft.
-
-## 8-research-copy-of-interview-with-mrs-divine.md
-
-- **Source**: `8 - Research/Copy of Interview With Mrs. Divine .docx`
-- **AI Copy**: `memory/extracted/8-research-copy-of-interview-with-mrs-divine.md`
-- **Summary**: Raw extraction of the client interview transcript.
-
-## final.md
-
-- **Source**: `final.html`
-- **AI Copy**: `memory/extracted/final.md`
-- **Summary**: Raw extraction of the system architecture HTML visualization.
-
-## wireframes-hifi-*.md (8 files)
-
-- **Source**: `5 - Wireframes/wireframes-hifi/*.html`
-- **AI Copy**: `memory/extracted/wireframes-hifi-*.md`
-- **Summary**: Raw extraction of high-fidelity wireframe HTML files for each screen.
-
+- Payroll is persistent and atomically creates an Expense.
+- Sales and expenses support approved maintenance/filtering and soft deletion.
+- Reports render compact `fl_chart` charts; the Dashboard legacy Sales Overview chart was removed.
+- Transactions accept optional `recorded_at`, persist UTC, and display local time.
+- Android uses bearer tokens; Web/PWA uses Sanctum session cookies/XSRF through Vercel same-origin rewrites.
+- Current production architecture is Vercel Web/PWA + Render API + Aiven MySQL TLS.
+- Official roles are Business Owner, Event Manager, Employee/Staff only.

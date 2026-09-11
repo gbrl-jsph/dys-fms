@@ -1,68 +1,47 @@
-# AI Knowledge Base — DYS Financial Management System (DYS FMS)
+# DYS FMS Documentation Library
 
-Related:
-- project-index.md
-- project-memory.md
-- AI_INSTRUCTIONS.md
+This directory contains detailed project evidence, approved design material, historical academic artifacts, and implementation-supporting guides for DYS Financial Management System (DYS FMS).
 
-## Purpose
+## Start Here
 
-This directory contains AI-friendly Markdown versions of every project document. It enables AI agents (Claude, OpenCode, Codex, Gemini, etc.) to read the full project context without parsing PDFs, DOCX, or other binary formats.
+For current operational context, read these documents first:
 
-## Folder Layout
+1. [`FINAL_DESIGN_AUTHORITY.md`](FINAL_DESIGN_AUTHORITY.md) — final design authority and current phase boundary.
+2. [`project-index.md`](project-index.md) — task-specific documentation index and status classification.
+3. [`../AI.md`](../AI.md) and [`../PROJECT.md`](../PROJECT.md) — implementation-state references only.
 
-```
-memory/
-├── README.md                  # This file
-├── project-index.md           # Index of every document with summaries
-├── project-memory.md          # AI context-optimized memory document
-├── concept-paper.md           # Curated concept paper
-├── client-interview.md        # Curated client interview
-├── system-components.md       # Curated system components
-├── blueprint/                 # Curated architectural documents
-│   ├── system-architecture.md
-│   ├── system-flowchart.md
-│   ├── user-flow.md
-│   ├── use-case.md
-│   ├── wireframes.md
-│   ├── er-diagram.md
-│   ├── database-schema.md
-│   └── consistency-review.md
-├── extracted/                 # Raw MarkItDown conversions
-│   ├── 1-system-architecture-*.md
-│   ├── 2-system-flowchart-*.md
-│   ├── ...
-└── scripts/
-    └── extract-docs.py        # Extraction script
-```
+Use `graphify query "<question>"` when `../graphify-out/graph.json` exists.
+Load only task-specific Markdown and source files. Do not preload this library.
 
-## Extraction Process
+## Important Distinction
 
-Every supported document in the repository is converted to Markdown using [Microsoft MarkItDown](https://github.com/microsoft/markitdown).
+`memory/` contains both current reference documents and historical evidence. Do not treat every file here as an active implementation specification. In particular:
 
-Supported formats: PDF, DOCX, PPTX, XLSX, ODT, HTML, MD, TXT, Images
+- Original concept papers and interviews preserve submitted/client evidence.
+- Frozen blueprint and roadmap documents may predate later approved implementation work.
+- Academic UML artifacts have their own approval history and require separate reconciliation before edits.
+- `extracted/` contains generated raw conversions; do not hand-edit it.
 
-Curated documents (`concept-paper.md`, `client-interview.md`, etc.) are then generated from the extracted raw Markdown, extracting structured knowledge rather than copying verbatim.
+## Structure
 
-## How to Refresh
+| Path | Purpose |
+|------|---------|
+| `project-index.md` | Documentation map, authority, and current/historical classification |
+| `project-memory.md` | Curated requirements/business-rule memory; consult with current root baseline |
+| `AI_INSTRUCTIONS.md` | Supplementary governance for this documentation library |
+| `blueprint/` | Requirements/design references, many frozen or historical |
+| `development/` | Roadmap, test, deployment, audit, and user-facing documents |
+| `diagrams/` | Curated diagram descriptions and sources |
+| `extracted/` | Generated raw source conversions, non-authoritative |
+| `scripts/` | Documentation extraction tooling |
+
+## Refreshing Raw Extractions
 
 ```bash
 python3 memory/scripts/extract-docs.py
+python3 memory/scripts/extract-docs.py --write
 ```
 
-This will:
-1. Scan the repository for all supported documents
-2. Convert new/changed files using MarkItDown
-3. Skip unchanged files using SHA-256 hashes
-4. Regenerate all curated documents, project index, and project memory
-
-## Source of Truth Hierarchy
-
-1. Approved Concept Paper
-2. System Architecture Documentation
-3. User Flow Documentation
-4. Use Case Documentation
-5. ER Diagram / Database Design
-6. Wireframes / HTML prototypes
-7. System Flowchart
-8. Client Interview
+The default command is a dry run. `--write` creates raw conversions only under
+`memory/generated/extracted/`. It never replaces curated Markdown. Reconcile
+curated documentation manually from the final design PDF.
