@@ -45,6 +45,9 @@ class AppRouter {
             authProvider.state.user?.isBusinessOwner ?? false;
         final bool isEventManager =
             authProvider.state.user?.isEventManager ?? false;
+        final bool isBookkeeper =
+            authProvider.state.user?.isBookkeeper ?? false;
+        final bool isEmployee = authProvider.state.user?.isEmployee ?? false;
 
         if (!isAuthenticated) {
           if (isOnLogin || isOnForgotPassword || isOnResetPassword) {
@@ -65,14 +68,15 @@ class AppRouter {
         }
         if (state.matchedLocation == '/expenses' &&
             !isBusinessOwner &&
-            !isEventManager) {
+            !isEventManager &&
+            !isEmployee) {
           return '/dashboard';
         }
-        // FR-007: Employees have no Reports access (API 403); the screen
-        // is Business Owner / Event Manager only (navigation-map Rule 6).
         if (state.matchedLocation == '/reports' &&
             !isBusinessOwner &&
-            !isEventManager) {
+            !isEventManager &&
+            !isBookkeeper &&
+            !isEmployee) {
           return '/dashboard';
         }
         // FR-008: Only the Business Owner can switch sectors (API 403

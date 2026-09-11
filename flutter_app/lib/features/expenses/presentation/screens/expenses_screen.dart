@@ -507,7 +507,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ),
             const SizedBox(height: AppSpacing.sp3),
             Text(
-              'Expense records are immutable after creation. Only the Business Owner and Event Managers can record expenses.',
+              'Expenses are scoped to your authorized sector and account.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),

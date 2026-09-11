@@ -27,5 +27,6 @@ class UserModel {
 
   bool get isBusinessOwner => role == 'Business Owner';
   bool get isEventManager => role == 'Event Manager';
+  bool get isBookkeeper => role == 'Bookkeeper';
   bool get isEmployee => role == 'Employee/Staff';
 }

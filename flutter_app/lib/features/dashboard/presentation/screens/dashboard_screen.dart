@@ -134,6 +134,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             _QuickActions(
               isBusinessOwner: isBusinessOwner,
               isEventManager: auth.user?.isEventManager ?? false,
+              isEmployee: auth.user?.isEmployee ?? false,
             ),
           ],
         ),
@@ -617,19 +618,22 @@ class _QuickActions extends StatelessWidget {
   const _QuickActions({
     required this.isBusinessOwner,
     required this.isEventManager,
+    required this.isEmployee,
   });
 
   final bool isBusinessOwner;
   final bool isEventManager;
+  final bool isEmployee;
 
   @override
   Widget build(BuildContext context) {
-    final bool showOperational = isBusinessOwner || isEventManager;
+    final bool showTransactionAction =
+        isBusinessOwner || isEventManager || isEmployee;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (showOperational) ...[
+        if (showTransactionAction) ...[
           FilledButton.icon(
             onPressed: () => _showTransactionChoice(context),
             icon: const Icon(Icons.add, size: 20),
@@ -637,8 +641,8 @@ class _QuickActions extends StatelessWidget {
           ),
         ] else ...[
           OutlinedButton(
-            onPressed: () => context.go('/payroll'),
-            child: const Text('View Payroll'),
+            onPressed: () => context.go('/reports'),
+            child: const Text('View Reports'),
           ),
         ],
       ],
@@ -661,7 +665,7 @@ class _QuickActions extends StatelessWidget {
                 style: Theme.of(sheetContext).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.sp2),
-              ListTile(
+              if (!isEmployee) ListTile(
                 leading: const Icon(Icons.trending_up),
                 title: const Text('Record Sale'),
                 onTap: () {

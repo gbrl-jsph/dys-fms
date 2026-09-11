@@ -273,7 +273,7 @@ void main() {
     expect(find.text('₱225,000.00'), findsWidgets);
   });
 
-  testWidgets('the Event Manager has no Analytics option, no sector selector, '
+  testWidgets('the Event Manager has Analytics, no sector selector, '
       'and no sector_id is sent', (WidgetTester tester) async {
     fakeAuthRepository.onGetStoredUser = () async =>
         UserModel.fromJson(eventManagerUserJson);
@@ -297,7 +297,7 @@ void main() {
 
     await tester.tap(find.byType(DropdownButtonFormField<String>));
     await tester.pumpAndSettle();
-    expect(find.text('Analytics'), findsNothing);
+    expect(find.text('Analytics'), findsOneWidget);
     expect(find.text('Sales'), findsWidgets);
     expect(find.text('Expenses'), findsWidgets);
     await tester.tap(find.text('Summary').last);

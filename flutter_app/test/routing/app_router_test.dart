@@ -45,6 +45,15 @@ const Map<String, dynamic> employeeUserJson = {
   'account_status': 'Active',
 };
 
+const Map<String, dynamic> bookkeeperUserJson = {
+  'id': 4,
+  'name': 'Bea Cruz',
+  'email': 'bea@dys.com',
+  'role': 'Bookkeeper',
+  'sector_id': 1,
+  'account_status': 'Active',
+};
+
 const FinancialSummary _sampleSummary = FinancialSummary(
   totalSales: 150000,
   totalExpenses: 85000,
@@ -263,7 +272,7 @@ void main() {
     expect(find.text('Record Expense'), findsOneWidget);
   });
 
-  testWidgets('employee visiting /expenses is redirected to /dashboard', (
+  testWidgets('employee visiting /expenses is shown the record expense screen', (
     WidgetTester tester,
   ) async {
     final GoRouter router = await pumpApp(
@@ -275,8 +284,7 @@ void main() {
     router.go('/expenses');
     await tester.pumpAndSettle();
 
-    expect(find.text('Record Expense'), findsNothing);
-    expect(find.text('QUICK ACTIONS'), findsOneWidget);
+    expect(find.text('Record Expense'), findsOneWidget);
   });
 
   testWidgets('owner bottom nav includes the Users tab', (
@@ -321,7 +329,7 @@ void main() {
     expect(find.text('Reports'), findsOneWidget);
   });
 
-  testWidgets('employee bottom nav shows only Dashboard and Payroll', (
+  testWidgets('employee bottom nav includes Expenses, Payroll, and Reports', (
     WidgetTester tester,
   ) async {
     await pumpApp(
@@ -333,9 +341,9 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.text('Users'), findsNothing);
     expect(find.text('Sales'), findsNothing);
-    expect(find.text('Expenses'), findsNothing);
+    expect(find.text('Expenses'), findsOneWidget);
     expect(find.text('Payroll'), findsOneWidget);
-    expect(find.text('Reports'), findsNothing);
+    expect(find.text('Reports'), findsOneWidget);
   });
 
   testWidgets('owner visiting /payroll is shown the payroll screen', (
@@ -409,7 +417,7 @@ void main() {
     expect(find.text('Generate Report'), findsOneWidget);
   });
 
-  testWidgets('employee visiting /reports is redirected to /dashboard', (
+  testWidgets('employee visiting /reports is shown the financial reports screen', (
     WidgetTester tester,
   ) async {
     final GoRouter router = await pumpApp(
@@ -421,8 +429,25 @@ void main() {
     router.go('/reports');
     await tester.pumpAndSettle();
 
-    expect(find.text('Financial Reports'), findsNothing);
-    expect(find.text('QUICK ACTIONS'), findsOneWidget);
+    expect(find.text('Financial Reports'), findsOneWidget);
+  });
+
+  testWidgets('bookkeeper can access reports and payroll but not transactions', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpApp(
+      tester,
+      authenticated: true,
+      storedUserJson: bookkeeperUserJson,
+    );
+
+    expect(find.text('Sales'), findsNothing);
+    expect(find.text('Expenses'), findsNothing);
+    expect(find.text('Reports'), findsOneWidget);
+
+    router.go('/reports');
+    await tester.pumpAndSettle();
+    expect(find.text('Financial Reports'), findsOneWidget);
   });
 
   testWidgets('owner dashboard uses the compact transaction action', (

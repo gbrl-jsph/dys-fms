@@ -28,10 +28,8 @@ import '../providers/reports_provider.dart';
 /// - Business Owner: Report Type selector (Summary, Sales, Expenses,
 ///   Analytics), sector selector ("All Sectors" cross-sector or one of
 ///   the four sectors), From/To date pickers, Generate Report button.
-/// - Event Manager: same form minus Analytics (no sector selector — the
-///   server scopes reports to the assigned sector).
-/// - Employee/Staff: screen is unreachable (router redirect + hidden
-///   bottom nav tab; the API returns 403 for this role).
+/// - Event Manager and Employee/Staff: assigned-sector reports and analytics
+///   without a sector selector. Bookkeepers have cross-sector read-only access.
 ///
 /// Charts are rendered as [AppChartPlaceholder]s per the wireframe —
 /// no chart rendering is invented. The analytics charts object
@@ -138,7 +136,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
     final ReportsProvider reportsProvider = context.watch<ReportsProvider>();
     final ReportsState state = reportsProvider.state;
     final bool isBusinessOwner = auth.user?.isBusinessOwner ?? false;
-    final bool isEventManager = auth.user?.isEventManager ?? false;
+    final bool isAssignedSectorRole =
+        auth.user?.isEventManager == true || auth.user?.isEmployee == true;
     final bool isAnalytics = _reportType == 'analytics';
 
     // Keep the sector selector in sync and discard the stale report after
@@ -176,7 +175,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             const SizedBox(height: AppSpacing.sp2),
             _ReportForm(
               isBusinessOwner: isBusinessOwner,
-              isEventManager: isEventManager,
+              isAssignedSectorRole: isAssignedSectorRole,
               reportType: _reportType,
               selectedSectorId: _selectedSectorId,
               isGenerating: state.isLoading,
@@ -222,7 +221,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 class _ReportForm extends StatelessWidget {
   const _ReportForm({
     required this.isBusinessOwner,
-    required this.isEventManager,
+    required this.isAssignedSectorRole,
     required this.reportType,
     required this.selectedSectorId,
     required this.isGenerating,
@@ -237,7 +236,7 @@ class _ReportForm extends StatelessWidget {
   });
 
   final bool isBusinessOwner;
-  final bool isEventManager;
+  final bool isAssignedSectorRole;
   final String reportType;
   final int? selectedSectorId;
   final bool isGenerating;
@@ -259,9 +258,7 @@ class _ReportForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<(String, String)> types = isBusinessOwner
-        ? _types
-        : _types.take(3).toList();
+    final List<(String, String)> types = _types;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sp4),
@@ -351,7 +348,7 @@ class _ReportForm extends StatelessWidget {
               ),
             ],
           ),
-          if (isEventManager) ...[
+          if (isAssignedSectorRole) ...[
             const SizedBox(height: AppSpacing.sp1),
             Text(
               'Reports are scoped to your assigned sector.',

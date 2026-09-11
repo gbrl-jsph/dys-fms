@@ -38,6 +38,8 @@ class AppShell extends StatelessWidget {
     final List<_NavItem> items = _navItemsFor(
       isBusinessOwner: authProvider.state.user?.isBusinessOwner ?? false,
       isEventManager: authProvider.state.user?.isEventManager ?? false,
+      isBookkeeper: authProvider.state.user?.isBookkeeper ?? false,
+      isEmployee: authProvider.state.user?.isEmployee ?? false,
     );
 
     final int currentIndex = items.indexWhere(
@@ -67,14 +69,17 @@ class AppShell extends StatelessWidget {
   /// Role-specific bottom nav items per the navigation-map matrix:
   /// BO: Dashboard, Sales, Expenses, Payroll, Users, Reports
   /// EM: Dashboard, Sales, Expenses, Payroll, Reports
-  /// EE: Dashboard, Payroll
-  /// (The Employee has no Reports screen — FR-007 / API 403 — so the
-  /// Reports tab is Business Owner / Event Manager only.)
+  /// BK: Dashboard, Payroll, Reports
+  /// EE: Dashboard, Expenses, Payroll, Reports
   List<_NavItem> _navItemsFor({
     required bool isBusinessOwner,
     required bool isEventManager,
+    required bool isBookkeeper,
+    required bool isEmployee,
   }) {
     final bool showOperational = isBusinessOwner || isEventManager;
+    final bool showExpenses = showOperational || isEmployee;
+    final bool showReports = isBusinessOwner || isEventManager || isBookkeeper || isEmployee;
 
     return [
       const _NavItem(
@@ -90,7 +95,7 @@ class AppShell extends StatelessWidget {
           icon: Icons.sell_outlined,
           selectedIcon: Icons.sell,
         ),
-      if (showOperational)
+      if (showExpenses)
         const _NavItem(
           branchIndex: 2,
           label: 'Expenses',
@@ -110,7 +115,7 @@ class AppShell extends StatelessWidget {
           icon: Icons.group_add_outlined,
           selectedIcon: Icons.group_add,
         ),
-      if (showOperational)
+      if (showReports)
         const _NavItem(
           branchIndex: 5,
           label: 'Reports',

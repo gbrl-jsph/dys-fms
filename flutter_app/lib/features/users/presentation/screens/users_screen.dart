@@ -512,6 +512,10 @@ class _UserForm extends StatelessWidget {
                           child: Text('Event Manager'),
                         ),
                         DropdownMenuItem(
+                          value: 'Bookkeeper',
+                          child: Text('Bookkeeper'),
+                        ),
+                        DropdownMenuItem(
                           value: 'Employee/Staff',
                           child: Text('Employee/Staff'),
                         ),
