@@ -12,6 +12,11 @@ class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
 
+    public const BUSINESS_OWNER = 'Business Owner';
+    public const EVENT_MANAGER = 'Event Manager';
+    public const BOOKKEEPER = 'Bookkeeper';
+    public const EMPLOYEE_STAFF = 'Employee/Staff';
+
     public $timestamps = true;
 
     protected $fillable = [
@@ -45,5 +50,10 @@ class User extends Authenticatable
     public function payrollRecords(): HasMany
     {
         return $this->hasMany(PayrollRecord::class, 'user_id');
+    }
+
+    public static function assignableRoles(): array
+    {
+        return [self::EVENT_MANAGER, self::BOOKKEEPER, self::EMPLOYEE_STAFF];
     }
 }

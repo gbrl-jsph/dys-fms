@@ -32,7 +32,7 @@ class PayrollService
             if ($userId !== null) {
                 $query->where('user_id', $userId);
             }
-        } else {
+        } elseif ($user->role !== 'Bookkeeper') {
             $query->where('user_id', $user->id);
         }
 

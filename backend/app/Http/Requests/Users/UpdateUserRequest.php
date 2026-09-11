@@ -4,6 +4,7 @@ namespace App\Http\Requests\Users;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
-            'role' => ['required', 'string', 'in:Event Manager,Employee/Staff'],
+            'role' => ['required', 'string', Rule::in(User::assignableRoles())],
             'sector_id' => ['required', 'integer', 'exists:business_sectors,id'],
         ];
     }

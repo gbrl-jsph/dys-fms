@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Users;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use App\Models\User;
 
 class StoreUserRequest extends FormRequest
 {
@@ -16,7 +18,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'role' => ['required', 'string', 'in:Event Manager,Employee/Staff'],
+            'role' => ['required', 'string', Rule::in(User::assignableRoles())],
             'sector_id' => ['required', 'integer', 'exists:business_sectors,id'],
         ];
     }

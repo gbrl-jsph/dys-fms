@@ -33,6 +33,10 @@ class UserService
 
     public function createUser(array $data): array
     {
+        if (! in_array($data['role'], User::assignableRoles(), true)) {
+            abort(422, 'The selected role is invalid.');
+        }
+
         // Defense in depth: reject duplicate email addresses even when
         // validation is bypassed, so a retried request can never create
         // a second account or deliver a second (mismatched) temporary
@@ -84,9 +88,9 @@ class UserService
             abort(403, 'Forbidden.');
         }
 
-        // Defense in depth: the Business Owner role must never be assigned
-        // through this endpoint (BR-33), even if validation is bypassed.
-        if ($data['role'] === 'Business Owner') {
+        // Defense in depth: account-management requests cannot assign an
+        // unapproved role even when request validation is bypassed.
+        if (! in_array($data['role'], User::assignableRoles(), true)) {
             abort(422, 'The selected role is invalid.');
         }
 

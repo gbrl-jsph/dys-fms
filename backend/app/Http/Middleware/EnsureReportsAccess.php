@@ -9,20 +9,15 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureReportsAccess
 {
     /**
-     * Allows Business Owners and Event Managers through; employees are
-     * rejected with 403 (validation-rules BR-14). The analytics report
-     * type is reserved for the Business Owner (TC-FR007-02).
+     * All final-design roles can read reports and analytics. Sector scope is
+     * enforced in the reports service.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $role = $request->user()?->role;
 
-        if ($role !== 'Business Owner' && $role !== 'Event Manager') {
+        if (! in_array($role, ['Business Owner', 'Event Manager', 'Bookkeeper', 'Employee/Staff'], true)) {
             abort(403, 'Forbidden.');
-        }
-
-        if ($role === 'Event Manager' && $request->query('type') === 'analytics') {
-            abort(403, 'Forbidden. Analytics dashboard is available for Business Owner only.');
         }
 
         return $next($request);

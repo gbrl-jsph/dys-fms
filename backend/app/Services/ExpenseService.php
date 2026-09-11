@@ -25,7 +25,9 @@ class ExpenseService
     {
         $query = Expense::with(['user', 'sector']);
 
-        if ($user->role === 'Event Manager') {
+        if ($user->role === 'Employee/Staff') {
+            $query->where('user_id', $user->id);
+        } elseif ($user->role === 'Event Manager') {
             $query->where('sector_id', $user->sector_id);
         } else {
             $query->where('sector_id', $sectorId);
@@ -161,6 +163,10 @@ class ExpenseService
         }
 
         if ($user->role === 'Event Manager' && $expense->sector_id === $user->sector_id) {
+            return;
+        }
+
+        if ($user->role === 'Employee/Staff' && $expense->user_id === $user->id) {
             return;
         }
 

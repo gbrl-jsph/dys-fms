@@ -24,6 +24,8 @@ class PayrollManagementTest extends TestCase
 
     private User $ana;
 
+    private User $bookkeeper;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,6 +63,15 @@ class PayrollManagementTest extends TestCase
             'email' => 'ana@dys.com',
             'password' => Hash::make('SecurePass123'),
             'role' => 'Employee/Staff',
+            'sector_id' => $this->eventsSector->id,
+            'account_status' => 'Active',
+        ]);
+
+        $this->bookkeeper = User::create([
+            'name' => 'Bea Cruz',
+            'email' => 'bea@dys.com',
+            'password' => Hash::make('SecurePass123'),
+            'role' => 'Bookkeeper',
             'sector_id' => $this->eventsSector->id,
             'account_status' => 'Active',
         ]);
@@ -441,6 +452,23 @@ class PayrollManagementTest extends TestCase
 
         $this->assertCount(1, $own->json('data'));
         $this->assertEquals($this->ana->id, $own->json('data.0.employee.id'));
+    }
+
+    public function test_bookkeeper_views_all_payroll_but_cannot_calculate_it(): void
+    {
+        $this->createPayroll($this->ana->id, $this->eventsSector->id, 160.00, 125.00, '2026-07-15', '2026-07-15 10:00:00', $this->owner->id);
+        $this->createPayroll($this->maria->id, $this->bandysSector->id, 80.00, 150.00, '2026-07-15', '2026-07-16 10:00:00', $this->owner->id);
+
+        $token = $this->authenticate('bea@dys.com');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/payroll')
+            ->assertStatus(200)
+            ->assertJsonPath('meta.total', 2);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/payroll', [])
+            ->assertStatus(403);
     }
 
     public function test_owner_views_all_payroll_with_sector_and_employee_filters(): void

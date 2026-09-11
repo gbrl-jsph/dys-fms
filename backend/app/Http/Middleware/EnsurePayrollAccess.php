@@ -22,7 +22,7 @@ class EnsurePayrollAccess
             abort(403, 'Forbidden.');
         }
 
-        if (! in_array($role, ['Business Owner', 'Event Manager', 'Employee/Staff'], true)) {
+        if (! in_array($role, ['Business Owner', 'Event Manager', 'Bookkeeper', 'Employee/Staff'], true)) {
             abort(403, 'Forbidden.');
         }
 

@@ -198,6 +198,24 @@ class UserManagementTest extends TestCase
             ]);
     }
 
+    public function test_owner_can_create_bookkeeper_account(): void
+    {
+        $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())
+            ->postJson('/api/users', [
+                'name' => 'Bea Cruz',
+                'email' => 'bea@dys.com',
+                'role' => 'Bookkeeper',
+                'sector_id' => $this->eventsSector->id,
+            ])
+            ->assertStatus(201)
+            ->assertJsonPath('data.role', 'Bookkeeper');
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'bea@dys.com',
+            'role' => 'Bookkeeper',
+        ]);
+    }
+
     public function test_creating_user_with_duplicate_email_returns_422(): void
     {
         $response = $this->withHeader('Authorization', 'Bearer '.$this->ownerToken())

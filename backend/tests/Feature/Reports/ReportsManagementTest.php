@@ -25,6 +25,8 @@ class ReportsManagementTest extends TestCase
 
     private User $ana;
 
+    private User $bookkeeper;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -62,6 +64,15 @@ class ReportsManagementTest extends TestCase
             'email' => 'ana@dys.com',
             'password' => Hash::make('SecurePass123'),
             'role' => 'Employee/Staff',
+            'sector_id' => $this->eventsSector->id,
+            'account_status' => 'Active',
+        ]);
+
+        $this->bookkeeper = User::create([
+            'name' => 'Bea Cruz',
+            'email' => 'bea@dys.com',
+            'password' => Hash::make('SecurePass123'),
+            'role' => 'Bookkeeper',
             'sector_id' => $this->eventsSector->id,
             'account_status' => 'Active',
         ]);
@@ -305,13 +316,15 @@ class ReportsManagementTest extends TestCase
         $this->assertArrayNotHasKey('cross_sector', $invalidSector->json('data'));
     }
 
-    public function test_event_manager_analytics_type_is_forbidden(): void
+    public function test_event_manager_analytics_is_scoped_to_assigned_sector(): void
     {
+        $this->seedCrossSectorData();
+
         $this->withHeader('Authorization', 'Bearer '.$this->authenticate('maria@dys.com'))
             ->getJson('/api/reports?type=analytics')
-            ->assertStatus(403)
+            ->assertStatus(200)
             ->assertJson([
-                'message' => 'Forbidden. Analytics dashboard is available for Business Owner only.',
+                'data' => ['summary' => ['total_sales' => 75000.0]],
             ]);
     }
 
@@ -348,13 +361,22 @@ class ReportsManagementTest extends TestCase
         $this->assertCount(2, $charts['sector_comparison']);
     }
 
-    public function test_employee_is_forbidden_from_reports(): void
+    public function test_bookkeeper_and_employee_can_view_assigned_sector_analytics(): void
     {
-        $this->withHeader('Authorization', 'Bearer '.$this->authenticate('ana@dys.com'))
-            ->getJson('/api/reports')
-            ->assertStatus(403)
+        $this->seedCrossSectorData();
+
+        $this->withHeader('Authorization', 'Bearer '.$this->authenticate('bea@dys.com'))
+            ->getJson('/api/reports?type=analytics')
+            ->assertStatus(200)
             ->assertJson([
-                'message' => 'Forbidden.',
+                'data' => ['summary' => ['total_sales' => 225000.0]],
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$this->authenticate('ana@dys.com'))
+            ->getJson('/api/reports?type=analytics')
+            ->assertStatus(200)
+            ->assertJson([
+                'data' => ['summary' => ['total_sales' => 150000.0]],
             ]);
     }
 

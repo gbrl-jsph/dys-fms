@@ -12,8 +12,8 @@ class ReportsService
 {
     /**
      * Generates the report for the given role scope:
-     * - Event Manager: always the assigned sector (sector_id overridden,
-     *   TC-FR007-03); analytics is rejected in the middleware.
+     * - Event Manager and Employee/Event Staff: always their assigned sector.
+     * - Bookkeeper: cross-sector read-only access.
      * - Business Owner without sector_id: cross-sector aggregation.
      * - Business Owner with sector_id: single-sector report.
      *
@@ -29,9 +29,9 @@ class ReportsService
         $dateFrom = $filters['date_from'] ?? null;
         $dateTo = $filters['date_to'] ?? null;
 
-        $sectorId = $user->role === 'Event Manager'
-            ? $user->sector_id
-            : ($filters['sector_id'] ?? null);
+        $sectorId = in_array($user->role, ['Business Owner', 'Bookkeeper'], true)
+            ? ($filters['sector_id'] ?? null)
+            : $user->sector_id;
 
         if ($type === 'analytics') {
             $summary = $this->totals($sectorId, $dateFrom, $dateTo);

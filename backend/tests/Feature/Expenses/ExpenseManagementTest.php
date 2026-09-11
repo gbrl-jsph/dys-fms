@@ -24,6 +24,8 @@ class ExpenseManagementTest extends TestCase
 
     private User $ana;
 
+    private User $bookkeeper;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,6 +63,15 @@ class ExpenseManagementTest extends TestCase
             'email' => 'ana@dys.com',
             'password' => Hash::make('SecurePass123'),
             'role' => 'Employee/Staff',
+            'sector_id' => $this->eventsSector->id,
+            'account_status' => 'Active',
+        ]);
+
+        $this->bookkeeper = User::create([
+            'name' => 'Bea Cruz',
+            'email' => 'bea@dys.com',
+            'password' => Hash::make('SecurePass123'),
+            'role' => 'Bookkeeper',
             'sector_id' => $this->eventsSector->id,
             'account_status' => 'Active',
         ]);
@@ -333,27 +344,28 @@ class ExpenseManagementTest extends TestCase
             ]);
     }
 
-    public function test_employee_is_forbidden_from_expense_endpoints(): void
+    public function test_employee_can_log_and_view_only_own_expenses(): void
     {
         $token = $this->authenticate('ana@dys.com');
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/expenses', [
                 'amount' => 1000.00,
-                'description' => 'Employee attempt',
-            ])->assertStatus(403)
-            ->assertJson([
-                'message' => 'Forbidden.',
-            ]);
+                'description' => 'Employee expense',
+            ])->assertStatus(201);
 
-        $this->withHeader('Authorization', 'Bearer '.$token)
+        $this->createExpense($this->eventsSector->id, 2000.00, 'Other employee expense', '2026-07-01 10:00:00', $this->owner->id);
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/expenses')
-            ->assertStatus(403)
-            ->assertJson([
-                'message' => 'Forbidden.',
-            ]);
+            ->assertStatus(200);
 
-        $this->assertDatabaseCount('expenses', 0);
+        $this->assertCount(1, $response->json('data'));
+        $this->assertSame($this->ana->id, $response->json('data.0.recorded_by.id'));
+
+        $this->withHeader('Authorization', 'Bearer '.$this->authenticate('bea@dys.com'))
+            ->postJson('/api/expenses', ['amount' => 1000.00])
+            ->assertStatus(403);
     }
 
     public function test_sector_scoping_filters_owner_results_and_orders_by_recorded_at_desc(): void
