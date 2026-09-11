@@ -12,15 +12,16 @@ Use this order when facts conflict:
 
 1. Latest explicit approval.
 2. Verified source, tests, and deployment configuration.
-3. [`../AI.md`](../AI.md) and [`../PROJECT.md`](../PROJECT.md).
+3. Repository-root `AI.md` and `PROJECT.md` when tracked in the current
+   worktree.
 4. This reconciliation record and active references in
    [`project-index.md`](project-index.md).
 5. Historical, academic, blueprint, and generated artifacts.
 
 ## Reviewed Design Reference
 
-- [`../DYS_FMS_System_Design_Sections_II_III.pdf`](../DYS_FMS_System_Design_Sections_II_III.pdf)
-  — System Architecture & Environment and System Logic & Behavior.
+- `DYS_FMS_System_Design_Sections_II_III.pdf` in the repository root — System
+  Architecture & Environment and System Logic & Behavior.
 
 ## Confirmed Alignment
 
