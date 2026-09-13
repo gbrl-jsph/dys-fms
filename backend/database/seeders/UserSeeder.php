@@ -10,6 +10,10 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        if (DB::table('users')->where('email', 'owner@dys.com')->exists()) {
+            return;
+        }
+
         $password = env('OWNER_PASSWORD');
 
         if (empty($password)) {
@@ -17,17 +21,15 @@ class UserSeeder extends Seeder
         }
 
         // Create once only: production seeding must never replace an owner's password.
-        DB::table('users')->insertOrIgnore(
-            [
-                'email' => 'owner@dys.com',
-                'name' => 'Juan Dela Cruz',
-                'password' => Hash::make($password),
-                'role' => 'Business Owner',
-                'sector_id' => null,
-                'account_status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]
-        );
+        DB::table('users')->insertOrIgnore([
+            'email' => 'owner@dys.com',
+            'name' => 'Juan Dela Cruz',
+            'password' => Hash::make($password),
+            'role' => 'Business Owner',
+            'sector_id' => null,
+            'account_status' => 'Active',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }
