@@ -1,5 +1,14 @@
 # Deployment & Testing Guide for Beginners — DYS Financial Management System (DYS FMS)
 
+## Current production verification — 2026-09-14
+
+See the [production UAT checkpoint](../../backend/DEPLOYMENT.md#production-uat-checkpoint--2026-09-14)
+for observed provisioning, authentication, health, and local PHPUnit results.
+Provisioning is complete, but final authenticated role and financial UAT is
+blocked on restoring authenticated access. The historical test totals and
+release claims below are not evidence that this production UAT passed.
+
+
 **Version:** 1.0
 **Purpose:** Deploy the DYS FMS Laravel backend on a clean machine **for testing** (not production) and run a live SMTP (email) validation.
 **Environment tested on:** Arch Linux (SteamOS) — PHP 8.4.10, Composer 2.8.10, MariaDB 11.8.2 — all steps below verified against the actual release candidate.

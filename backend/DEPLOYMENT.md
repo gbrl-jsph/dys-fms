@@ -1,5 +1,55 @@
 # DYS FMS — Permanent Cloud Deployment Guide
 
+## Production UAT checkpoint — 2026-09-14
+
+Provisioning is complete. The observed deployed application commit was `c58f445`
+(`feat: add opt-in UAT user seeding`). Render deployment
+`dep-dajvlmuk1f9s739jsoqg` completed `UatUserSeeder` successfully. The final
+steady-state deployment was `dep-dak0ufoae00c73bni8cg`; Render reported it live
+and its startup did not run seeders. No generated UAT passwords were found
+in the reviewed deployment logs. This is a scoped log observation, not a
+claim about every historical log entry.
+
+All four UAT accounts passed browser-origin CSRF initialization (`204`), login
+(`200`), authenticated profile (`200`), logout (`200`), and post-logout profile
+(`401`). Each profile matched the expected UAT email and was active. Login
+responses contained no bearer token. These checks do not establish acceptance
+of the Flutter screens, session restoration, financial workflows, or role
+isolation.
+
+The saved Render environment was verified as `RUN_MIGRATIONS=false`,
+`RUN_SEEDERS=false`, and `SEED_UAT_USERS=false`. All four `UAT_*_PASSWORD`
+variables were removed. Do not repeat provisioning or migrations to resume UAT.
+The prior migration clearance remains historical evidence; migration commands
+were not rerun during this checkpoint.
+
+Final authenticated UAT remains **BLOCKED**. Provisioning cleanup ended the UAT
+sessions and cleared the generated passwords from browser memory. An
+authenticated Business Owner browser session is needed to recover temporary
+UAT account access through supported application controls. Do not request
+passwords in chat or change the production database directly. No financial
+test records were created and no UAT accounts were deactivated in this phase.
+
+Fresh unauthenticated checks returned `/up` = `200`,
+`/sanctum/csrf-cookie` = `204`, and `401` JSON for `GET /api/profile`,
+`/api/users`, `/api/sales`, `/api/expenses`, `/api/payroll`, `/api/reports`,
+and `/api/business-sectors`. These checks do not establish authenticated RBAC.
+
+Local PHPUnit ran with `/usr/bin/php vendor/bin/phpunit` from `backend/`
+through the host environment: 114 tests, 3 assertions, 112 errors, exit code 2.
+The database-dependent tests were blocked by:
+
+```text
+SQLSTATE[HY000] [1045] Access denied for user 'dys_fms'@'localhost' (using password: NO)
+```
+
+The configured test database was `dys_fms_testing` at `127.0.0.1:3306`.
+This is not a passing backend suite. No application source changed, so Flutter
+analysis/tests were not rerun. Android bearer testing was not performed because
+UAT credentials were unavailable; no `adb` executable was found on the current
+container or host PATH for device-level checks.
+
+
 Preserves Laravel 12 + MySQL + Sanctum. Minimum changes: `Dockerfile`, `docker/apache/000-default.conf`, `docker/entrypoint.sh`, `.dockerignore`, `.env.production.example`, this doc. No schema/route/response changes.
 
 ## 1. Recommended hosting (free/low-cost for QA)

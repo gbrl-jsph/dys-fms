@@ -1,5 +1,22 @@
 # PROJECT MEMORY — DYS Financial Management System (DYS FMS)
 
+## Latest observed UAT checkpoint — 2026-09-14
+
+Provisioning is complete at application commit `c58f445`. All four UAT accounts
+passed CSRF/login/profile/logout checks. Seeding and migration flags are false,
+and the four UAT password environment variables were removed. Do not redo
+provisioning. Final authenticated role and financial UAT is blocked on
+authenticated access after the temporary passwords and sessions were cleared.
+
+Fresh health/CSRF/unauthenticated API checks passed. Local PHPUnit did not pass:
+114 tests, 3 assertions, 112 database errors (`dys_fms_testing` credentials
+unavailable). No application source or production financial records changed
+in this phase. See the [deployment checkpoint](../../backend/DEPLOYMENT.md#production-uat-checkpoint--2026-09-14)
+for exact evidence and remaining coverage. This checkpoint supersedes older
+operational/test status claims below; design authority remains
+[`memory/FINAL_DESIGN_AUTHORITY.md`](../../memory/FINAL_DESIGN_AUTHORITY.md).
+
+
 *Generated: 2026-09-03 · Source of truth: actual repository/code + git status + tests*
 *READ-ONLY snapshot — do not infer implementation from docs alone.*
 
