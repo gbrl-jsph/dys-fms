@@ -325,7 +325,38 @@ class ReportsManagementTest extends TestCase
             ->assertStatus(200)
             ->assertJson([
                 'data' => ['summary' => ['total_sales' => 75000.0]],
-            ]);
+            ])
+            ->assertJsonCount(1, 'data.charts.sector_comparison')
+            ->assertJsonPath('data.charts.sector_comparison.0.id', $this->bandysSector->id);
+    }
+
+    public function test_bookkeeper_without_sector_can_read_all_report_types(): void
+    {
+        $this->seedCrossSectorData();
+        $this->bookkeeper->update(['sector_id' => null]);
+        $token = $this->authenticate('bea@dys.com');
+
+        foreach (['summary', 'sales', 'expenses'] as $type) {
+            $this->withHeader('Authorization', 'Bearer '.$token)
+                ->getJson('/api/reports?type='.$type)
+                ->assertOk()
+                ->assertJsonPath('data.cross_sector', true)
+                ->assertJsonPath('data.grand_total.total_sales', 225000)
+                ->assertJsonPath('data.grand_total.total_expenses', 117000)
+                ->assertJsonCount(2, 'data.charts.sector_comparison');
+        }
+    }
+
+    public function test_employee_analytics_ignores_foreign_sector_and_limits_all_charts(): void
+    {
+        $this->seedCrossSectorData();
+
+        $this->withHeader('Authorization', 'Bearer '.$this->authenticate('ana@dys.com'))
+            ->getJson('/api/reports?type=analytics&sector_id='.$this->bandysSector->id)
+            ->assertOk()
+            ->assertJsonPath('data.summary.total_sales', 150000)
+            ->assertJsonCount(1, 'data.charts.sector_comparison')
+            ->assertJsonPath('data.charts.sector_comparison.0.id', $this->eventsSector->id);
     }
 
     public function test_owner_analytics_returns_charts_and_summary(): void

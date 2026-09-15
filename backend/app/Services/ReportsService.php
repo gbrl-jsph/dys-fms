@@ -42,7 +42,7 @@ class ReportsService
                     'charts' => [
                         'sales_trend' => $this->salesTrend($sectorId, $dateFrom, $dateTo),
                         'expense_breakdown' => $this->expenseBreakdown($sectorId, $dateFrom, $dateTo),
-                        'sector_comparison' => $this->sectorComparison($dateFrom, $dateTo),
+                        'sector_comparison' => $this->sectorComparison($dateFrom, $dateTo, $sectorId),
                     ],
                     'summary' => $summary,
                 ],
@@ -50,7 +50,7 @@ class ReportsService
             ];
         }
 
-        if ($user->role === 'Business Owner' && $sectorId === null) {
+        if (in_array($user->role, ['Business Owner', 'Bookkeeper'], true) && $sectorId === null) {
             $crossData = $this->crossSectorReport($dateFrom, $dateTo);
             $crossData['charts'] = [
                 'sales_trend' => $this->salesTrend(null, $dateFrom, $dateTo),
