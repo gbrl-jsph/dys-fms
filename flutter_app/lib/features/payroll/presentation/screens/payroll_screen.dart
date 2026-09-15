@@ -287,6 +287,9 @@ class _PayrollScreenState extends State<PayrollScreen> {
               isBusinessOwner
                   ? 'Payroll records are immutable and stored permanently. '
                         'Only the Business Owner can calculate payroll.'
+                  : auth.user?.isBookkeeper == true
+                  ? 'You can view payroll records across all sectors. Payroll is '
+                        'calculated by the Business Owner.'
                   : 'You can only view your own payroll records. Payroll is '
                         'calculated by the Business Owner.',
               textAlign: TextAlign.center,
@@ -403,7 +406,10 @@ class _CalculatePayrollForm extends StatelessWidget {
             hintText: '0.00',
             prefixIcon: const Padding(
               padding: EdgeInsetsDirectional.only(start: 12, end: 8),
-              child: Text('₱', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(
+                '₱',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
             ),
             errorText: rateError,
             onChanged: onRateChanged,

@@ -356,6 +356,29 @@ void main() {
     );
   });
 
+  testWidgets('the Bookkeeper sees read-only payroll guidance without '
+      'calculation or sector controls', (WidgetTester tester) async {
+    fakeAuthRepository.onGetStoredUser = () async => UserModel.fromJson({
+      ...eventManagerUserJson,
+      'role': 'Bookkeeper',
+      'sector_id': null,
+    });
+    await authProvider.checkAuthStatus();
+
+    await pumpScreen(tester, withUsers: false);
+
+    expect(find.text('Save Payroll Record'), findsNothing);
+    expect(find.text('Business Sector'), findsNothing);
+    expect(find.text('PAYROLL HISTORY'), findsOneWidget);
+    expect(
+      find.text(
+        'You can view payroll records across all sectors. Payroll is '
+        'calculated by the Business Owner.',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('the Employee sees only their own records — no calculate '
       'controls', (WidgetTester tester) async {
     fakeAuthRepository.onGetStoredUser = () async =>
