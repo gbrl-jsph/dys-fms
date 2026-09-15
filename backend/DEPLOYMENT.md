@@ -1,5 +1,29 @@
 # DYS FMS — Permanent Cloud Deployment Guide
 
+## Mail safety and UAT continuation — 2026-09-15
+
+Commit `84f5932` was observed live on Render. The configured `failover` mailer
+no longer falls back to the `log` transport, which would write temporary
+password email bodies to a log when SMTP fails. SMTP failure now propagates
+to the existing application handling instead of reporting logged mail as sent.
+Explicitly configuring `MAIL_MAILER=log` is not suitable for production
+credential delivery.
+
+The SMTP-outage regression failed on a credential-body logging attempt before
+the fix and passed afterward. Host PHP ran `vendor/bin/phpunit
+tests/Feature/Configuration`: 3 tests, 6 assertions, all passing. This does
+not clear the previously recorded MySQL blocker for the full backend suite.
+Graphify's hook could not refresh the graph because its executable environment
+was unavailable.
+
+An authenticated Business Owner profile returned 200, and the Dashboard, Sales,
+Expenses, Payroll, Reports, User Management, and sector-selection screens were
+opened. This establishes screen access only, not full financial or role UAT.
+Before any temporary-password reset was issued, the session expired during
+the overnight interruption. A fresh Business Owner sign-in is required. No
+UAT credentials were reset and no financial records were created in this phase.
+
+
 ## Production UAT checkpoint — 2026-09-14
 
 Provisioning is complete. The observed deployed application commit was `c58f445`

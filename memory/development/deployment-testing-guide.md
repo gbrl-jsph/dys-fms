@@ -1,5 +1,13 @@
 # Deployment & Testing Guide for Beginners — DYS Financial Management System (DYS FMS)
 
+## Credential-delivery regression — 2026-09-15
+
+The SMTP-outage regression now verifies that temporary-password mail cannot
+fall back to logging its body. All 3 configuration tests passed with 6
+assertions. The database-dependent suite remains blocked; final authenticated
+UAT has not passed. See the [deployment update](../../backend/DEPLOYMENT.md#mail-safety-and-uat-continuation--2026-09-15).
+
+
 ## Current production verification — 2026-09-14
 
 See the [production UAT checkpoint](../../backend/DEPLOYMENT.md#production-uat-checkpoint--2026-09-14)

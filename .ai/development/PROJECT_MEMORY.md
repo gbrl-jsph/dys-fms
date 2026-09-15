@@ -1,5 +1,16 @@
 # PROJECT MEMORY — DYS Financial Management System (DYS FMS)
 
+## UAT continuation — 2026-09-15
+
+Mail-safety fix `84f5932` was observed live on Render. Its SMTP-outage regression
+and the configuration tests pass (3 tests, 6 assertions). The full MySQL suite
+remains blocked as previously recorded. Business Owner screen access was
+observed, but the session expired overnight before UAT credential recovery.
+No UAT passwords were reset and no financial records were created. Resume
+from a fresh Business Owner sign-in; do not repeat seeding. See the
+[deployment update](../../backend/DEPLOYMENT.md#mail-safety-and-uat-continuation--2026-09-15).
+
+
 ## Latest observed UAT checkpoint — 2026-09-14
 
 Provisioning is complete at application commit `c58f445`. All four UAT accounts
